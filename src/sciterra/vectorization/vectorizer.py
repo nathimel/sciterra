@@ -1,15 +1,13 @@
 """Base class for vectorizing abstracts."""
 
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-
 
 class Vectorizer:
 
     def __init__(self) -> None:
         pass
 
-    def embed(self, docs: list[str]) -> np.ndarray:
+    def embed_documents(self, docs: list[str]) -> np.ndarray:
         """Embed a list of documents into document vectors.
         
         Args:
