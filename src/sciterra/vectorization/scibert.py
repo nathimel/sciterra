@@ -9,7 +9,7 @@ Links:
 import torch
 import numpy as np
 from .vectorizer import Vectorizer
-from transformers import BertTokenizer, AutoModelForSequenceClassification
+from transformers import BertTokenizerFast, AutoModelForSequenceClassification
 
 # the SciBERT pretrained model path from Allen AI repo
 MODEL_PATH = 'allenai/scibert_scivocab_uncased'
@@ -19,7 +19,7 @@ class SciBERTVectorizer(Vectorizer):
     def __init__(self) -> None:
 
         # Get tokenizer  
-        self.tokenizer = BertTokenizer.from_pretrained(
+        self.tokenizer = BertTokenizerFast.from_pretrained(
             MODEL_PATH, 
             do_lower_case=True,
         )
@@ -29,8 +29,15 @@ class SciBERTVectorizer(Vectorizer):
             output_attentions = False,
             output_hidden_states = True,
         )
+
+        # set device to GPU
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        print(f"Using device {self.device}.")
+        self.model.to(self.device)
+
         # Put the model in "evaluation" mode
         self.model.eval()
+
 
         super().__init__()
     
@@ -49,12 +56,16 @@ class SciBERTVectorizer(Vectorizer):
             batch = docs[idx : min(len(docs), idx+batch_size)]
 
             # Tokenize the batch
-            encoded = self.tokenizer.batch_encode_plus(
+            encoded = self.tokenizer(
                 batch,
                 add_special_tokens = True,
                 padding = True, # pad up to length of longest abstract
+                return_tensors = 'pt',
             )
-            encoded = {key:torch.LongTensor(value) for key, value in encoded.items()}
+
+            # Put data on GPU
+            for k, v in encoded.items():
+                encoded[k] = v.to(self.device)
 
             # Run the text through SciBERT, and collect all of the hidden states produced
             # from all 12 layers. 

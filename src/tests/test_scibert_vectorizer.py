@@ -1,5 +1,8 @@
 import numpy as np
 from scipy.spatial.distance import cosine
+from sklearn.metrics.pairwise import cosine_distances
+
+from tqdm import tqdm
 
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
@@ -20,25 +23,24 @@ def test_single_vector():
 
 
 def test_identity_of_embeddings():
-    v1 = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
-    v2 = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
-
-    # flatten each (1, 768) into (768)
-    v1 = v1.flatten()
-    v2 = v2.flatten()
-
+    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str, abstract_str])
     # check identity
-    assert np.all(v1 == v2)
+    assert np.all( embeddings[0] == embeddings[1] )
 
 
 def test_single_cosine_pair():
-    v1 = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
-    v2 = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
-
-    # flatten each (1, 768) into (768)
-    v1 = v1.flatten()
-    v2 = v2.flatten()
+    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str, abstract_str])
     
     # Check that the cosine sim of doc w/ itself is 1
-    sim = float(1 - cosine(v1, v2))
+    sim = float(1 - cosine(embeddings[0], embeddings[1]))
     assert sim == 1.0
+
+def test_basic_cosine_matrix():
+    # TODO: this takes way too long. 
+    # like pair above, but pretending that we have more than 2 publications.
+    num_pubs = 10 
+    embeddings = np.array([
+        TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str] * num_pubs).flatten()
+    ])
+    cosine_matrix = cosine_distances(embeddings, embeddings)
+    assert np.all( cosine_matrix == 0 )
