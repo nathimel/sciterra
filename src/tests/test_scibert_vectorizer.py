@@ -38,7 +38,7 @@ def test_single_cosine_pair():
 def test_basic_cosine_matrix():
     # TODO: this takes way too long. 
     # like pair above, but pretending that we have more than 2 publications.
-    num_pubs = 10 
+    num_pubs = 1000 
     embeddings = np.array([
         TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str] * num_pubs).flatten()
     ])

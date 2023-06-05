@@ -9,14 +9,18 @@ Links:
 import torch
 import numpy as np
 from .vectorizer import Vectorizer
+from tqdm import tqdm
+
 from transformers import BertTokenizerFast, AutoModelForSequenceClassification
+
+MPS_DEVICE = torch.device("mps")
 
 # the SciBERT pretrained model path from Allen AI repo
 MODEL_PATH = 'allenai/scibert_scivocab_uncased'
 
 class SciBERTVectorizer(Vectorizer):
 
-    def __init__(self) -> None:
+    def __init__(self, device = "cuda") -> None:
 
         # Get tokenizer  
         self.tokenizer = BertTokenizerFast.from_pretrained(
@@ -31,14 +35,16 @@ class SciBERTVectorizer(Vectorizer):
         )
 
         # set device to GPU
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        if device == "mps":
+            self.device = MPS_DEVICE
+        elif device == "cuda":
+            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
         print(f"Using device {self.device}.")
         self.model.to(self.device)
 
         # Put the model in "evaluation" mode
         self.model.eval()
-
-
         super().__init__()
     
     def embed_documents(self, docs: list[str], batch_size: int = 64) -> np.ndarray:
@@ -50,9 +56,9 @@ class SciBERTVectorizer(Vectorizer):
         Returns:
             a numpy array of shape `(num_documents, 768)`
         """
-
+        print("embedding documents ...")
         embeddings = []
-        for idx in range(0, len(docs), batch_size):
+        for idx in tqdm(range(0, len(docs), batch_size)):
             batch = docs[idx : min(len(docs), idx+batch_size)]
 
             # Tokenize the batch
