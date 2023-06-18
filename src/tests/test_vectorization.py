@@ -11,7 +11,7 @@ abstract_str = "We use cosmological hydrodynamic simulations with stellar feedba
 
 class TestSciBERTVectorizer:
 
-    vectorizer = SciBERTVectorizer()
+    vectorizer = SciBERTVectorizer(device="mps")
 
 def test_single_vector():
     embedding = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
@@ -36,9 +36,11 @@ def test_single_cosine_pair():
     assert sim == 1.0
 
 def test_basic_cosine_matrix():
-    # TODO: this takes way too long. 
     # like pair above, but pretending that we have more than 2 publications.
-    num_pubs = 1000 
+
+    num_pubs = 3000 
+    # n.b., 1000 typically takes 83.75s with mps; Colab cuda takes just 29s
+
     embeddings = np.array([
         TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str] * num_pubs).flatten()
     ])

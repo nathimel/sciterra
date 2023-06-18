@@ -40,7 +40,7 @@ class SciBERTVectorizer(Vectorizer):
         elif device == "cuda":
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         
-        print(f"Using device {self.device}.")
+        print(f"Using device: {self.device}.")
         self.model.to(self.device)
 
         # Put the model in "evaluation" mode
