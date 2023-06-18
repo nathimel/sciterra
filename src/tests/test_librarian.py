@@ -1,4 +1,8 @@
-"""Test basic pipeline functionality with semantic scholar."""
+"""Test basic pipeline functionality with each librarian."""
+
+############################################################################## 
+# Semantic Scholar
+############################################################################## 
 
 class TestSemanticScholarAtlas:
 

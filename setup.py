@@ -26,7 +26,7 @@ setuptools.setup(
         "torch",
         "transformers",
         "scikit-learn",
-        # "pandas",
+        "pandas",
         # "plotnine",
         "pytest",
     ],
