@@ -37,15 +37,16 @@ def test_save_load_empty_atlas(tmp_path):
 """Test an Atlas with a single publication."""
 
 def test_atlas_single():
-
-    atl = Atlas([Publication({"identifier": "id"})])
-    assert atl.identifier_to_index == {"id": 0}
+    pub = Publication({"identifier": "id"})
+    atl = Atlas([pub])
+    assert atl[str(pub)] == pub
 
 def test_atlas_single_duplicate():
 
     pub = Publication({"identifier":"id"})
     atl = Atlas([pub,pub])
-    assert atl.identifier_to_index == {"id": 0}
+    assert atl[str(pub)] == pub
+    assert len(atl) == 1
 
 def test_save_atlas_single(tmp_path):
 

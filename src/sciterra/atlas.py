@@ -6,32 +6,21 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from publication import FIELDS
-from publication import Publication
+from .publication import FIELDS, Publication
 
 class Atlas:
 
     def __init__(
         self, 
         publications: list[Publication], 
-        # embeddings: np.ndarray = None,
         ) -> None:
 
         self.publications = list(set(publications))
-        # self.embeddings = embeddings
-        
-        # lookups for embeddings
         if self.publications:
-            self.index_to_identifier = [str(pub) for pub in self.publications]
-            self.identifier_to_index = {pub: i for i, pub in enumerate(self.index_to_identifier)}
-
-            # if self.embeddings is not None:
-            #     if len(self.embeddings) != len(self.publications):
-            #         raise Exception(f"Number of embeddings ({len(self.embeddings)}) do not match number of publications ({self.publications}).")
+            self.id_to_pub = {str(pub): pub for pub in self.publications}
 
     ######################################################################
-    # Lookups for embeddings
-    ######################################################################
+    # Lookup    ######################################################################
     
     def __getitem__(self, identifier: str) -> Publication:
         """Get a publication given its identifier.
@@ -39,17 +28,9 @@ class Atlas:
         Raises:
             ValueError: the identifier is not in the Atlas.
         """
-        if identifier in self.identifier_to_index:
-            return self.identifier_to_index[identifier]
+        if identifier in self.id_to_pub:
+            return self.id_to_pub[identifier]
         raise ValueError(f"Identifier {identifier} not in Atlas.")
-    
-    def identifiers_to_indices(self, identifiers: list[str]) -> list[int]:
-        """Get all indices for a list of tokens."""
-        return [self.identifier_to_index[identifer] for identifer in identifiers]
-
-    def indices_to_identifiers(self, indices: list[int]) -> list[str]:
-        """Get all identifiers for a list of integer indices."""
-        return [self.index_to_identifier[idx] for idx in indices]
     
     ######################################################################
     # File I/O
@@ -59,9 +40,7 @@ class Atlas:
         self, 
         atlas_dirpath: str, 
         publications_fn: str = "publications.csv", 
-        embeddings_fn: str = "embeddings.npy",
         overwrite_publications: bool = True,
-        overwrite_embeddings: bool = True,
         ) -> None:
         """Write the Atlas to a directory containing a CSV file of publications and a .npy file of embeddings.
 
@@ -70,11 +49,8 @@ class Atlas:
 
             publications_fn: name of file to save publications to.
 
-            embeddings_fn: name of file to save embeddings to.
-
             overwrite_publications: whether to overwrite an existing publications file.
 
-            overwrite_embeddings: whether to overwrite an existing embeddings file.
         """
         # save publications
         if self.publications:
@@ -89,23 +65,12 @@ class Atlas:
                 pub_data.to_csv(fp, index=False)
         else:
             warnings.warn("No publications to save, skipping.")
-
-        # save embeddings
-        if self.embeddings is not None:
-            if overwrite_embeddings:
-                fp = os.path.join(atlas_dirpath, embeddings_fn)
-                if os.path.isfile(fp):
-                    warnings.warn(f"Overwriting existing file at {fp}.")
-                np.save(fp, self.embeddings)
-        else:
-            warnings.warn("No embeddings to save, skipping.")
     
     @classmethod
     def load(
         cls, 
         atlas_dirpath: str, 
         publications_fn: str = "publications.csv", 
-        embeddings_fn: str = "embeddings.csv",
         **kwargs,
         ):
         """Load an Atlas object from a directory containing publications saved to a CSV file and possibly embeddings saved to a .npy file.
@@ -118,14 +83,8 @@ class Atlas:
         fp = os.path.join(atlas_dirpath, publications_fn)
         pub_data = pd.read_csv(fp)
         publications = [Publication.from_csv_entry(entry) for entry in pub_data.values.tolist()]
-
-        # load embeddings
-        fp = os.path.join(atlas_dirpath, embeddings_fn)
-        embeddings = None
-        if os.path.isfile(fp):
-            embeddings = np.load(fp)
         
-        return cls(publications, embeddings)
+        return cls(publications)
 
     ######################################################################
     # Other
@@ -133,4 +92,4 @@ class Atlas:
 
     def __len__(self) -> int:
         """Get length of the Atlas."""
-        return len(self.index_to_publications)
+        return len(self.publications)
