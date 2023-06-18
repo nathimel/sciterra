@@ -15,7 +15,7 @@ class Atlas:
         publications: list[Publication], 
         ) -> None:
 
-        self.publications = list(set(publications))
+        self.publications = sorted(list(set(publications)))
         if self.publications:
             self.id_to_pub = {str(pub): pub for pub in self.publications}
 

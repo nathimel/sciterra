@@ -87,6 +87,9 @@ class Publication:
     def __eq__(self, __value: object) -> bool:
         return self.__dict__ == __value.__dict__
     
+    def __lt__(self, __value: object) -> bool:
+        return str(self) < str(__value)
+    
     def init_attributes(self, data) -> None:
 
         if "identifier" in data:

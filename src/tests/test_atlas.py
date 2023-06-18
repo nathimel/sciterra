@@ -71,16 +71,30 @@ def test_atlas_10():
     
     pubs = [Publication({"identifier": f"id_{i}"}) for i in range(10)]
     atl = Atlas(pubs)
-    for i, pub in enumerate(pubs):
-
+    for pub in pubs:
         assert atl[str(pub)] == pub
 
-        # NOTE: The following is too strong!
-        # assert atl.index_to_identifier[i] == pub.identifier
+def test_save_atlas_10(tmp_path):
 
-def test_load_atlas_10():
-    pass
+    path = tmp_path / atlas_10_dir
+    path.mkdir()
 
-def test_save_atlas_10():
-    pass
+    pubs = [Publication({"identifier": f"id_{i}"}) for i in range(10)]
+    atl = Atlas(pubs)
+    atl.save(path)
 
+def test_save_load_atlas_10(tmp_path):
+
+    path = tmp_path / atlas_10_dir
+    path.mkdir()
+
+    pubs = [Publication({"identifier": f"id_{i}"}) for i in range(10)]
+    atl = Atlas(pubs)
+    atl.save(path)
+
+    atl_loaded = Atlas.load(path)
+    assert atl.publications == atl_loaded.publications
+
+
+# TODO: test loading from a .bib file, or some other equally realistic file.
+# The bib file can be a starter for the more efficient file saving post expansion.
