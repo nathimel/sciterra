@@ -1,5 +1,7 @@
 """Test basic pipeline functionality with each librarian."""
 
+from sciterra.cartography import Cartographer
+
 ############################################################################## 
 # Semantic Scholar
 ############################################################################## 
@@ -9,6 +11,8 @@ class TestSemanticScholarAtlas:
 
     def test_semanticscholar_atlas_single_query(self):
         # construct an atlas w a single identifier, 
+
+        identifier = "DOI:10.1093/mnras/stx952"
         pass
 
     def test_semanticscholar_atlas_100_query(self):
