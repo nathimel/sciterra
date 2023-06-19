@@ -1,7 +1,7 @@
 """The general container for data for any scientific publication, regardless of the API that was used to obtain it."""
 
 # from datetime import datetime
-from datetime import date
+from datetime import date, datetime
 from typing import Any
 
 # keys for data
@@ -10,7 +10,14 @@ FIELDS = [
     "abstract",
     "publication_date",
     "citation_count",
+]
+
+ADDITIONAL_FIELDS = [
+    "doi",
+    "paperid",
     "url",
+    "title",
+    "issn",
 ]
 
 
@@ -73,7 +80,59 @@ class Publication:
 
     @classmethod
     def from_bibtex_entry(cls, bibtex_entry: dict):
-        raise NotImplementedError
+        """Construct a Publication from a bibtex entry."""
+
+        # identifier
+        identifier = None
+        if "identifier" in bibtex_entry:
+            identifier = bibtex_entry["identifier"]
+        elif "doi" in bibtex_entry:
+            identifier = bibtex_entry["doi"]
+
+        # abstract
+        abstract = None
+        if "abstract" in bibtex_entry:
+            abstract = bibtex_entry["abstract"]
+
+        # publication_date
+        publication_date = None
+        year = None
+        month = None
+        day = None
+        if "year" in bibtex_entry:
+            year = int(bibtex_entry["year"])
+        if "month" in bibtex_entry:
+            month = datetime.strptime(bibtex_entry["month"], "%B").month
+        if "day" in bibtex_entry:
+            day = int(bibtex_entry["day"])
+        publication_date = date(
+            year=year if year is not None else 1900,
+            month=month if month is not None else 1,
+            day=day if day is not None else 1,
+        )
+        # reset to None if default year
+        if publication_date.year == 1900:
+            publication_date = None
+        
+        # citation_count
+        citation_count = None
+        if "citation_count" in bibtex_entry: # it probably won't be
+            citation_count = bibtex_entry["citation_count"]
+        
+        # Merge data
+        primary_data = {
+            "identifier": identifier,
+            "publication_date": publication_date,
+            "abstract": abstract,
+            "citation_count": citation_count,
+        }
+        additional_data = {
+            key: bibtex_entry[key] for key in ADDITIONAL_FIELDS if key in bibtex_entry
+        }
+        data = {k: v for k, v in (primary_data | additional_data).items() if v is not None}
+
+        return cls(data)
+
 
     def __repr__(self) -> str:
         return "sciterra.publication.Publication:{}".format( self.identifier )
@@ -124,19 +183,11 @@ class Publication:
         # Other attributes
         ######################################################################  
 
-        if "url" in data:
-            val = data["url"]
-            if not isinstance(val, str):
-                raise ValueError
-
-            self.url = val
-        
-
-        data_copy = dict(data)
-        for key in FIELDS:
-            if key in data_copy:
-                del data_copy[key]
-        
+        # data_copy = dict(data)
+        # for key in FIELDS:
+            # if key in data_copy:
+        #         del data_copy[key]
+        data_copy = {k:v for k,v in data.items() if k in ADDITIONAL_FIELDS}
         self.__dict__.update(data_copy)
 
         

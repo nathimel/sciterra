@@ -1,4 +1,4 @@
-from publication import Publication
+from ..publication import Publication
 
 class Librarian:
 
