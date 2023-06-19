@@ -97,7 +97,14 @@ class Atlas:
         with open(bibtex_fp, "r") as f:
             bib_database = bibtexparser.load(f)
 
-        publications = [Publication.from_bibtex_entry(entry) for entry in bib_database.entries]
+        publications = []
+        for entry in bib_database.entries:
+            pub = Publication.from_bibtex_entry(entry)
+            if pub.identifier is not None and pub.abstract is not None:
+                publications.append(pub)
+
+        if len(publications) < len(bib_database.entries):
+            warnings.warn(f"Failed to load {len(bib_database.entries) - len(publications)} publications out of {len(bib_database.entries)} total from bibtex due to lack of identifier or abstract.")
 
         return cls(publications)
 

@@ -99,6 +99,8 @@ class TestAtlasDummy:
 
 single_pub_bibtex_fp = "src/tests/data/single_publication.bib"
 ten_pub_bibtex_fp = "src/tests/data/ten_publications.bib"
+realistic_bibtex_fp = "src/tests/data/rdsg.bib"
+
 class TestAtlasBibtex:
 
     """Test loading atlases from bibtex files."""
@@ -139,10 +141,10 @@ class TestAtlasBibtex:
         atl = Atlas.from_bibtex(ten_pub_bibtex_fp)
 
         # Test length
-        assert len(bib_database.entries) == len(atl)
+        assert len(bib_database.entries) == len(atl)        
 
         for entry in bib_database.entries:
-            
+
             identifier = entry["doi"] # this is a test too
             pub = atl[identifier]
 
@@ -154,5 +156,38 @@ class TestAtlasBibtex:
             if "url" in entry:
                 assert pub.url == entry["url"]
             assert pub.issn == entry["issn"]
+            assert pub.doi == entry["doi"]
+            assert pub.title == entry["title"]
+
+    def test_from_bibtex_realistic(self):
+
+        # Load expected values
+        bibtex_fp = realistic_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        # Construct Atlas
+        atl = Atlas.from_bibtex(realistic_bibtex_fp)
+
+        for entry in bib_database.entries:
+
+            if "doi" not in entry:
+                continue
+
+            if "abstract" not in entry:
+                continue
+
+            identifier = entry["doi"] # this is a test too
+            pub = atl[identifier]
+
+            # main attributes
+            assert pub.abstract == entry["abstract"]
+            assert pub.publication_date.year == int(entry["year"])
+
+            # other attributes
+            if "url" in entry:
+                assert pub.url == entry["url"]
+            if "issn" in entry:
+                assert pub.issn == entry["issn"]
             assert pub.doi == entry["doi"]
             assert pub.title == entry["title"]
