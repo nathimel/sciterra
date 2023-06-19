@@ -1,6 +1,7 @@
 """Main container object for a large library of publications. Can be thought of as a vocabulary used in NLP, in that it stores a bidirectional mapping of strings to integers for indexing embeddings.
 """
 
+import bibtexparser
 import os
 import warnings
 import numpy as np
@@ -84,6 +85,20 @@ class Atlas:
         pub_data = pd.read_csv(fp)
         publications = [Publication.from_csv_entry(entry) for entry in pub_data.values.tolist()]
         
+        return cls(publications)
+    
+    @classmethod
+    def from_bibtex(
+        cls,
+        bibtex_fp: str,
+        **kwargs,
+    ):
+        """Load an Atlas object from publications parsed from a bibtex file."""
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        publications = [Publication.from_bibtex_entry(entry) for entry in bib_database.entries]
+
         return cls(publications)
 
     ######################################################################

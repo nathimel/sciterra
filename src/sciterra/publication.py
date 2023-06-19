@@ -4,6 +4,8 @@
 from datetime import date, datetime
 from typing import Any
 
+from .misc.utils import standardize_month
+
 # keys for data
 FIELDS = [
     "identifier",
@@ -102,7 +104,8 @@ class Publication:
         if "year" in bibtex_entry:
             year = int(bibtex_entry["year"])
         if "month" in bibtex_entry:
-            month = datetime.strptime(bibtex_entry["month"], "%B").month
+            month_str = standardize_month(bibtex_entry["month"])
+            month = datetime.strptime(month_str, "%B").month
         if "day" in bibtex_entry:
             day = int(bibtex_entry["day"])
         publication_date = date(
