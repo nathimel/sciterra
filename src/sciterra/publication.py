@@ -12,6 +12,8 @@ FIELDS = [
     "abstract",
     "publication_date",
     "citation_count",
+    "citations",
+    "references",
 ]
 
 ADDITIONAL_FIELDS = [
@@ -67,18 +69,31 @@ class Publication:
         return self._publication_date
     
     @property
+    def citations(self) -> list[str]:
+        return self._citations
+        
+    @property
+    def references(self) -> list[str]:
+        return self._references
+    
+    @property
     def citation_count(self) -> int:
         return self._citation_count
 
     def to_csv_entry(self) -> list:
         """Convert publication to a list of values corresponding to FIELDS, for saving with other publications to a csv file."""
-        return [self.__getattribute__(field) if hasattr(self, field) else None for field in FIELDS]
+        return [self.__getattribute__(field) if hasattr(self, field) else None for field in FIELDS + ADDITIONAL_FIELDS]
 
     @classmethod
     def from_csv_entry(cls, csv_entry: list):
-        return cls(
-            data={k: v for k, v in dict(zip(FIELDS, csv_entry)).items() if v == v } # check for nans
-            )
+        data = {k: v for k, v in dict(zip(FIELDS + ADDITIONAL_FIELDS, csv_entry)).items() if v == v } # check for nans
+
+        # need to recast as datetime
+        data["publication_date"] = datetime.strptime(
+            data["publication_date"], "%Y-%m-%d",
+        ).date()
+
+        return cls(data)
 
     @classmethod
     def from_bibtex_entry(cls, bibtex_entry: dict):
@@ -171,9 +186,24 @@ class Publication:
         if "publication_date" in data:
             val = data["publication_date"]
             if not isinstance(val, date):
+                # breakpoint()
                 raise ValueError
             
             self._publication_date = val
+
+        if "citations" in data:
+            val = data["citations"]
+            if not isinstance(val, list):
+                raise ValueError
+            
+            self._citations = val
+
+        if "references" in data:
+            val = data["references"]
+            if not isinstance(val, list):
+                raise ValueError
+            
+            self._references = val
         
         if "citation_count" in data:
             val = data["citation_count"]

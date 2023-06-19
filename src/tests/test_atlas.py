@@ -128,7 +128,43 @@ class TestAtlasBibtex:
         assert pub.url == entry["url"]
         assert pub.issn == entry["issn"]
         assert pub.doi == entry["doi"]
-        assert pub.title == entry["title"]        
+        assert pub.title == entry["title"]       
+
+    def test_save_from_bibtex_single(self, tmp_path):
+
+        path = tmp_path / atlas_single_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = Atlas.from_bibtex(single_pub_bibtex_fp)
+        atl.save(path)
+    
+    def test_load_saved_from_bibtex(self, tmp_path):
+
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+        entry: dict = bib_database.entries[0]
+
+        path = tmp_path / atlas_single_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = Atlas.from_bibtex(single_pub_bibtex_fp)
+        atl.save(path)
+
+        atl_loaded = atl.load(path)
+        pub, = atl_loaded.publications
+
+        # main attributes
+        assert pub.identifier in entry.values()
+        assert pub.abstract == entry["abstract"]
+        assert pub.publication_date.year == int(entry["year"])
+
+        # other attributes
+        assert pub.url == entry["url"]
+        assert pub.issn == entry["issn"]
+        assert pub.doi == entry["doi"]
+        assert pub.title == entry["title"]
 
     def test_from_bibtex_10(self):
 
@@ -145,7 +181,8 @@ class TestAtlasBibtex:
 
         for entry in bib_database.entries:
 
-            identifier = entry["doi"] # this is a test too
+            assert entry["doi"] in atl.id_to_pub
+            identifier = entry["doi"]
             pub = atl[identifier]
 
             # main attributes
@@ -158,6 +195,44 @@ class TestAtlasBibtex:
             assert pub.issn == entry["issn"]
             assert pub.doi == entry["doi"]
             assert pub.title == entry["title"]
+
+    def test_save_from_bibtex_10(self, tmp_path):
+        path = tmp_path / atlas_10_dir
+        path.mkdir()
+        atl = Atlas.from_bibtex(ten_pub_bibtex_fp)
+        atl.save(path)
+    
+    def test_load_save_from_bibtex_10(self, tmp_path):
+
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_10_dir
+        path.mkdir()
+        atl = Atlas.from_bibtex(ten_pub_bibtex_fp)
+        atl.save(path)
+
+        atl_loaded = Atlas.load(path)
+
+        # don't bother checking whether atl_loaded contains same as bib_database entries, that requires extensive preprocessing that is not clearly worth the investment.
+        # instead, check whether atl_loaded and atl have same pubs.
+        for pub in atl.publications:
+            loaded_pub = atl_loaded[str(pub)]
+
+            # Don't check pub == loaded_pub, too strict since we are conservative in what may belong in a csv_entry to load.
+            # Instead, perform a few targeted checks.
+            # main attributes
+            assert pub.abstract == loaded_pub.abstract
+            assert pub.publication_date == loaded_pub.publication_date
+
+            # other attributes
+            if hasattr(pub, "url"):
+                assert pub.url == loaded_pub.url
+            if hasattr(pub, "issn"):
+                assert pub.issn == loaded_pub.issn
+            assert pub.title == loaded_pub.title
 
     def test_from_bibtex_realistic(self):
 
@@ -191,3 +266,14 @@ class TestAtlasBibtex:
                 assert pub.issn == entry["issn"]
             assert pub.doi == entry["doi"]
             assert pub.title == entry["title"]
+
+
+class TestAtlasCitationNetwork:
+
+    """Check the basic graph structure encoded into an Atlas by each publication's citations and references."""
+
+    def test_singleton_network(self):
+        pass
+
+    def test_three_node_network(self):
+        pass

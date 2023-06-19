@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from .publication import FIELDS, Publication
+from .publication import FIELDS, ADDITIONAL_FIELDS, Publication
 
 class Atlas:
 
@@ -57,8 +57,8 @@ class Atlas:
         if self.publications:
             if overwrite_publications:
                 pub_data = pd.DataFrame(
-                    data=[pub.to_csv_entry() for pub in self.publications],
-                    columns=FIELDS,
+                    data = [pub.to_csv_entry() for pub in self.publications],
+                    columns = FIELDS + ADDITIONAL_FIELDS,
                 )
                 fp = os.path.join(atlas_dirpath, publications_fn)
                 if os.path.isfile(fp):
