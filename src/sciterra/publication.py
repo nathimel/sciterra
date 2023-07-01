@@ -88,10 +88,11 @@ class Publication:
     def from_csv_entry(cls, csv_entry: list):
         data = {k: v for k, v in dict(zip(FIELDS + ADDITIONAL_FIELDS, csv_entry)).items() if v == v } # check for nans
 
+        if "publication_date" in data:
         # need to recast as datetime
-        data["publication_date"] = datetime.strptime(
-            data["publication_date"], "%Y-%m-%d",
-        ).date()
+            data["publication_date"] = datetime.strptime(
+                data["publication_date"], "%Y-%m-%d",
+            ).date()
 
         return cls(data)
 

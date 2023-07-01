@@ -64,6 +64,6 @@ class Cartographer:
             "embeddings": embeddings,
         }
 
-    def expand(atl: Atlas) -> Atlas:
+    def expand(self, atl: Atlas) -> Atlas:
         """Expand an atlas by retrieving a list of publications resulting from traversal of the citation network."""
         raise NotImplementedError
