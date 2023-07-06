@@ -4,7 +4,7 @@ import bibtexparser
 
 from sciterra.atlas import Atlas
 from sciterra.cartography import Cartographer
-from sciterra.librarians.semanticscholar import SemanticScholarLibrarian
+from sciterra.librarians.s2 import SemanticScholarLibrarian
 from sciterra.publication import Publication
 from sciterra.vectorization.scibert import SciBERTVectorizer
 

@@ -47,7 +47,7 @@ def standardize_month(month: str) -> str:
 
 def keep_trying(
     n_attempts=5, 
-    allowed_exceptions = [ReadTimeout, ConnectionError], 
+    allowed_exceptions = (ReadTimeout, ConnectionError), 
     verbose=True, 
     sleep_after_attempt=1,
     ):
@@ -87,8 +87,10 @@ def keep_trying(
                 try:
                     result = f( *args, **kwargs )
                     if i > 0 and verbose:
+
                         print( 'Had to call {} {} times to get a response.'.format( f, i+1 ) )
                     return result
+                # TODO: need to branch for every case.
                 except allowed_exceptions as _:
                     continue
 

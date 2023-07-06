@@ -1,6 +1,8 @@
 from typing import Any
 from tqdm import tqdm
 
+from sciterra.publication import Publication
+
 from ..publication import Publication
 from .librarian import Librarian
 from ..misc.utils import chunk_ids, keep_trying
@@ -87,7 +89,7 @@ class SemanticScholarLibrarian(Librarian):
         self.sch = SemanticScholar()
         super().__init__()
 
-    def query_publications(
+    def get_publications(
         self, 
         identifiers: list[str], 
         *args, 
@@ -152,10 +154,15 @@ class SemanticScholarLibrarian(Librarian):
 
         if not convert:
             return papers
-        return self.convert_publications(papers)
+        return self.convert_publications(papers, identifiers=identifiers)
 
     def convert_publication(self, paper: Paper, *args, **kwargs) -> Publication:
         """Convert a SemanticScholar Paper object to a sciterra.publication.Publication. """
+
+        # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we use the identifier passed to the query. Most of the time this will just be the paperId.
+        identifier = paper.paperId
+        if "identifier" in kwargs:
+            identifier = kwargs["identifier"]
 
         # get doi from externalids
         doi = None
@@ -165,7 +172,7 @@ class SemanticScholarLibrarian(Librarian):
         # parse data
         data = {
             # primary fields
-            "identifier": paper.paperId,
+            "identifier": identifier,
             "abstract": paper.abstract,
             "publication_date": paper.publicationDate,
             "citations": paper.citations,
@@ -185,20 +192,33 @@ class SemanticScholarLibrarian(Librarian):
         self, 
         papers: list[Paper], 
         *args, 
-        multiprocess: bool = True, 
+        multiprocess: bool = True,
         num_processes = 6, 
         **kwargs,
         ) -> list[Publication]:
         """Convet a list of SemanticScholar Papes to sciterra Publications, possibly using multiprocessing."""
 
-        if not multiprocess:
-            return [self.convert_publication(paper) for paper in papers]
+        identifiers = []
+        if "identifiers" in kwargs:
+            identifiers = kwargs["identifiers"]
 
-        with Pool() as p:
-            pubs = list(
-                tqdm(
-                    p.imap(self.convert_publication, papers),
-                    total=len(papers),
+        if not multiprocess:
+            return [self.convert_publication(
+                paper, 
+                **{"identifier": identifiers[idx]} if identifiers else {},
+                ) for idx, paper in enumerate(papers)]
+
+
+        with Pool(num_processes) as p:
+            async_results = [
+                p.apply_async(
+                self.convert_publication,
+                args=[paper],
+                kwds={"identifier": identifiers[idx]} if identifiers else {},
                 )
-            )
-        return pubs
+                for idx, paper in enumerate(papers)
+            ]
+            p.close()
+            p.join()
+
+        return [async_result.get() for async_result in tqdm(async_results)]
