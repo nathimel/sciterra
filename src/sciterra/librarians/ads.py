@@ -1,6 +1,6 @@
 
-from publication import Publication
-from librarian import Librarian
+from ..publication import Publication
+from .librarian import Librarian
 
 class ADSLibrarian(Librarian):
 

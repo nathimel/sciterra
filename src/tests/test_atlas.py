@@ -181,7 +181,7 @@ class TestAtlasBibtex:
 
         for entry in bib_database.entries:
 
-            assert entry["doi"] in atl.id_to_pub
+            assert entry["doi"] in atl
             identifier = entry["doi"]
             pub = atl[identifier]
 

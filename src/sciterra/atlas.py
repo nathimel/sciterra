@@ -1,4 +1,4 @@
-"""Main container object for a large library of publications. Can be thought of as a vocabulary used in NLP, in that it stores a bidirectional mapping of strings to integers for indexing embeddings.
+"""Main container object for a large library of publications.
 """
 
 import bibtexparser
@@ -16,9 +16,7 @@ class Atlas:
         publications: list[Publication], 
         ) -> None:
 
-        self.publications = sorted(list(set(publications)))
-        if self.publications:
-            self.id_to_pub = {str(pub): pub for pub in self.publications}
+        self.publications: dict[str, Publication] = {str(pub): pub for pub in publications}
 
     ######################################################################
     # Lookup    ######################################################################
@@ -29,8 +27,8 @@ class Atlas:
         Raises:
             ValueError: the identifier is not in the Atlas.
         """
-        if identifier in self.id_to_pub:
-            return self.id_to_pub[identifier]
+        if identifier in self.publications:
+            return self.publications[identifier]
         raise ValueError(f"Identifier {identifier} not in Atlas.")
     
     ######################################################################
@@ -57,7 +55,7 @@ class Atlas:
         if self.publications:
             if overwrite_publications:
                 pub_data = pd.DataFrame(
-                    data = [pub.to_csv_entry() for pub in self.publications],
+                    data = [pub.to_csv_entry() for pub in self.publications.values()],
                     columns = FIELDS + ADDITIONAL_FIELDS,
                 )
                 fp = os.path.join(atlas_dirpath, publications_fn)

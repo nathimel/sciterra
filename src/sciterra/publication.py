@@ -18,7 +18,6 @@ FIELDS = [
 
 ADDITIONAL_FIELDS = [
     "doi",
-    "paperid",
     "url",
     "title",
     "issn",
@@ -187,7 +186,6 @@ class Publication:
         if "publication_date" in data:
             val = data["publication_date"]
             if not isinstance(val, date):
-                # breakpoint()
                 raise ValueError
             
             self._publication_date = val
@@ -209,6 +207,7 @@ class Publication:
         if "citation_count" in data:
             val = data["citation_count"]
             if not isinstance(val, int):
+                breakpoint()
                 raise ValueError
 
             self._citation_count = val
