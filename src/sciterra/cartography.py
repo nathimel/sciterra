@@ -1,5 +1,6 @@
 """Functions for manipulating an atlas based on the document embeddings of the abstracts of its publications."""
 
+import bibtexparser
 import warnings
 
 import numpy as np
@@ -15,15 +16,53 @@ class Cartographer:
 
     def __init__(
         self, 
-        librarian: Librarian,
-        vectorizer: Vectorizer,
+        librarian: Librarian = None,
+        vectorizer: Vectorizer = None,
         ) -> None:
 
         self.librarian = librarian
         self.vectorizer = vectorizer
 
+    def bibtex_to_atlas(self, bibtex_fp: str, *args, **kwargs) -> Atlas:
+        """Convert a bibtex file to an atlas, by parsing each entry for an identifier, and querying an API for publications using `self.librarian`.
+
+        NOTE: the identifiers in the corresponding atlas will be API-specific ids; there is no relationship between the parsed id used to query papers (e.g. 'DOI:XYZ' in the case of SemanticScholar) and the resulting identifier associated with the resulting Publication object, (a paperId, a bibcode, etc.) Therefore, the purpose of using the `bibtex_to_atlas` method is primarily for initializing literature exploration in a human-readable way. If you want to obtain as many publications as identifiers supplied, you need to use `get_publications`.
+        
+        Args:
+            bibtex_fp: the filepath where the bibtex file is saved.
+
+            args and kwargs are passed to `get_publications`.
+        """
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        # Retrieve the identifier from each bibtex entry
+        identifiers = [self.librarian.bibtex_entry_identifier(entry) for entry in bib_database.entries]
+        identifiers = [id for id in identifiers if id is not None]
+        if len(identifiers) < len(bib_database.entries):
+            warnings.warn(f"Only obtained {len(identifiers)} publications out of {len(bib_database.entries)} total due to missing identifiers.")
+
+        # Query
+        results = self.librarian.get_publications(identifiers, *args, **kwargs)
+        # Validate
+        publications = [
+            result for result in results
+            if (
+            result is not None
+            and result.publication_date is not None
+            and result.abstract is not None
+            # identifier will never be none            
+            )
+        ]
+        if len(publications) < len(identifiers):
+            warnings.warn(f"Only obtained {len(publications)} publications out of {len(identifiers)} total due to querying-related errors or missing abstracts.")
+
+        # Construct atlas
+        atl = Atlas(publications)
+        return atl
+
     def project(self, atl: Atlas) -> np.ndarray:
-        """Obtain document embeddings for all publications in an atlas that have abstracts.
+        """Obtain document embeddings for all publications in an atlas that have abstracts using `self.vectorizer`.
         
         Args:
             atl: the Atlas containing publications to project to document embeddings
@@ -40,7 +79,7 @@ class Cartographer:
         idx_to_id = []
         valid_pubs = []
         invalid = 0
-        for idx, pub in enumerate(atl.publications):
+        for idx, (id, pub) in enumerate(atl.publications.items()):
             if pub.abstract is None:
                 invalid += 1
                 continue
@@ -99,14 +138,14 @@ class Cartographer:
         existing_keys = set(atl.publications.keys())
         ids = set()
         for key in expand_keys:
-            # NOTE: the below line may need to be broken into a larger function to handle edge cases
             ids_i = set(atl[key].references + atl[key].citations)
             # Prune for obvious overlap
-            ids += ids_i - existing_keys
+            ids.update(ids_i - existing_keys)
             # Break when the search is centered and we're maxed out
             if len( ids ) > n_pubs_max and center is not None:
                 break
-        
+        ids = list(ids)
+
         if not ids:
             print("Overly-restrictive search, no ids to retrive.")
 
@@ -117,7 +156,7 @@ class Cartographer:
         print(f"Expansion will include {len(ids)} new publications.")
 
         # Retrieve publications from ids using a librarian
-        new_publications = self.librarian.query_publications(ids)
+        new_publications = self.librarian.get_publications(ids)
         
         # New atlas
         atl_exp = Atlas(new_publications)

@@ -6,7 +6,12 @@ class Librarian:
     def __init__(self) -> None:
         pass
 
-    def query_publications(
+    def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:
+        """Parse a bibtex entry for a usable unique identifier appropriate to the API.
+        """
+        raise NotImplementedError
+
+    def get_publications(
         self, 
         identifiers: list[str], 
         *args, 

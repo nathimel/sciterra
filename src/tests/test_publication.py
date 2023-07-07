@@ -27,6 +27,7 @@ class TestPublication:
         pub = Publication(data)
 
         assert pub.identifier == "exampleidentifierstring"
+        assert str(pub) == pub.identifier
         assert pub.abstract == "Example abstract text."
         assert pub.publication_date == datetime.today().date()
         assert pub.citation_count == 0

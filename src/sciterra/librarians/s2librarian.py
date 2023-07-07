@@ -1,5 +1,8 @@
+from datetime import date
+
 from typing import Any
 from tqdm import tqdm
+
 
 from sciterra.publication import Publication
 
@@ -21,8 +24,10 @@ from multiprocessing import Pool
 
 # NOTE: semantic scholar will truncate total number of references, citations each at 10,000 for the entire batch.
 QUERY_FIELDS = [
+    'year',
     'abstract',
     'externalIds', # supports ArXiv, MAG, ACL, PubMed, Medline, PubMedCentral, DBLP, DOI
+    'citationCount',
     'url', # as a possible external id
     'citations.externalIds',
     'citations.url',
@@ -47,6 +52,7 @@ EXTERNAL_IDS  = [
     ]
 
 # for storing the results from above, we avoid dot operator to avoid attribute error, but note that everything above will be included.
+# n.b.: no idea what i meant above here
 STORE_FIELDS = [
     'abstract',
     'externalIds', 
@@ -89,9 +95,19 @@ class SemanticScholarLibrarian(Librarian):
         self.sch = SemanticScholar()
         super().__init__()
 
+    def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:
+        """Parse a bibtex entry for a usable unique SemanticScholar identifier (see EXTERNAL_IDS).
+        """
+        identifier = None
+        if "identifier" in bibtex_entry:
+            identifier = bibtex_entry["identifier"]
+        elif "doi" in bibtex_entry:
+            identifier = f"DOI:{bibtex_entry['doi']}"
+        return identifier
+
     def get_publications(
         self, 
-        identifiers: list[str], 
+        paper_ids: list[str], 
         *args, 
         call_size: int = CALL_SIZE,        
         n_attempts_per_query: int = NUM_ATTEMPTS_PER_QUERY,
@@ -101,7 +117,7 @@ class SemanticScholarLibrarian(Librarian):
         """Use the (unofficial) S2 python package, which calls the Semantic Scholar API to retrieve publications from the S2AG.
 
         Args:
-            identifiers: the str ids required for querying. See EXTERNAL_IDS
+            paper_ids: the str ids required for querying. While it is possible to use one of EXTERNAL_IDS to query, if SemanticScholar returns a paper at all, it will return a paperId, so it is preferred to use paperIds.
 
             n_attempts_per_query: Number of attempts to access the API per query. Useful when experiencing connection issues.
 
@@ -112,20 +128,19 @@ class SemanticScholarLibrarian(Librarian):
         Returns:
             the list of publications (or Papers)
         """
+        paper_ids = list(paper_ids)
 
-        identifiers = list( identifiers )
-
-        if not identifiers:
+        if not paper_ids:
             return []
 
-        total = len(identifiers)
-        chunked_ids = chunk_ids(identifiers, call_size = call_size)
+        total = len(paper_ids)
+        chunked_ids = chunk_ids(paper_ids, call_size = call_size)
 
-        if None in identifiers:
+        if None in paper_ids:
             # any Nones should have been handled by this point
-            raise Exception("Passed `identifiers` contains None.")
+            raise Exception("Passed `paper_ids` contains None.")
 
-        print( f'Querying Semantic Scholar for {len(identifiers)} total papers.')
+        print( f'Querying Semantic Scholar for {len(paper_ids)} total papers.')
         papers = []
 
         pbar = tqdm(desc=f'progress using call_size={call_size}', total=total)
@@ -154,29 +169,45 @@ class SemanticScholarLibrarian(Librarian):
 
         if not convert:
             return papers
-        return self.convert_publications(papers, identifiers=identifiers)
+        return self.convert_publications(
+            papers, 
+            *args, 
+            **kwargs,
+        )
 
     def convert_publication(self, paper: Paper, *args, **kwargs) -> Publication:
-        """Convert a SemanticScholar Paper object to a sciterra.publication.Publication. """
+        """Convert a SemanticScholar Paper object to a sciterra.publication.Publication."""
+        if paper is None:
+            return
 
-        # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we use the identifier passed to the query. Most of the time this will just be the paperId.
+        # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we always use the paperId.
         identifier = paper.paperId
-        if "identifier" in kwargs:
-            identifier = kwargs["identifier"]
+
+        # Parse date from datetime or year
+        if hasattr(paper, "publicationDate"):
+            publication_date = paper.publicationDate
+        elif hasattr(paper, "year"):
+            publication_date = date(paper.year, 1, 1)
+        else:
+            publication_date = None
 
         # get doi from externalids
         doi = None
         if "DOI" in paper.externalIds:
             doi = paper.externalIds["DOI"]
 
+        # convert citations/references from lists of Papers to identifiers
+        citations = [paper.paperId for paper in paper.citations] # no point using recursion assuming identifier=paperId
+        references = [paper.paperId for paper in paper.references]
+
         # parse data
         data = {
             # primary fields
             "identifier": identifier,
             "abstract": paper.abstract,
-            "publication_date": paper.publicationDate,
-            "citations": paper.citations,
-            "references": paper.references,
+            "publication_date": publication_date,
+            "citations": citations,
+            "references": references,
             "citation_count": paper.citationCount,
             # additional fields
             "doi": doi,
@@ -185,6 +216,9 @@ class SemanticScholarLibrarian(Librarian):
             "issn": paper.issn if hasattr(paper, "issn") else None,
         }
         data = {k:v for k,v in data.items() if v is not None}
+
+        if hasattr(paper, "title") and paper.title is not None and "title" not in data:
+            breakpoint()
 
         return Publication(data)
     
@@ -198,27 +232,19 @@ class SemanticScholarLibrarian(Librarian):
         ) -> list[Publication]:
         """Convet a list of SemanticScholar Papes to sciterra Publications, possibly using multiprocessing."""
 
-        identifiers = []
-        if "identifiers" in kwargs:
-            identifiers = kwargs["identifiers"]
-
         if not multiprocess:
-            return [self.convert_publication(
-                paper, 
-                **{"identifier": identifiers[idx]} if identifiers else {},
-                ) for idx, paper in enumerate(papers)]
-
-
-        with Pool(num_processes) as p:
-            async_results = [
-                p.apply_async(
-                self.convert_publication,
-                args=[paper],
-                kwds={"identifier": identifiers[idx]} if identifiers else {},
-                )
-                for idx, paper in enumerate(papers)
+            return [
+                self.convert_publication(
+                paper,
+                ) for paper in papers
             ]
-            p.close()
-            p.join()
 
-        return [async_result.get() for async_result in tqdm(async_results)]
+        with Pool(processes=6) as p:
+            publications = list(
+                tqdm(
+                    p.imap(self.convert_publication, papers), 
+                    total=len(papers),
+                )
+            )
+
+        return publications
