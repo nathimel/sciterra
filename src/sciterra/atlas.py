@@ -6,7 +6,10 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from typing import Any
+
 from .publication import FIELDS, ADDITIONAL_FIELDS, Publication
+from .vectorization.projection import Projection
 
 class Atlas:
 
@@ -16,6 +19,7 @@ class Atlas:
         ) -> None:
 
         self.publications: dict[str, Publication] = {str(pub): pub for pub in publications}
+        self.projection: Projection = None
 
     ######################################################################
     # Lookup    ######################################################################

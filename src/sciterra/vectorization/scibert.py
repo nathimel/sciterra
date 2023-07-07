@@ -26,6 +26,7 @@ class SciBERTVectorizer(Vectorizer):
         self.tokenizer = BertTokenizerFast.from_pretrained(
             MODEL_PATH, 
             do_lower_case=True,
+            model_max_length=512, # I shouldn't have to pass this but I do
         )
         # Get the model
         self.model = AutoModelForSequenceClassification.from_pretrained(
@@ -67,8 +68,12 @@ class SciBERTVectorizer(Vectorizer):
                     batch,
                     add_special_tokens = True,
                     padding = True, # pad up to length of longest abstract
+                    truncation = True, # max length 512 chars, unfortunately
                     return_tensors = 'pt',
                 )
+                # each encoded item of shape [64, 512]
+                if encoded['input_ids'].size()[-1] > 512:
+                    breakpoint() # look at encoded
 
                 # Put data on GPU
                 for k, v in encoded.items():

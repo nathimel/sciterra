@@ -5,11 +5,16 @@ import warnings
 
 import numpy as np
 
-from typing import Type
+from typing import Type, Any
 
 from .atlas import Atlas
 from .librarians.librarian import Librarian
+from .publication import Publication
 from .vectorization.vectorizer import Vectorizer
+from .vectorization.projection import Projection
+
+from sklearn.metrics.pairwise import cosine_similarity
+
 
 class Cartographer:
     """A basic wrapper for obtaining and updating atlas projections."""
@@ -61,25 +66,42 @@ class Cartographer:
         atl = Atlas(publications)
         return atl
 
-    def project(self, atl: Atlas) -> np.ndarray:
-        """Obtain document embeddings for all publications in an atlas that have abstracts using `self.vectorizer`.
+    def project(self, atl: Atlas) -> Atlas:
+        """Update an atlas with its projection, i.e. the document embeddings for all publications, removing publications with no abstracts.
         
         Args:
             atl: the Atlas containing publications to project to document embeddings
 
         Returns:
-            a dict of the form 
-                {
-                    "identifiers_to_indices": a dict[str, int] mapping a publication identifier to its embedding index,
-                    "indices_to_identifiers": a tuple mapping an embedding index to its str publication identifier
-                    "embeddings": a np.ndarray of shape `(num_publications, embedding_dim)`
-                }
+            the updated atlas containing all nonempty-abstract-containing publications and their projection
+        """
+        projection = self.get_projection(atl.publications)
+        publications = {k:v for k,v in atl.publications.items() if k in projection.identifier_to_index}
+
+        invalid = set(atl.publications.keys()) - set(publications.keys())
+        if invalid:
+            warnings.warn(f"Removing {len(invalid)} publications from atlas after projection.")
+            breakpoint() # this is supposed to prevent the index error but it's not
+            # why is resetting the number of publications not working?
+        breakpoint()
+        atl.publications = publications
+        atl.projection = projection
+        return atl
+    
+    def get_projection(self, publications: dict[str, Publication]) -> Projection:
+        """Obtain document embeddings for all publications that have abstracts using `self.vectorizer`.
+        
+        Args:
+            atl: the Atlas containing publications to project to document embeddings
+
+        Returns:
+            a Projection of all publications with non-empty abstracts
         """
         id_to_idx = {}
         idx_to_id = []
         valid_pubs = []
         invalid = 0
-        for idx, (id, pub) in enumerate(atl.publications.items()):
+        for idx, (id, pub) in enumerate(publications.items()):
             if pub.abstract is None:
                 invalid += 1
                 continue
@@ -88,7 +110,7 @@ class Cartographer:
             valid_pubs.append(pub)
         
         if invalid:
-            warnings.warn(f"Some abstracts were not available. Found {len(valid_pubs)} nonempty abstracts out of {len(atl)} total publications.")
+            warnings.warn(f"Some abstracts were not available. Found {len(valid_pubs)} nonempty abstracts out of {len(publications)} total publications.")
 
         embeddings = None
         if valid_pubs:
@@ -96,12 +118,12 @@ class Cartographer:
         
         if embeddings is None:
             warnings.warn(f"Obtained no publication embeddings.")
-
-        return {
-            "identifiers_to_indices": id_to_idx,
-            "indices_to_identifiers": tuple(idx_to_id),
-            "embeddings": embeddings,
-        }
+        
+        return Projection(
+            id_to_idx,
+            tuple(idx_to_id),
+            embeddings,
+        )
 
     def expand(
         self, 
@@ -112,7 +134,6 @@ class Cartographer:
         ) -> Atlas:
         """Expand an atlas by retrieving a list of publications resulting from traversal of the citation network.
         
-
         Args: 
             atl: the atlas containing the region to expand
 
@@ -125,17 +146,31 @@ class Cartographer:
         Returns:
             atl_expanded: the expanded atlas
         """
+        existing_keys = set(atl.publications.keys())
         if center is None:
-            expand_keys = atl.publications.keys()
+            expand_keys = existing_keys
         else:
-            raise NotImplementedError("Expanding around a center not implemented yet.")
+            if atl.projection is None:
+                atl = self.project(atl)
+
+            # cosine similarity matrix
+            # breakpoint()
+            # for some even though projection should have only 148 items, the identifier_to_index map contains indices greater than this. They should just describe the embeddings, but maybe I erroroneously defined them before i defined embeddings.
+            cospsi_matrix = cosine_similarity(
+                atl.projection.identifiers_to_embeddings([center]),
+                atl.projection.embeddings,
+            )
+            sort_inds = np.argsort(cospsi_matrix)[1:] # exclude the center
+            expand_keys = atl.projection.indices_to_identifiers(sort_inds)
+
+            if len(expand_keys) < len(existing_keys):
+                expand_keys = set(expand_keys).union(existing_keys)
         
         if n_sources_max is not None:
             expand_keys = expand_keys[:n_sources_max]
 
         # Get identifiers for the expansion
         # For each publication corresponding to an id in `expand_keys`, collect the ids corresponding to the publication's references and citations.
-        existing_keys = set(atl.publications.keys())
         ids = set()
         for key in expand_keys:
             ids_i = set(atl[key].references + atl[key].citations)

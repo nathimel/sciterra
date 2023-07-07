@@ -2,6 +2,8 @@
 
 import bibtexparser
 
+import numpy as np
+
 from sciterra.atlas import Atlas
 from sciterra.cartography import Cartographer
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
@@ -112,11 +114,8 @@ class TestS2SBProjection:
         pubs = [Publication({"identifier": f"id_{i}"}) for i in range(10)]
         atl = Atlas(pubs)
 
-        projection = TestS2SBProjection.crt.project(atl)
-
-        assert "identifiers_to_indices" in projection
-        assert "indices_to_identifiers" in projection
-        assert "embeddings" in projection
+        atl_proj = TestS2SBProjection.crt.project(atl)
+        assert atl_proj.projection.index_to_identifier == ()
 
     def test_dummy_projection(self):
         
@@ -126,11 +125,12 @@ class TestS2SBProjection:
              }) for i in range(10)]
         atl = Atlas(pubs)
 
-        projection = TestS2SBProjection.crt.project(atl)
+        atl_proj = TestS2SBProjection.crt.project(atl)
+        projection = atl_proj.projection
 
-        assert "identifiers_to_indices" in projection
-        assert "indices_to_identifiers" in projection
-        assert "embeddings" in projection
+        vector0 = projection.identifier_to_embedding("id_0")
+        vector1 = projection.identifier_to_embedding("id_9")
+        assert np.array_equal(vector0, vector1)
 
     def test_single_projection(self, tmp_path):
 
@@ -139,12 +139,13 @@ class TestS2SBProjection:
         # Construct Atlas
         atl = TestS2SBProjection.crt.bibtex_to_atlas(single_pub_bibtex_fp)
 
-        projection = TestS2SBProjection.crt.project(atl)
+        atl_proj = TestS2SBProjection.crt.project(atl)
+        projection = atl_proj.projection
 
         identifier = list(atl.publications.keys())[0]
-        assert projection["identifiers_to_indices"] == {identifier:0}
-        assert projection["indices_to_identifiers"] == (identifier,)
-        assert projection["embeddings"].shape == (1,768) # (num_pubs, embedding_dim)
+        assert projection.identifier_to_index == {identifier:0}
+        assert projection.index_to_identifier == (identifier,)
+        assert projection.embeddings.shape == (1,768) # (num_pubs, embedding_dim)
 
 
 class TestS2SBExpand:
@@ -160,7 +161,6 @@ class TestS2SBExpand:
         bibtex_fp = single_pub_bibtex_fp
         with open(bibtex_fp, "r") as f:
             bib_database = bibtexparser.load(f)
-        entry: dict = bib_database.entries[0]
 
         path = tmp_path / atlas_dir
         path.mkdir()
@@ -176,3 +176,66 @@ class TestS2SBExpand:
         # so far this holds, but things that aren't our fault could make it fail.
         assert len(atl_exp) == len(ids)
 
+    def test_expand_double(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references        
+
+        atl_exp_single = TestS2SBProjection.crt.expand(atl)
+        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single)
+        # empirically found this
+        # note that all ids from atl_exp_single is 68282!
+        assert len(atl_exp_double)  == 4000 + len(ids)
+
+    def test_expand_center_single(self, tmp_path):
+
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
+        assert len(atl_exp_single) == len(ids)
+    
+    def test_expand_center_double(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
+        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single, center=center)
+        # empirically found this
+        # note that all ids from atl_exp_single is 68282!
+        assert len(atl_exp_double)  == 4000 + len(ids)
+        breakpoint()

@@ -31,8 +31,9 @@ def test_identity_of_embeddings():
 def test_single_cosine_pair():
     embeddings = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str, abstract_str])
     
-    # Check that the cosine sim of doc w/ itself is 1
-    sim = float(1 - cosine(embeddings[0], embeddings[1]))
+    # Check that the cosine sim of doc w/ itself is 1 
+    # n.b., see sklearn.metrics.pairwise.cosine_similarity
+    sim = float(1 - cosine(embeddings[0], embeddings[1])) 
     assert sim == 1.0
 
 def test_basic_cosine_matrix():
