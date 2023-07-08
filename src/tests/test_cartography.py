@@ -197,6 +197,9 @@ class TestS2SBExpand:
         # note that all ids from atl_exp_single is 68282!
         assert len(atl_exp_double)  == 4000 + len(ids)
 
+        # Save atlas
+        atl_exp_double.save(path)
+
     def test_expand_center_single(self, tmp_path):
 
         # Load single file from bibtex
@@ -216,6 +219,9 @@ class TestS2SBExpand:
 
         atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
         assert len(atl_exp_single) == len(ids)
+
+        # Save atlas
+        atl_exp_single.save(path)
     
     def test_expand_center_double(self, tmp_path):
         # Load single file from bibtex
@@ -236,6 +242,7 @@ class TestS2SBExpand:
         atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
         atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single, center=center)
         # empirically found this
-        # note that all ids from atl_exp_single is 68282!
-        assert len(atl_exp_double)  == 4000 + len(ids)
-        breakpoint()
+        # do no assert len(atl_exp_double)  == 4000 + len(ids), because we want 4000 + len(valid_ids), i.e. 148 not 154
+        assert len(atl_exp_double) == 4148
+
+        atl_exp_double.save(path)

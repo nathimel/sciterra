@@ -32,12 +32,12 @@ class Projection:
     
     def identifier_to_embedding(self, identifier: str) -> np.ndarray:
         """Retrieve the document embedding of a Publication."""
-        # try: 
-        #     embedding = self.embeddings[self.identifier_to_index[identifier]]
-        # except IndexError as e:
-        #     breakpoint()
-        # return embedding
-        return self.embeddings[self.identifier_to_index[identifier]]
+        try: 
+            embedding = self.embeddings[self.identifier_to_index[identifier]]
+        except (IndexError, KeyError) as e:
+            breakpoint()
+        return embedding
+        # return self.embeddings[self.identifier_to_index[identifier]]
     
     def __len__(self) -> int:
         return len(self.identifier_to_index)

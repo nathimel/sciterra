@@ -67,7 +67,7 @@ class Cartographer:
         return atl
 
     def project(self, atl: Atlas) -> Atlas:
-        """Update an atlas with its projection, i.e. the document embeddings for all publications, removing publications with no abstracts.
+        """Update an atlas with its projection, i.e. the document embeddings for all publications using `self.vectorizer`, removing publications with no abstracts.
         
         Args:
             atl: the Atlas containing publications to project to document embeddings
@@ -75,55 +75,38 @@ class Cartographer:
         Returns:
             the updated atlas containing all nonempty-abstract-containing publications and their projection
         """
-        projection = self.get_projection(atl.publications)
+        # only project publications that have abstracts
+        valid_pubs = {id:pub for id,pub in atl.publications.items() if pub.abstract is not None}
+        invalid = len(atl.publications) - len(valid_pubs)
+        if invalid:
+            warnings.warn(f"Some abstracts were not available. Found {len(valid_pubs)} nonempty abstracts out of {len(publications)} total publications.")
+
+        # Project
+        embeddings = None
+        if valid_pubs:
+            embeddings = self.vectorizer.embed_documents([pub.abstract for _, pub in valid_pubs.items()])
+        
+        if embeddings is None:
+            warnings.warn(f"Obtained no publication embeddings.")
+
+        projection = Projection(
+            identifier_to_index = {identifier: idx for idx, identifier in enumerate(valid_pubs)},
+            index_to_identifier = tuple([id for id in valid_pubs]),
+            embeddings = embeddings,
+        )
+
+        # prepare to overwrite atlas publications with abstract subset
         publications = {k:v for k,v in atl.publications.items() if k in projection.identifier_to_index}
 
         invalid = set(atl.publications.keys()) - set(publications.keys())
         if invalid:
             warnings.warn(f"Removing {len(invalid)} publications from atlas after projection.")
-            breakpoint() # this is supposed to prevent the index error but it's not
-            # why is resetting the number of publications not working?
-        breakpoint()
+
+        # Overwrite atlas data
         atl.publications = publications
         atl.projection = projection
+
         return atl
-    
-    def get_projection(self, publications: dict[str, Publication]) -> Projection:
-        """Obtain document embeddings for all publications that have abstracts using `self.vectorizer`.
-        
-        Args:
-            atl: the Atlas containing publications to project to document embeddings
-
-        Returns:
-            a Projection of all publications with non-empty abstracts
-        """
-        id_to_idx = {}
-        idx_to_id = []
-        valid_pubs = []
-        invalid = 0
-        for idx, (id, pub) in enumerate(publications.items()):
-            if pub.abstract is None:
-                invalid += 1
-                continue
-            id_to_idx[str(pub)] = idx
-            idx_to_id.append(str(pub))
-            valid_pubs.append(pub)
-        
-        if invalid:
-            warnings.warn(f"Some abstracts were not available. Found {len(valid_pubs)} nonempty abstracts out of {len(publications)} total publications.")
-
-        embeddings = None
-        if valid_pubs:
-            embeddings = self.vectorizer.embed_documents([pub.abstract for pub in valid_pubs])
-        
-        if embeddings is None:
-            warnings.warn(f"Obtained no publication embeddings.")
-        
-        return Projection(
-            id_to_idx,
-            tuple(idx_to_id),
-            embeddings,
-        )
 
     def expand(
         self, 

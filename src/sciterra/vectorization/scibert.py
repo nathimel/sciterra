@@ -72,8 +72,9 @@ class SciBERTVectorizer(Vectorizer):
                     return_tensors = 'pt',
                 )
                 # each encoded item of shape [64, 512]
-                if encoded['input_ids'].size()[-1] > 512:
-                    breakpoint() # look at encoded
+                assert encoded['input_ids'].size()[-1] <= 512
+                # if encoded['input_ids'].size()[-1] > 512:
+                    # breakpoint() # look at encoded
 
                 # Put data on GPU
                 for k, v in encoded.items():

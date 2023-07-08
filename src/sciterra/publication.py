@@ -1,6 +1,7 @@
 """The general container for data for any scientific publication, regardless of the API that was used to obtain it."""
 
 import warnings
+from ast import literal_eval
 from datetime import date, datetime
 from typing import Any
 
@@ -98,6 +99,12 @@ class Publication:
     @classmethod
     def from_csv_entry(cls, csv_entry: list):
         data = {k: v for k, v in dict(zip(FIELDS + ADDITIONAL_FIELDS, csv_entry)).items() if v == v } # check for nans
+
+        # Parse strings into their appropriate objects / literals
+        if "citations" in data:
+            data["citations"] = literal_eval(data["citations"])
+        if "references in data":
+            data["references"] = literal_eval(data["references"])
 
         if "publication_date" in data:
         # need to recast as datetime

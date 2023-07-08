@@ -105,7 +105,7 @@ class TestAtlasBibtex:
 
     """Test loading atlases from bibtex files."""
 
-    def test_from_bibtex_single(self):
+    def test_bibtex_single(self):
 
         # Load expected values
         bibtex_fp = single_pub_bibtex_fp

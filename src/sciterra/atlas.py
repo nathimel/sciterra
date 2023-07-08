@@ -41,15 +41,20 @@ class Atlas:
     def save(
         self, 
         atlas_dirpath: str, 
-        publications_fn: str = "publications.csv", 
+        publications_fn: str = "publications.csv",
+        projection_fn: str = "",
         overwrite_publications: bool = True,
         ) -> None:
         """Write the Atlas to a directory containing a CSV file of publications and a .npy file of embeddings.
+
+        Write the Atlas to a directory containing a .pkl file of publications and a .pkl file of the projection.
 
         Args:
             atlas_dirpath: path of directory to save files to.
 
             publications_fn: name of file to save publications to.
+
+            projection_fn: name of file to save projection to.
 
             overwrite_publications: whether to overwrite an existing publications file.
 
@@ -67,6 +72,8 @@ class Atlas:
                 pub_data.to_csv(fp, index=False)
         else:
             warnings.warn("No publications to save, skipping.")
+
+        # save projection
     
     @classmethod
     def load(
@@ -77,6 +84,8 @@ class Atlas:
         ):
         """Load an Atlas object from a directory containing publications saved to a CSV file and possibly embeddings saved to a .npy file.
 
+        Load an Atlas object from a directory containing publications and/or their projection
+
         Args:
             atlas_dirpath: file with vocab, assumed output from `save_to_file`
         """
@@ -85,6 +94,8 @@ class Atlas:
         fp = os.path.join(atlas_dirpath, publications_fn)
         pub_data = pd.read_csv(fp)
         publications = [Publication.from_csv_entry(entry) for entry in pub_data.values.tolist()]
+
+        # load projection
         
         return cls(publications)
 
