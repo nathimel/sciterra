@@ -2,14 +2,14 @@
 
 import numpy as np
 
-class Vectorizer:
 
+class Vectorizer:
     def __init__(self) -> None:
         pass
 
     def embed_documents(self, docs: list[str]) -> np.ndarray:
         """Embed a list of documents into document vectors.
-        
+
         Args:
             docs: the documents to embed.
 
@@ -17,4 +17,3 @@ class Vectorizer:
             a numpy array of shape `(num_documents, embedding_dim)`
         """
         raise NotImplementedError
-    

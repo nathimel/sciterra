@@ -10,8 +10,8 @@ abstract_str = "We use cosmological hydrodynamic simulations with stellar feedba
 
 
 class TestSciBERTVectorizer:
-
     vectorizer = SciBERTVectorizer(device="mps")
+
 
 def test_single_vector():
     embedding = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str])
@@ -23,27 +23,36 @@ def test_single_vector():
 
 
 def test_identity_of_embeddings():
-    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str, abstract_str])
+    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents(
+        [abstract_str, abstract_str]
+    )
     # check identity
-    assert np.all( embeddings[0] == embeddings[1] )
+    assert np.all(embeddings[0] == embeddings[1])
 
 
 def test_single_cosine_pair():
-    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str, abstract_str])
-    
-    # Check that the cosine sim of doc w/ itself is 1 
+    embeddings = TestSciBERTVectorizer.vectorizer.embed_documents(
+        [abstract_str, abstract_str]
+    )
+
+    # Check that the cosine sim of doc w/ itself is 1
     # n.b., see sklearn.metrics.pairwise.cosine_similarity
-    sim = float(1 - cosine(embeddings[0], embeddings[1])) 
+    sim = float(1 - cosine(embeddings[0], embeddings[1]))
     assert sim == 1.0
+
 
 def test_basic_cosine_matrix():
     # like pair above, but pretending that we have more than 2 publications.
 
-    num_pubs = 3000 
+    num_pubs = 3000
     # n.b., 1000 typically takes 83.75s with mps; Colab cuda takes just 29s
 
-    embeddings = np.array([
-        TestSciBERTVectorizer.vectorizer.embed_documents([abstract_str] * num_pubs).flatten()
-    ])
+    embeddings = np.array(
+        [
+            TestSciBERTVectorizer.vectorizer.embed_documents(
+                [abstract_str] * num_pubs
+            ).flatten()
+        ]
+    )
     cosine_matrix = cosine_distances(embeddings, embeddings)
-    assert np.all( cosine_matrix == 0 )
+    assert np.all(cosine_matrix == 0)

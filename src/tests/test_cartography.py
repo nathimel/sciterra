@@ -10,7 +10,9 @@ from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.publication import Publication
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
-from .test_atlas import single_pub_bibtex_fp, ten_pub_bibtex_fp, realistic_bibtex_fp
+single_pub_bibtex_fp = "src/tests/data/single_publication.bib"
+ten_pub_bibtex_fp = "src/tests/data/ten_publications.bib"
+realistic_bibtex_fp = "src/tests/data/rdsg.bib"
 
 ##############################################################################
 # SemanticScholar x SciBERT
@@ -18,8 +20,9 @@ from .test_atlas import single_pub_bibtex_fp, ten_pub_bibtex_fp, realistic_bibte
 
 atlas_dir = "atlas_tmpdir"
 
-# NOTE: The purpose of mapping a 
+
 class TestS2BibtexToAtlas:
+    """Test functionality that maps a bibtex file to a list of identifiers, and then populates an atlas. The purpose of this functionality is to map a human-readable / very popular dataformat to the Atlas data structure."""
 
     librarian = SemanticScholarLibrarian()
     crt = Cartographer(librarian)
@@ -37,7 +40,7 @@ class TestS2BibtexToAtlas:
         # Construct Atlas
         atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
 
-        pub, = list(atl.publications.values())
+        (pub,) = list(atl.publications.values())
 
         assert pub.identifier
         assert pub.abstract
@@ -48,9 +51,7 @@ class TestS2BibtexToAtlas:
 
         assert entry["doi"] == pub.doi
 
-
     def test_bibtex_to_atlas_ten(self, tmp_path):
-
         # Load ten files from bibtex
         # Load expected values
         bibtex_fp = ten_pub_bibtex_fp
@@ -65,7 +66,6 @@ class TestS2BibtexToAtlas:
         atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
 
         for id, pub in atl.publications.items():
-            
             assert pub.identifier == id
             assert pub.abstract
             assert pub.publication_date
@@ -75,7 +75,6 @@ class TestS2BibtexToAtlas:
             assert pub.doi in dois if hasattr(pub, "doi") else True
 
     def test_bibtex_to_atlas_realistic(self, tmp_path):
-
         # Load ten files from bibtex
         # Load expected values
         bibtex_fp = realistic_bibtex_fp
@@ -86,12 +85,11 @@ class TestS2BibtexToAtlas:
         path.mkdir()
         # Construct Atlas
         atl = TestS2SBProjection.crt.bibtex_to_atlas(
-            bibtex_fp, 
+            bibtex_fp,
             # multiprocess=False,
-            )
+        )
 
         for id, pub in atl.publications.items():
-            
             assert pub.identifier == id
             assert pub.abstract
             assert pub.publication_date
@@ -104,25 +102,22 @@ class TestS2BibtexToAtlas:
 
 
 class TestS2SBProjection:
-
     librarian = SemanticScholarLibrarian()
     vectorizer = SciBERTVectorizer()
     crt = Cartographer(librarian, vectorizer)
 
     def test_empty_projection(self):
-        
         pubs = [Publication({"identifier": f"id_{i}"}) for i in range(10)]
         atl = Atlas(pubs)
 
         atl_proj = TestS2SBProjection.crt.project(atl)
-        assert atl_proj.projection.index_to_identifier == ()
+        assert atl_proj.projection is None
 
     def test_dummy_projection(self):
-        
-        pubs = [Publication(
-            {"identifier": f"id_{i}", 
-             "abstract": "blah blah blah"
-             }) for i in range(10)]
+        pubs = [
+            Publication({"identifier": f"id_{i}", "abstract": "blah blah blah"})
+            for i in range(10)
+        ]
         atl = Atlas(pubs)
 
         atl_proj = TestS2SBProjection.crt.project(atl)
@@ -133,7 +128,6 @@ class TestS2SBProjection:
         assert np.array_equal(vector0, vector1)
 
     def test_single_projection(self, tmp_path):
-
         path = tmp_path / atlas_dir
         path.mkdir()
         # Construct Atlas
@@ -143,19 +137,17 @@ class TestS2SBProjection:
         projection = atl_proj.projection
 
         identifier = list(atl.publications.keys())[0]
-        assert projection.identifier_to_index == {identifier:0}
+        assert projection.identifier_to_index == {identifier: 0}
         assert projection.index_to_identifier == (identifier,)
-        assert projection.embeddings.shape == (1,768) # (num_pubs, embedding_dim)
+        assert projection.embeddings.shape == (1, 768)  # (num_pubs, embedding_dim)
 
 
 class TestS2SBExpand:
-
     librarian = SemanticScholarLibrarian()
     vectorizer = SciBERTVectorizer()
     crt = Cartographer(librarian, vectorizer)
 
     def test_expand_single(self, tmp_path):
-
         # Load single file from bibtex
         # Load expected values
         bibtex_fp = single_pub_bibtex_fp
@@ -189,19 +181,18 @@ class TestS2SBExpand:
         atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
 
         pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references        
+        ids = pub.citations + pub.references
 
         atl_exp_single = TestS2SBProjection.crt.expand(atl)
-        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single)
+        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single, n_pubs_max=200)
         # empirically found this
         # note that all ids from atl_exp_single is 68282!
-        assert len(atl_exp_double)  == 4000 + len(ids)
+        assert len(atl_exp_double) == 200 + len(ids)
 
         # Save atlas
         atl_exp_double.save(path)
 
     def test_expand_center_single(self, tmp_path):
-
         # Load single file from bibtex
         # Load expected values
         bibtex_fp = single_pub_bibtex_fp
@@ -222,7 +213,7 @@ class TestS2SBExpand:
 
         # Save atlas
         atl_exp_single.save(path)
-    
+
     def test_expand_center_double(self, tmp_path):
         # Load single file from bibtex
         # Load expected values
@@ -240,9 +231,11 @@ class TestS2SBExpand:
         center = pub.identifier
 
         atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
-        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single, center=center)
+        atl_exp_double = TestS2SBProjection.crt.expand(
+            atl_exp_single, center=center, n_pubs_max=200
+        )
         # empirically found this
         # do no assert len(atl_exp_double)  == 4000 + len(ids), because we want 4000 + len(valid_ids), i.e. 148 not 154
-        assert len(atl_exp_double) == 4148
+        assert len(atl_exp_double) == 348
 
         atl_exp_double.save(path)

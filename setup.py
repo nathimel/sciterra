@@ -3,6 +3,23 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+requirements = [
+    "ads",
+    "bibtexparser",
+    "numpy",
+    "torch",
+    "transformers",
+    "scikit-learn",
+    "pandas",
+    "plotnine",
+]
+
+test_requirements = [
+    "black",
+    "pytest",
+    "coverage",
+]
+
 setuptools.setup(
     name="sciterra",
     version="0.0.1",
@@ -21,14 +38,5 @@ setuptools.setup(
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),
     # python_requires=">=3.6",
-    install_requires=[
-        "bibtexparser",
-        "numpy",
-        "torch",
-        "transformers",
-        "scikit-learn",
-        "pandas",
-        # "plotnine",
-        "pytest",
-    ],
+    install_requires=requirements,
 )
