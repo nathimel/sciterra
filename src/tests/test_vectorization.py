@@ -10,7 +10,7 @@ abstract_str = "We use cosmological hydrodynamic simulations with stellar feedba
 
 
 class TestSciBERTVectorizer:
-    vectorizer = SciBERTVectorizer(device="mps")
+    vectorizer = SciBERTVectorizer()  # don't pass 'mps' for CI tests
 
 
 def test_single_vector():

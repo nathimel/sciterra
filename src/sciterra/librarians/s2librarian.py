@@ -28,7 +28,7 @@ from multiprocessing import Pool
 QUERY_FIELDS = [
     "year",
     "abstract",
-    "title", # useful for inspection
+    "title",  # useful for inspection
     "externalIds",  # supports ArXiv, MAG, ACL, PubMed, Medline, PubMedCentral, DBLP, DOI
     "citationCount",
     "url",  # as a possible external id

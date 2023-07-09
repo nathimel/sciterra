@@ -102,9 +102,7 @@ class Cartographer:
         if atl_filtered.projection is not None:
             previously_embedded_ids = atl_filtered.projection.identifier_to_index
         embed_ids = [
-            id
-            for id in atl_filtered.publications
-            if id not in previously_embedded_ids
+            id for id in atl_filtered.publications if id not in previously_embedded_ids
         ]
 
         # Embed documents

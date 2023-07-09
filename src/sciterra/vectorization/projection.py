@@ -58,7 +58,7 @@ def merge(proj_a: Projection, proj_b: Projection) -> Projection:
     """
     if proj_b is None or not len(proj_b):
         return proj_a
-    
+
     # Get the data in the new projection missing from the old
     indices_missing = []
     identifiers_missing = []
