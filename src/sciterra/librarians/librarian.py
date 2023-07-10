@@ -1,5 +1,9 @@
 from ..publication import Publication
+from datetime import date
+
 from typing import Any
+from multiprocessing import Pool
+from tqdm import tqdm
 
 
 class Librarian:
@@ -16,6 +20,7 @@ class Librarian:
         *args,
         call_size: int = None,
         n_attempts_per_query: int = None,
+        convert: bool = True,
         **kwargs,
     ) -> list[Publication]:
         """Call an API and retrieve the publications corresponding to str identifiers.
@@ -31,5 +36,30 @@ class Librarian:
         """Convert an API-specific resulting publication data structure into a sciterra Publication object."""
         raise NotImplementedError
 
-    def convert_publications(self, pubs: list[Any], *args, **kwargs):
-        """Convert a list of API-specific publication data structures into a list of sciterra Publications."""
+    def convert_publications(
+        self,
+        papers: list,
+        *args,
+        multiprocess: bool = True,
+        num_processes=6,
+        **kwargs,
+    ) -> list[Publication]:
+        """Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing."""
+
+        if not multiprocess:
+            return [
+                self.convert_publication(
+                    paper,
+                )
+                for paper in papers
+            ]
+
+        with Pool(processes=num_processes) as p:
+            publications = list(
+                tqdm(
+                    p.imap(self.convert_publication, papers),
+                    total=len(papers),
+                )
+            )
+
+        return publications

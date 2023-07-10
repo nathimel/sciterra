@@ -18,8 +18,6 @@ from semanticscholar.Paper import Paper
 from requests.exceptions import ReadTimeout, ConnectionError
 from semanticscholar.SemanticScholarException import ObjectNotFoundExeception
 
-from multiprocessing import Pool
-
 ##############################################################################
 # Constants
 ##############################################################################
@@ -101,8 +99,8 @@ class SemanticScholarLibrarian(Librarian):
     def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:
         """Parse a bibtex entry for a usable identifier for querying SemanticScholar (see EXTERNAL_IDS)."""
         identifier = None
-        if "identifier" in bibtex_entry:
-            identifier = bibtex_entry["identifier"]
+        if "paper_id" in bibtex_entry:
+            identifier = bibtex_entry["paper_id"]
         elif "doi" in bibtex_entry:
             identifier = f"DOI:{bibtex_entry['doi']}"
         return identifier
@@ -125,7 +123,7 @@ class SemanticScholarLibrarian(Librarian):
 
             call_size: maximum number of papers to call API for in one query; if less than `len(paper_ids)`, chunking will be performed.
 
-            convert: whether to convert resulting SemanticScholar Papers to sciterra Publications (True by default).
+            convert: whether to convert each resulting SemanticScholar Paper to sciterra Publications (True by default).
 
         Returns:
             the list of publications (or Papers)
@@ -144,7 +142,6 @@ class SemanticScholarLibrarian(Librarian):
 
         print(f"Querying Semantic Scholar for {len(paper_ids)} total papers.")
         papers = []
-
         pbar = tqdm(desc=f"progress using call_size={call_size}", total=total)
         for ids in chunked_ids:
 
@@ -155,14 +152,14 @@ class SemanticScholarLibrarian(Librarian):
             )
             def get_papers() -> list[Paper]:
                 if call_size > 1:
-                    result = self.sch.get_papers(
+                    result = self.get_papers(
                         paper_ids=ids,
                         fields=QUERY_FIELDS,
                     )
                 else:
                     # typically completes about 100 queries per minute.
                     result = [
-                        self.sch.get_paper(
+                        self.get_paper(
                             paper_id=paper_id,
                             fields=QUERY_FIELDS,
                         )
@@ -239,30 +236,40 @@ class SemanticScholarLibrarian(Librarian):
 
         return Publication(data)
 
-    def convert_publications(
-        self,
-        papers: list[Paper],
-        *args,
-        multiprocess: bool = True,
-        num_processes=6,
-        **kwargs,
-    ) -> list[Publication]:
-        """Convet a list of SemanticScholar Papes to sciterra Publications, possibly using multiprocessing."""
+    # We write this minimally different function from SemanticScholar.get_papers so that others dont need to fork our version of semantic scholar.
+    def get_papers(self, paper_ids: list[str], fields: list[str]):
+        """Custom function for calling the S2 API that doesn't fail on empty results."""
+        if not fields:
+            fields = Paper.SEARCH_FIELDS
 
-        if not multiprocess:
-            return [
-                self.convert_publication(
-                    paper,
-                )
-                for paper in papers
-            ]
+        url = f"{self.sch.api_url}/paper/batch"
 
-        with Pool(processes=6) as p:
-            publications = list(
-                tqdm(
-                    p.imap(self.convert_publication, papers),
-                    total=len(papers),
-                )
-            )
+        fields = ",".join(fields)
+        parameters = f"&fields={fields}"
 
-        return publications
+        payload = {"ids": paper_ids}
+
+        data = self.sch._requester.get_data(
+            url, parameters, self.sch.auth_header, payload
+        )
+        papers = [
+            Paper(item) if item is not None else None for item in data
+        ]  # added condition
+
+        return papers
+
+    # "
+    def get_paper(self, paper_id: str, fields: list[str]):
+        """Custom function for calling the S2 API that doesn't fail on empty results."""
+        if not fields:
+            fields = Paper.FIELDS
+
+        url = f"{self.api_url}/paper/{paper_id}"
+
+        fields = ",".join(fields)
+        parameters = f"&fields={fields}"
+
+        data = self.sch._requester.get_data(url, parameters, self.auth_header)
+        paper = Paper(data) if data is not None else None  # added condition
+
+        return paper
