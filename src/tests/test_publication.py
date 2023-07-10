@@ -1,7 +1,7 @@
 """Test the basic publication wrapper."""
 
 from datetime import datetime
-from sciterra.publication import Publication
+from sciterra.mapping.publication import Publication
 
 import bibtexparser
 

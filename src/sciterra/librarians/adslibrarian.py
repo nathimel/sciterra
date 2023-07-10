@@ -3,8 +3,8 @@ import ads
 from ads.search import Article
 from datetime import date, datetime
 
-from sciterra.publication import Publication
-from ..publication import Publication
+from sciterra.mapping.publication import Publication
+from ..mapping.publication import Publication
 from .librarian import Librarian
 
 from ..misc.utils import chunk_ids, keep_trying
@@ -167,7 +167,7 @@ class ADSLibrarian(Librarian):
         references = article.reference
 
         citation_count = article.citation_count
-        if citation_count != len(citations):
+        if (citation_count is not None) and (citations is not None) and  (citation_count != len(citations)):
             warnings.warn(
                 f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
             )

@@ -6,9 +6,9 @@ import warnings
 import numpy as np
 
 from .atlas import Atlas
-from .librarians.librarian import Librarian
-from .vectorization.vectorizer import Vectorizer
-from .vectorization.projection import Projection, merge
+from ..librarians.librarian import Librarian
+from ..vectorization.vectorizer import Vectorizer
+from ..vectorization.projection import Projection, merge
 
 from sklearn.metrics.pairwise import cosine_similarity
 

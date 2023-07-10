@@ -1,5 +1,4 @@
-from ..publication import Publication
-from datetime import date
+from ..mapping.publication import Publication
 
 from typing import Any
 from multiprocessing import Pool

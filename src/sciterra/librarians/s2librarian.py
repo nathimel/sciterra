@@ -6,9 +6,9 @@ from typing import Any
 from tqdm import tqdm
 
 
-from sciterra.publication import Publication
+from sciterra.mapping.publication import Publication
 
-from ..publication import Publication
+from ..mapping.publication import Publication
 from .librarian import Librarian
 from ..misc.utils import chunk_ids, keep_trying
 

@@ -4,10 +4,10 @@ import bibtexparser
 
 import numpy as np
 
-from sciterra.atlas import Atlas
-from sciterra.cartography import Cartographer
+from sciterra.mapping.atlas import Atlas
+from sciterra.mapping.cartography import Cartographer
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
-from sciterra.publication import Publication
+from sciterra.mapping.publication import Publication
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
 single_pub_bibtex_fp = "src/tests/data/single_publication.bib"

@@ -4,8 +4,8 @@ import bibtexparser
 
 import pandas as pd
 
-from sciterra.atlas import Atlas
-from sciterra.publication import Publication
+from sciterra.mapping.atlas import Atlas
+from sciterra.mapping.publication import Publication
 
 from sciterra.misc.utils import write_pickle, read_pickle
 

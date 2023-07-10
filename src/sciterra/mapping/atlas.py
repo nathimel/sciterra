@@ -9,8 +9,8 @@ import pandas as pd
 from typing import Any
 
 from .publication import Publication
-from .vectorization.projection import Projection
-from .misc.utils import read_pickle, write_pickle
+from ..vectorization.projection import Projection
+from ..misc.utils import read_pickle, write_pickle
 
 
 class Atlas:
