@@ -14,7 +14,9 @@ jobs:
       - name: Install package 
         run: pip install -e .
       - name: Save ADS api key
-        run: echo ${{ secrets.ADS_API_KEY }} > ~/.ads/dev_key
+        run: |
+          mkdir ~/.ads
+          echo ${{ secrets.ADS_API_KEY }} > ~/.ads/dev_key
       - name: Test with pytest
         run: |
           pip install pytest 
