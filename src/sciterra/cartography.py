@@ -195,7 +195,10 @@ class Cartographer:
         # For each publication corresponding to an id in `expand_keys`, collect the ids corresponding to the publication's references and citations.
         ids = set()
         for key in expand_keys:
-            ids_i = set(atl[key].references + atl[key].citations)
+            try:
+                ids_i = set(atl[key].references + atl[key].citations)
+            except ValueError as e:
+                breakpoint()
             # Prune for obvious overlap
             ids.update(ids_i - existing_keys)
             # Break when the search is centered and we're maxed out

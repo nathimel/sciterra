@@ -110,7 +110,7 @@ def keep_trying(
 def chunk_ids(ids: list[str], call_size=2000):
     """Helper function to chunk bibcodes or paperIds into smaller sublists if appropriate."""
     # Break into chunks
-    assert (
+    assert (  # TODO: this seems like an irrelevant copypasta since we use SearchQuery
         call_size <= 2000
     ), "Max number of calls ExportQuery can handle at a time is 2000."
     if len(ids) > call_size:

@@ -79,6 +79,7 @@ ATTRS_TO_SAVE = [
 ]
 
 ALLOWED_EXCEPTIONS = (
+    Exception,  # "Internal Service Error"
     ReadTimeout,
     ConnectionError,
     ObjectNotFoundExeception,
@@ -217,7 +218,6 @@ class SemanticScholarLibrarian(Librarian):
             warnings.warn("Setting citation_count = {len(citations)}.")
             citation_count = len(citations)
 
-        # parse data
         data = {
             # primary fields
             "identifier": identifier,
@@ -228,7 +228,7 @@ class SemanticScholarLibrarian(Librarian):
             "citation_count": citation_count,
             # additional fields
             "doi": doi,
-            "url": paper.title,
+            "url": paper.url if hasattr(paper, "url") else None,
             "title": paper.title if hasattr(paper, "title") else None,
             "issn": paper.issn if hasattr(paper, "issn") else None,
         }

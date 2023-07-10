@@ -1,7 +1,7 @@
 import ads
 
 from ads.search import Article
-from datetime import date
+from datetime import date, datetime
 
 from sciterra.publication import Publication
 from ..publication import Publication
@@ -11,6 +11,10 @@ from ..misc.utils import chunk_ids, keep_trying
 
 from tqdm import tqdm
 
+import warnings
+
+CALL_SIZE = 2000
+NUM_ATTEMPTS_PER_QUERY = 10
 
 QUERY_FIELDS = [
     "bibcode",  # str
@@ -22,6 +26,7 @@ QUERY_FIELDS = [
     "citation_count",
     "citation",  # list
     "reference",  # list
+    "identifier",  # list of external ids
 ]
 
 ALLOWED_EXCEPTIONS = (ads.exceptions.APIResponseError,)
@@ -52,8 +57,8 @@ class ADSLibrarian(Librarian):
         self,
         bibcodes: list[str],
         *args,
-        call_size: int = None,
-        n_attempts_per_query: int = None,
+        call_size: int = CALL_SIZE,
+        n_attempts_per_query: int = NUM_ATTEMPTS_PER_QUERY,
         convert: bool = True,
         **kwargs,
     ) -> list[Publication]:
@@ -129,15 +134,59 @@ class ADSLibrarian(Librarian):
         # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we always use the bibcode.
         identifier = article.bibcode
 
-        # datetime.strptime(
-        # data['publicationDate'], '%Y-%m-%d')
+        def process_date(date_str: str) -> str:
+            # sometimes there is extra data
+            date_str = date_str[:10]  # e.g. yyyy-mm-dd
+            # sometimes ads has 00 for month or day
+            if date_str[-2:] == "00":
+                date_str[-2:] = "01"
+            if date_str[-5:-3] == "00":
+                date_str[-5:-3] = "01"
+            date_ = datetime.strptime(date_str, "%Y-%m-%d")
+            return date_
 
         # Parse date from datetime or year
         if hasattr(article, "entry_date"):
-            publication_date = article.entry_date
+            publication_date = process_date(article.entry_date)
         elif hasattr(article, "pubdate"):
-            publication_date = article.pubdate
+            publication_date = process_date(article.pubdate)
         elif hasattr(article, "year"):
             publication_date = date(article.year, 1, 1)
         else:
             publication_date = None
+
+        # get doi from Article identifiers
+        # warning: ADS tracks two DOIs: for official and arxiv
+        doi = None
+        if hasattr(article, "identifier"):
+            dois = [item for item in article.identifier if item[:3] == "10."]
+            if dois:
+                doi = dois[0]
+
+        citations = article.citation
+        references = article.reference
+
+        citation_count = article.citation_count
+        if citation_count != len(citations):
+            warnings.warn(
+                f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
+            )
+        if "infer_citation_count" in kwargs and kwargs["infer_citation_count"]:
+            warnings.warn("Setting citation_count = {len(citations)}.")
+            citation_count = len(citations)
+
+        data = {
+            # primary fields
+            "identifier": identifier,
+            "abstract": article.abstract,
+            "publication_date": publication_date,
+            "citations": citations,
+            "references": references,
+            "citation_count": citation_count,
+            # additional fields
+            "doi": doi,
+            "title": article.title,
+        }
+        data = {k: v for k, v in data.items() if v is not None}
+
+        return Publication(data)
