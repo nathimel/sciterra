@@ -231,6 +231,7 @@ class TestS2SBExpand:
         center = pub.identifier
 
         atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
+        atl_exp_single = TestS2SBProjection.crt.project(atl_exp_single)
         atl_exp_double = TestS2SBProjection.crt.expand(
             atl_exp_single, center=center, n_pubs_max=200
         )
@@ -239,3 +240,47 @@ class TestS2SBExpand:
         assert len(atl_exp_double) == 348
 
         atl_exp_double.save(path)
+
+    def test_project_no_repeats(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
+        atl_exp_single = TestS2SBProjection.crt.project(atl_exp_single)
+
+        before = len(atl_exp_single)
+        atl_exp_double = TestS2SBProjection.crt.expand(
+            atl_exp_single, center=center, n_pubs_max=200
+        )
+        after = len(atl_exp_double)
+
+        # Check that the second projection does not need to pull more docs than necessary
+
+        # 1. Simulate first part of project
+        # 'only project publications that have abstracts'
+        atl_filtered = TestS2SBProjection.crt.filter(
+            atl_exp_double, attributes=["abstract"]
+        )
+
+        # 'get only embeddings for publications not already projected in atlas'
+        previously_embedded_ids = []
+        if atl_filtered.projection is not None:
+            previously_embedded_ids = atl_filtered.projection.identifier_to_index
+        embed_ids = [
+            id for id in atl_filtered.publications if id not in previously_embedded_ids
+        ]
+
+        # 2. Check that the number of abstracts to be embedded does not exceed the size of the previous expansion
+        assert len(embed_ids) <= after - before

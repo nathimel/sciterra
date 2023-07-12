@@ -180,13 +180,9 @@ class Cartographer:
                     atl.projection.identifiers_to_embeddings([center]),
                     atl.projection.embeddings,
                 )
-                sort_inds = np.argsort(cospsi_matrix)[1:]  # exclude the center
+                # get most similar keys from center, including center itself
+                sort_inds = np.argsort(cospsi_matrix)[0]  # shape (1, num_pubs)
                 expand_keys = atl.projection.indices_to_identifiers(sort_inds)
-
-                # fill expand keys to allowed capacity
-                if len(expand_keys) < len(existing_keys):
-                    # only consider non-empty abstracts
-                    expand_keys = set(expand_keys).union(existing_keys)
 
         if n_sources_max is not None:
             expand_keys = expand_keys[:n_sources_max]
@@ -216,6 +212,7 @@ class Cartographer:
         print(f"Expansion will include {len(ids)} new publications.")
 
         # Retrieve publications from ids using a librarian
+        # breakpoint()
         new_publications = self.librarian.get_publications(ids)
 
         # New atlas
@@ -223,6 +220,7 @@ class Cartographer:
 
         # Update the new atlas
         atl_exp.publications.update(atl.publications)
+        atl_exp.projection = atl.projection
 
         return atl_exp
 
@@ -270,11 +268,13 @@ class Cartographer:
                 else:
                     idx_to_id_new.append(id)
             # From embeddings
-            embeddings = [
-                embedding
-                for idx, embedding in enumerate(embeddings)
-                if idx not in filter_indices
-            ]
+            embeddings = np.array(
+                [
+                    embedding
+                    for idx, embedding in enumerate(atl.projection.embeddings)
+                    if idx not in filter_indices
+                ]
+            )
             # From identifier to index map
             id_to_idx_new = {id: idx for idx, id in enumerate(idx_to_id_new)}
             # Overwrite Projection

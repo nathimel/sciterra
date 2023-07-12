@@ -54,7 +54,7 @@ class Projection:
 def merge(proj_a: Projection, proj_b: Projection) -> Projection:
     """Return the result of merging projection `proj_a` with projection `proj_b`.
 
-    NOTE: This is not a symmetric operation: it adds all embedding data contained in proj_a that is missing from proj_b. This means that the resulting projection can only be greater or equal in size to proj_a.
+    This adds to proj_a all embedding data contained in proj_b that is missing from proj_a. This means that the resulting projection can only be greater or equal in size to proj_a.
     """
     if proj_b is None or not len(proj_b):
         return proj_a
@@ -81,7 +81,7 @@ def merge(proj_a: Projection, proj_b: Projection) -> Projection:
     embeddings_new = embeddings_missing
     if proj_a is not None:
         idx_to_ids_new = list(proj_a.index_to_identifier) + idx_to_ids_new
-        embeddings_new = np.concatenate(proj_a.embeddings, embeddings_new)
+        embeddings_new = np.concatenate([proj_a.embeddings, embeddings_new])
 
     # Return a new projection
     return Projection(

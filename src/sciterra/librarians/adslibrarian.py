@@ -13,7 +13,9 @@ from tqdm import tqdm
 
 import warnings
 
-CALL_SIZE = 2000
+CALL_SIZE = (
+    50  # handles more than 2000, much better than S2; but easy to hit TooManyRequests
+)
 NUM_ATTEMPTS_PER_QUERY = 10
 
 QUERY_FIELDS = [
@@ -108,7 +110,7 @@ class ADSLibrarian(Librarian):
                             }
                         )
                     )[
-                        0
+                        0  # screw black, this is ugly
                     ]  # retrieve from generator
                     for query in ids
                 ]
@@ -167,7 +169,11 @@ class ADSLibrarian(Librarian):
         references = article.reference
 
         citation_count = article.citation_count
-        if (citation_count is not None) and (citations is not None) and  (citation_count != len(citations)):
+        if (
+            (citation_count is not None)
+            and (citations is not None)
+            and (citation_count != len(citations))
+        ):
             warnings.warn(
                 f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
             )
