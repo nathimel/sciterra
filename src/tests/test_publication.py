@@ -1,17 +1,20 @@
 """Test the basic publication wrapper."""
 
+import bibtexparser
+import pytest
+
 from datetime import datetime
 from sciterra.mapping.publication import Publication
 
-import bibtexparser
 
 single_pub_bibtex_fp = "src/tests/data/single_publication.bib"
 
 
 class TestPublication:
     def test_empty_publication(self):
-        pub = Publication()
-        assert pub.identifier is None
+        # Publication must have data
+        with pytest.raises(TypeError) as e_info:
+            pub = Publication()
 
     def test_dummy_publication(self):
         data = {
