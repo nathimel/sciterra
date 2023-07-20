@@ -133,7 +133,7 @@ class ADSLibrarian(Librarian):
         if article is None:
             return
 
-        verbose = get_verbose()
+        verbose = get_verbose(kwargs)
 
         # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we always use the bibcode.
         identifier = article.bibcode

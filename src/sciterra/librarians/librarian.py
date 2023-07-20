@@ -45,10 +45,14 @@ class Librarian:
     ) -> list[Publication]:
         """Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing."""
 
+        # TODO: you need to pass args and kwargs into these
+
         if not multiprocess:
             return [
                 self.convert_publication(
                     paper,
+                    *args,
+                    **kwargs,
                 )
                 for paper in papers
             ]

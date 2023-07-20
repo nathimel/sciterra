@@ -59,7 +59,7 @@ class Publication:
             An int corresponding to the number of citations received by the publication
     """
 
-    def __init__(self, data: dict = {}, **kwargs) -> None:
+    def __init__(self, data: dict, **kwargs) -> None:
         """Construct a publication.
 
         Args:

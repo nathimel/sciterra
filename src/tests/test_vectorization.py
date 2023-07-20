@@ -44,8 +44,9 @@ def test_single_cosine_pair():
 def test_basic_cosine_matrix():
     # like pair above, but pretending that we have more than 2 publications.
 
-    num_pubs = 3000
+    num_pubs = 300
     # n.b., 1000 typically takes 83.75s with mps; Colab cuda takes just 29s
+    # github actions just uses cpu, so maybe don't waste time stress testing
 
     embeddings = np.array(
         [

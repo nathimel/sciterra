@@ -272,7 +272,10 @@ class Cartographer:
         filter_ids = invalid_pubs.keys()
 
         # Filter embeddings, ids from projection
-        if len(atl.projection):
+        # if len(atl.projection):
+        if atl.projection is None:
+            new_projection = None
+        else:
             filter_indices = set()
             idx_to_id_new = []
             # From indexing
