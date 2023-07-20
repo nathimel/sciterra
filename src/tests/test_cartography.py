@@ -115,7 +115,7 @@ class TestS2SBProjection:
         atl = Atlas(pubs)
 
         atl_proj = TestS2SBProjection.crt.project(atl)
-        assert atl_proj.projection is None # was filtered
+        assert atl_proj.projection is None  # was filtered
 
     def test_dummy_projection_no_date(self):
         pubs = [
@@ -125,12 +125,14 @@ class TestS2SBProjection:
         atl = Atlas(pubs)
 
         atl_proj = TestS2SBProjection.crt.project(atl)
-        assert all([hasattr(pub, "abstract") for pub in  atl.publications.values()])
-        assert atl_proj.projection is None # was filtered
+        assert all([hasattr(pub, "abstract") for pub in atl.publications.values()])
+        assert atl_proj.projection is None  # was filtered
 
     def test_dummy_projection_no_abstract(self):
         pubs = [
-            Publication({"identifier": f"id_{i}", "publication_date": datetime(2023, 1, 1)})
+            Publication(
+                {"identifier": f"id_{i}", "publication_date": datetime(2023, 1, 1)}
+            )
             for i in range(10)
         ]
         atl = Atlas(pubs)
@@ -138,16 +140,18 @@ class TestS2SBProjection:
         # breakpoint()
         atl_proj = TestS2SBProjection.crt.project(atl)
 
-        assert all([hasattr(pub, "publication_date") for pub in  atl.publications.values()])
-        assert atl_proj.projection is None # was filtered
+        assert all(
+            [hasattr(pub, "publication_date") for pub in atl.publications.values()]
+        )
+        assert atl_proj.projection is None  # was filtered
 
     def test_dummy_projection(self):
         pubs = [
             Publication(
                 {
-                    "identifier": f"id_{i}", 
+                    "identifier": f"id_{i}",
                     "abstract": "blah blah blah",
-                    "publication_date": datetime(2023, 1, 1)
+                    "publication_date": datetime(2023, 1, 1),
                 }
             )
             for i in range(10)
