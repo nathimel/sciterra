@@ -8,9 +8,12 @@ import numpy as np
 from .atlas import Atlas
 from ..librarians.librarian import Librarian
 from ..vectorization.vectorizer import Vectorizer
-from ..vectorization.projection import Projection, merge
+from ..vectorization.projection import Projection, merge, get_empty_projection
+from ..misc.utils import get_verbose, custom_formatwarning
 
 from sklearn.metrics.pairwise import cosine_similarity
+
+warnings.formatwarning = custom_formatwarning
 
 
 class Cartographer:
@@ -38,6 +41,8 @@ class Cartographer:
 
             args and kwargs are passed to `get_publications`.
         """
+        verbose = get_verbose(kwargs)
+
         with open(bibtex_fp, "r") as f:
             bib_database = bibtexparser.load(f)
 
@@ -47,7 +52,7 @@ class Cartographer:
             for entry in bib_database.entries
         ]
         identifiers = [id for id in identifiers if id is not None]
-        if len(identifiers) < len(bib_database.entries):
+        if len(identifiers) < len(bib_database.entries) and verbose:
             warnings.warn(
                 f"Only obtained {len(identifiers)} publications out of {len(bib_database.entries)} total due to missing identifiers."
             )
@@ -65,7 +70,7 @@ class Cartographer:
                 # identifier will never be none
             )
         ]
-        if len(publications) < len(identifiers):
+        if len(publications) < len(identifiers) and verbose:
             warnings.warn(
                 f"Only obtained {len(publications)} publications out of {len(identifiers)} total due to querying-related errors or missing abstracts."
             )
@@ -78,7 +83,7 @@ class Cartographer:
     # Project Atlas
     ######################################################################
 
-    def project(self, atl: Atlas) -> Atlas:
+    def project(self, atl: Atlas, **kwargs) -> Atlas:
         """Update an atlas with its projection, i.e. the document embeddings for all publications using `self.vectorizer`, removing publications with no abstracts.
 
         Args:
@@ -87,12 +92,14 @@ class Cartographer:
         Returns:
             the updated atlas containing all nonempty-abstract-containing publications and their projection
         """
-        # Only project publications that have abstracts
-        atl_filtered = self.filter(atl, attributes=["abstract"])
-        invalid = len(atl) - len(atl_filtered)
-        if invalid:
+        verbose = get_verbose(kwargs)
+
+        # Only project publications that have abstracts and publication dates
+        atl_filtered = self.filter(atl)
+        num_empty = len(atl) - len(atl_filtered)
+        if num_empty and verbose:
             warnings.warn(
-                f"Some abstracts were not available. Found {len(atl_filtered)} nonempty abstracts out of {len(atl.publications)} total publications."
+                f"{num_empty} publications were filtered due to missing crucial data."
             )
 
         # Project
@@ -105,12 +112,19 @@ class Cartographer:
             id for id in atl_filtered.publications if id not in previously_embedded_ids
         ]
 
-        # Embed documents
         if embed_ids:
+            if verbose:
+                if atl_filtered.projection is not None:
+                    warnings.warn(
+                        f"Found {len(atl_filtered.publications) - len(atl_filtered.projection)} publications not contained in Atlas projection."
+                    )
+                warnings.warn(f"Embedding {len(embed_ids)} total documents.")
+            # Embed documents
             embeddings = self.vectorizer.embed_documents(
                 [atl_filtered[id].abstract for id in embed_ids]
             )
-        if embeddings is None:
+
+        if embeddings is None and verbose:
             warnings.warn(f"Obtained no new publication embeddings.")
 
         # create new projection
@@ -121,6 +135,7 @@ class Cartographer:
             index_to_identifier=tuple(embed_ids),
             embeddings=embeddings,
         )
+
         # merge existing projection with new projection
         merged_projection = merge(atl_filtered.projection, projection)
 
@@ -130,13 +145,9 @@ class Cartographer:
             for id, pub in atl_filtered.publications.items()
             if id in merged_projection.identifier_to_index
         }
-        invalid = set(atl_filtered.publications.keys()) - set(
+        assert not set(atl_filtered.publications.keys()) - set(
             embedded_publications.keys()
         )
-        if invalid:
-            warnings.warn(
-                f"Removing {len(invalid)} publications from atlas after projection."
-            )
 
         # Overwrite atlas data
         atl_filtered.publications = embedded_publications
@@ -171,7 +182,8 @@ class Cartographer:
         existing_keys = set(atl.publications.keys())
         expand_keys = existing_keys
         if center is not None:
-            if atl.projection is None:
+            if atl.projection is None:  # If initial atlas
+                # atl.projection = get_empty_projection()
                 atl = self.project(atl)
 
             if len(atl.projection):
@@ -212,7 +224,6 @@ class Cartographer:
         print(f"Expansion will include {len(ids)} new publications.")
 
         # Retrieve publications from ids using a librarian
-        # breakpoint()
         new_publications = self.librarian.get_publications(ids)
 
         # New atlas
@@ -220,7 +231,9 @@ class Cartographer:
 
         # Update the new atlas
         atl_exp.publications.update(atl.publications)
-        atl_exp.projection = atl.projection
+        atl_exp.projection = (
+            atl.projection
+        )  # new projection will be updated in `project`
 
         return atl_exp
 
@@ -250,15 +263,16 @@ class Cartographer:
         invalid_pubs = {
             id: pub
             for id, pub in atl.publications.items()
-            if all([getattr(pub, attr) is None for attr in attributes])
+            if (pub is None or any([getattr(pub, attr) is None for attr in attributes]))
         }
         # Do not update if unnecessary
         if not len(invalid_pubs):
             return atl
 
         filter_ids = invalid_pubs.keys()
-        # Remove embeddings, ids from projection
-        if atl.projection is not None and len(atl.projection):
+
+        # Filter embeddings, ids from projection
+        if len(atl.projection):
             filter_indices = set()
             idx_to_id_new = []
             # From indexing
@@ -277,16 +291,18 @@ class Cartographer:
             )
             # From identifier to index map
             id_to_idx_new = {id: idx for idx, id in enumerate(idx_to_id_new)}
-            # Overwrite Projection
-            atl.projection = Projection(
+            # Construct new, filtered projection
+            new_projection = Projection(
                 identifier_to_index=id_to_idx_new,
                 index_to_identifier=idx_to_id_new,
                 embeddings=embeddings,
             )
 
-        # Remove publications
-        atl.publications = {
-            id: pub for id, pub in atl.publications.items() if id not in filter_ids
-        }
+        # Keep only filtered publications
+        new_publications = [
+            pub for id, pub in atl.publications.items() if id not in filter_ids
+        ]
 
-        return atl
+        # Construct new atlas
+        atl_filtered = Atlas(new_publications, new_projection)
+        return atl_filtered

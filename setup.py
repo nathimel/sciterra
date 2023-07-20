@@ -33,8 +33,7 @@ setuptools.setup(
     project_urls={"Bug Tracker": "https://github.com/nathimel/sciterra/issues"},
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
-        "Operating System :: OS Independent",
+        "License :: OSI Approved :: MIT License",
     ],
     package_dir={"": "src"},
     packages=setuptools.find_packages(where="src"),

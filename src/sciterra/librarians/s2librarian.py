@@ -10,7 +10,7 @@ from sciterra.mapping.publication import Publication
 
 from ..mapping.publication import Publication
 from .librarian import Librarian
-from ..misc.utils import chunk_ids, keep_trying
+from ..misc.utils import chunk_ids, keep_trying, get_verbose
 
 from semanticscholar import SemanticScholar
 from semanticscholar.Paper import Paper
@@ -174,7 +174,7 @@ class SemanticScholarLibrarian(Librarian):
 
         if not convert:
             return papers
-        return self.convert_publications(
+        return self.convert_publications(  # may contain Nones!
             papers,
             *args,
             **kwargs,
@@ -185,13 +185,15 @@ class SemanticScholarLibrarian(Librarian):
         if paper is None:
             return
 
+        verbose = get_verbose(kwargs)
+
         # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we always use the paperId.
         identifier = paper.paperId
 
         # Parse date from datetime or year
-        if hasattr(paper, "publicationDate"):
+        if paper.publicationDate is not None:
             publication_date = paper.publicationDate
-        elif hasattr(paper, "year"):
+        elif paper.year is not None:
             publication_date = date(paper.year, 1, 1)
         else:
             publication_date = None
@@ -210,11 +212,15 @@ class SemanticScholarLibrarian(Librarian):
         ]
 
         citation_count = paper.citationCount
-        if citation_count != len(citations):
+        if citation_count != len(citations) and verbose:
             warnings.warn(
                 f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
             )
-        if "infer_citation_count" in kwargs and kwargs["infer_citation_count"]:
+        if (
+            "infer_citation_count" in kwargs
+            and kwargs["infer_citation_count"]
+            and verbose
+        ):
             warnings.warn("Setting citation_count = {len(citations)}.")
             citation_count = len(citations)
 

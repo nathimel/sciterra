@@ -141,107 +141,7 @@ class TestS2SBProjection:
         assert projection.index_to_identifier == (identifier,)
         assert projection.embeddings.shape == (1, 768)  # (num_pubs, embedding_dim)
 
-
-class TestS2SBExpand:
-    librarian = SemanticScholarLibrarian()
-    vectorizer = SciBERTVectorizer()
-    crt = Cartographer(librarian, vectorizer)
-
-    def test_expand_single(self, tmp_path):
-        # Load single file from bibtex
-        # Load expected values
-        bibtex_fp = single_pub_bibtex_fp
-        with open(bibtex_fp, "r") as f:
-            bib_database = bibtexparser.load(f)
-
-        path = tmp_path / atlas_dir
-        path.mkdir()
-        # Construct Atlas
-        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
-
-        pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references
-
-        atl_exp = TestS2SBProjection.crt.expand(atl)
-
-        assert len(atl_exp) > len(atl)
-        # so far this holds, but things that aren't our fault could make it fail.
-        assert len(atl_exp) == len(ids)
-
-    def test_expand_double(self, tmp_path):
-        # Load single file from bibtex
-        # Load expected values
-        bibtex_fp = single_pub_bibtex_fp
-        with open(bibtex_fp, "r") as f:
-            bib_database = bibtexparser.load(f)
-
-        path = tmp_path / atlas_dir
-        path.mkdir()
-        # Construct Atlas
-        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
-
-        pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references
-
-        atl_exp_single = TestS2SBProjection.crt.expand(atl)
-        atl_exp_double = TestS2SBProjection.crt.expand(atl_exp_single, n_pubs_max=200)
-        # empirically found this
-        # note that all ids from atl_exp_single is 68282!
-        assert len(atl_exp_double) == 200 + len(ids)
-
-        # Save atlas
-        atl_exp_double.save(path)
-
-    def test_expand_center_single(self, tmp_path):
-        # Load single file from bibtex
-        # Load expected values
-        bibtex_fp = single_pub_bibtex_fp
-        with open(bibtex_fp, "r") as f:
-            bib_database = bibtexparser.load(f)
-
-        path = tmp_path / atlas_dir
-        path.mkdir()
-        # Construct Atlas
-        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
-
-        pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references
-        center = pub.identifier
-
-        atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
-        assert len(atl_exp_single) == len(ids)
-
-        # Save atlas
-        atl_exp_single.save(path)
-
-    def test_expand_center_double(self, tmp_path):
-        # Load single file from bibtex
-        # Load expected values
-        bibtex_fp = single_pub_bibtex_fp
-        with open(bibtex_fp, "r") as f:
-            bib_database = bibtexparser.load(f)
-
-        path = tmp_path / atlas_dir
-        path.mkdir()
-        # Construct Atlas
-        atl = TestS2SBProjection.crt.bibtex_to_atlas(bibtex_fp)
-
-        pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references
-        center = pub.identifier
-
-        atl_exp_single = TestS2SBProjection.crt.expand(atl, center=center)
-        atl_exp_single = TestS2SBProjection.crt.project(atl_exp_single)
-        atl_exp_double = TestS2SBProjection.crt.expand(
-            atl_exp_single, center=center, n_pubs_max=200
-        )
-        # empirically found this
-        # do no assert len(atl_exp_double)  == 4000 + len(ids), because we want 4000 + len(valid_ids), i.e. 148 not 154
-        assert len(atl_exp_double) == 348
-
-        atl_exp_double.save(path)
-
-    def test_project_no_repeats(self, tmp_path):
+    def test_project_correct_number(self, tmp_path):
         # Load single file from bibtex
         # Load expected values
         bibtex_fp = single_pub_bibtex_fp
@@ -284,3 +184,103 @@ class TestS2SBExpand:
 
         # 2. Check that the number of abstracts to be embedded does not exceed the size of the previous expansion
         assert len(embed_ids) <= after - before
+
+
+class TestS2SBExpand:
+    librarian = SemanticScholarLibrarian()
+    vectorizer = SciBERTVectorizer()
+    crt = Cartographer(librarian, vectorizer)
+
+    def test_expand_single(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+
+        atl_exp = TestS2SBExpand.crt.expand(atl)
+
+        assert len(atl_exp) > len(atl)
+        # so far this holds, but things that aren't our fault could make it fail.
+        assert len(atl_exp) == len(ids)
+
+    def test_expand_double(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+
+        atl_exp_single = TestS2SBExpand.crt.expand(atl)
+        atl_exp_double = TestS2SBExpand.crt.expand(atl_exp_single, n_pubs_max=200)
+        # empirically found this
+        # note that all ids from atl_exp_single is 68282!
+        assert len(atl_exp_double) == 200 + len(ids)
+
+        # Save atlas
+        atl_exp_double.save(path)
+
+    def test_expand_center_single(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
+        assert len(atl_exp_single) == len(ids)
+
+        # Save atlas
+        atl_exp_single.save(path)
+
+    def test_expand_center_double(self, tmp_path):
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = single_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
+        atl_exp_single = TestS2SBExpand.crt.project(atl_exp_single)
+        atl_exp_double = TestS2SBExpand.crt.expand(
+            atl_exp_single, center=center, n_pubs_max=200
+        )
+        # empirically found this
+        # do no assert len(atl_exp_double)  == 4000 + len(ids), because we want 4000 + len(valid_ids), i.e. 148 not 154
+        assert len(atl_exp_double) == 348
+
+        atl_exp_double.save(path)

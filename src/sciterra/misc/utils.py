@@ -133,3 +133,15 @@ def read_pickle(fn: str):
     with open(fn, "rb") as f:
         data = pickle.load(f)
     return data
+
+
+# various helper functions
+
+
+def get_verbose(kwargs: dict):
+    return kwargs["verbose"] if "verbose" in kwargs else False
+
+
+def custom_formatwarning(msg, *args, **kwargs):
+    # ignore everything except the message
+    return str(msg) + "\n"

@@ -12,6 +12,9 @@ from .vectorizer import Vectorizer
 from tqdm import tqdm
 
 from transformers import BertTokenizerFast, AutoModelForSequenceClassification
+from transformers import logging
+
+logging.set_verbosity(logging.ERROR)  # Silence warnings about training SCIBERT
 
 MPS_DEVICE = torch.device("mps")
 
@@ -58,47 +61,52 @@ class SciBERTVectorizer(Vectorizer):
         """
 
         embeddings = []
-        with tqdm(
+
+        pbar = tqdm(
             total=len(docs),
             desc="embedding documents",
-        ) as pbar:
-            for i in range(0, len(docs), batch_size):
-                batch = docs[i : min(len(docs), i + batch_size)]
+            leave=True,
+        )
 
-                # Tokenize the batch
-                encoded = self.tokenizer(
-                    batch,
-                    add_special_tokens=True,
-                    padding=True,  # pad up to length of longest abstract
-                    truncation=True,  # max length 512 chars, unfortunately
-                    return_tensors="pt",
+        for i in range(0, len(docs), batch_size):
+            batch = docs[i : min(len(docs), i + batch_size)]
+
+            # Tokenize the batch
+            encoded = self.tokenizer(
+                batch,
+                add_special_tokens=True,
+                padding=True,  # pad up to length of longest abstract
+                truncation=True,  # max length 512 chars, unfortunately
+                return_tensors="pt",
+            )
+            # each encoded item of shape [64, 512]
+            assert encoded["input_ids"].size()[-1] <= 512
+
+            # Put data on GPU
+            for k, v in encoded.items():
+                encoded[k] = v.to(self.device)
+
+            # Run the text through SciBERT,
+            # collecting all of the hidden states produced from all 12 layers.
+            with torch.no_grad():
+                _, encoded_layers = self.model(  # discard logits
+                    **encoded,
+                    return_dict=False,
                 )
-                # each encoded item of shape [64, 512]
-                assert encoded["input_ids"].size()[-1] <= 512
 
-                # Put data on GPU
-                for k, v in encoded.items():
-                    encoded[k] = v.to(self.device)
+            # Extract the embeddings
+            # index last (13th) BERT layer before the classifier
+            final_hidden_state = encoded_layers[12]  # [batch_size, 256, 768]
+            # index first token of sequence, [CLS], for our document embeddings
+            batched_embeddings = final_hidden_state[:, 0, :]  # [batch_size, 768]
 
-                # Run the text through SciBERT, and collect all of the hidden states produced
-                # from all 12 layers.
-                with torch.no_grad():
-                    _, encoded_layers = self.model(  # discard logits
-                        **encoded,
-                        return_dict=False,
-                    )
+            # Move to the CPU and convert to numpy ndarray
+            batched_embeddings = batched_embeddings.detach().cpu().numpy()
 
-                # Extract the embeddings
-                # index last (13th) BERT layer before the classifier
-                final_hidden_state = encoded_layers[12]  # (batch_size, 256, 768)
-                # index first token of sequence, [CLS], for our document embeddings
-                batched_embeddings = final_hidden_state[:, 0, :]  # (batch_size, 768)
+            # Collect batched embeddings
+            embeddings.extend(batched_embeddings)
 
-                # Move to the CPU and convert to numpy ndarray
-                batched_embeddings = batched_embeddings.detach().cpu().numpy()
-
-                # Collect batched embeddings
-                embeddings.extend(batched_embeddings)
-                pbar.update(batch_size)
+            pbar.update(batch_size)
+        pbar.close()
 
         return np.array(embeddings)

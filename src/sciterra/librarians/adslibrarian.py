@@ -7,7 +7,7 @@ from sciterra.mapping.publication import Publication
 from ..mapping.publication import Publication
 from .librarian import Librarian
 
-from ..misc.utils import chunk_ids, keep_trying
+from ..misc.utils import chunk_ids, keep_trying, get_verbose
 
 from tqdm import tqdm
 
@@ -133,6 +133,8 @@ class ADSLibrarian(Librarian):
         if article is None:
             return
 
+        verbose = get_verbose()
+
         # to be consistent with identifiers (e.g., to avoid storing the same publication twice), we always use the bibcode.
         identifier = article.bibcode
 
@@ -165,6 +167,7 @@ class ADSLibrarian(Librarian):
             if dois:
                 doi = dois[0]
 
+        # Process citation data
         citations = article.citation
         references = article.reference
 
@@ -173,13 +176,15 @@ class ADSLibrarian(Librarian):
             (citation_count is not None)
             and (citations is not None)
             and (citation_count != len(citations))
+            and verbose
         ):
             warnings.warn(
                 f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
             )
-        if "infer_citation_count" in kwargs and kwargs["infer_citation_count"]:
-            warnings.warn("Setting citation_count = {len(citations)}.")
-            citation_count = len(citations)
+            if "infer_citation_count" in kwargs and kwargs["infer_citation_count"]:
+                if verbose:
+                    warnings.warn("Setting citation_count = {len(citations)}.")
+                citation_count = len(citations)
 
         data = {
             # primary fields

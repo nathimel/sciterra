@@ -89,3 +89,12 @@ def merge(proj_a: Projection, proj_b: Projection) -> Projection:
         index_to_identifier=tuple(idx_to_ids_new),
         embeddings=embeddings_new,
     )
+
+
+def get_empty_projection() -> Projection:
+    """Construct a Projection with no data (but is not None)."""
+    return Projection(
+        identifier_to_index={},
+        index_to_identifier=(),
+        embeddings=np.array([[]]),  # 2D
+    )

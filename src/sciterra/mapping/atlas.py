@@ -10,7 +10,9 @@ from typing import Any
 
 from .publication import Publication
 from ..vectorization.projection import Projection
-from ..misc.utils import read_pickle, write_pickle
+from ..misc.utils import read_pickle, write_pickle, get_verbose, custom_formatwarning
+
+warnings.formatwarning = custom_formatwarning
 
 
 class Atlas:
@@ -46,14 +48,16 @@ class Atlas:
     def save(
         self,
         atlas_dirpath: str,
+        *args,
         publications_fn: str = "publications.pkl",
         projection_fn: str = "projection.pkl",
         overwrite_publications: bool = True,
         overwrite_projection: bool = True,
+        **kwargs,
     ) -> None:
-        """Write the Atlas to a directory containing a CSV file of publications and a .npy file of embeddings.
+        """Write the Atlas to a directory containing a .pkl file of publications and a .pkl file of the projection.
 
-        Write the Atlas to a directory containing a .pkl file of publications and a .pkl file of the projection.
+        Warnings cannot be silenced.
 
         Args:
             atlas_dirpath: path of directory to save files to.
@@ -96,6 +100,8 @@ class Atlas:
         **kwargs,
     ):
         """Load an Atlas object from a directory containing publications and/or their projection.
+
+        Warnings cannot be silenced.
 
         Args:
             atlas_dirpath: file with vocab, assumed output from `save_to_file`

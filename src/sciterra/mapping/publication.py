@@ -1,8 +1,11 @@
 """The general container for data for any scientific publication, regardless of the API that was used to obtain it."""
 
 import warnings
-from ast import literal_eval
-from datetime import date, datetime
+from datetime import date
+from ..misc.utils import get_verbose, custom_formatwarning
+
+warnings.formatwarning = custom_formatwarning
+
 
 """Things a publication must have.
 
@@ -56,7 +59,7 @@ class Publication:
             An int corresponding to the number of citations received by the publication
     """
 
-    def __init__(self, data: dict = {}) -> None:
+    def __init__(self, data: dict = {}, **kwargs) -> None:
         """Construct a publication.
 
         Args:
@@ -69,7 +72,7 @@ class Publication:
         self._citation_count = None
 
         # Regularize and store data, including but not limited to above attrs.
-        self.init_attributes(data)
+        self.init_attributes(data, **kwargs)
 
     @property
     def identifier(self) -> str:
@@ -111,7 +114,9 @@ class Publication:
     def __lt__(self, __value: object) -> bool:
         return str(self) < str(__value)
 
-    def init_attributes(self, data) -> None:
+    def init_attributes(self, data, **kwargs) -> None:
+        verbose = get_verbose(kwargs)
+
         if "identifier" in data:
             val = data["identifier"]
             if not isinstance(val, str):
@@ -154,7 +159,7 @@ class Publication:
 
         else:
             # we can use citations, but this is unexpected, so raise a warning.
-            if self.citations:
+            if self.citations and verbose:
                 warnings.warn(
                     "Found an entry for 'citations' but no entry for citation_count; this is unexpected. Inferring value from citation_count."
                 )
