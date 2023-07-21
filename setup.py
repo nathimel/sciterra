@@ -39,5 +39,5 @@ setuptools.setup(
     packages=setuptools.find_packages(where="src"),
     install_requires=requirements,
     extra_requires={"test": test_requirements},
-    python_requires=">=3.11",
+    python_requires=">=3.10.6", # Colab-compatible
 )
