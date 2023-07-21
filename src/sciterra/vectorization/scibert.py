@@ -25,6 +25,7 @@ MODEL_PATH = "allenai/scibert_scivocab_uncased"
 class SciBERTVectorizer(Vectorizer):
     def __init__(self, device="cuda") -> None:
         # Get tokenizer
+        # TODO: does this include the SCIVOCAB or BASEVOCAB?
         self.tokenizer = BertTokenizerFast.from_pretrained(
             MODEL_PATH,
             do_lower_case=True,

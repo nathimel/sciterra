@@ -187,7 +187,7 @@ class Cartographer:
                 atl = self.project(atl)
 
             if len(atl.projection):
-                # cosine similarity matrix
+                # build cosine similarity matrix, of shape (1, num_pubs)
                 cospsi_matrix = cosine_similarity(
                     atl.projection.identifiers_to_embeddings([center]),
                     atl.projection.embeddings,
