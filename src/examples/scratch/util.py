@@ -22,7 +22,7 @@ def get_args() -> argparse.Namespace:
         required=True,
         type=str,
         # default="data/hafenLowredshiftLymanLimit2017.bib",
-        help="Bibtex file containing the initial (and center, if appropriate) publication.",
+        help="Bibtex file solely containing the initial (and center, if appropriate) publication.",
     )
     required_named.add_argument(
         "--atlas_dir",
@@ -52,10 +52,11 @@ def get_args() -> argparse.Namespace:
         help="Whether to retrieve publications in order of similarity to the center publication. If False, retrieves a random sample of citations and references in the Atlas accumulated from the previous iteration.",
     )
     parser.add_argument(
-        "--center_idx",
-        type=int,
-        default=0,
-        help="The index of the entry in the bibtex file to use as the center of expansion.",
+        "--api",
+        type=str,
+        choices=["S2", "ADS",],
+        default="S2",
+        help="The API, corresponding to a sciterra.librarian.Librarian, to use to retrieve publications.",
     )
 
     args = parser.parse_args()

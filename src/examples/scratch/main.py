@@ -2,25 +2,28 @@ import util
 
 from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import Cartographer
-from sciterra.librarians.s2librarian import SemanticScholarLibrarian
-from sciterra.librarians.adslibrarian import ADSLibrarian
+from sciterra.librarians import ADSLibrarian, SemanticScholarLibrarian
+from sciterra.librarians import ADSLibrarian
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
+librarians = {
+    'S2': SemanticScholarLibrarian(),
+    'ADS': ADSLibrarian(),
+}
 
 def main(args):
     seed = args.seed
     target = args.target_size
     n_pubs_max = args.max_pubs_per_expand
     centered = args.centered
-    center_idx = args.center_idx
+    librarian = librarians[args.api]
     bibtex_fp = args.bibtex_fp
     atlas_dir = args.atlas_dir
 
     util.set_seed(seed)
 
-    # TODO: make librarian and vectorizer CML args
     crt = Cartographer(
-        librarian=SemanticScholarLibrarian(),
+        librarian=librarian,
         vectorizer=SciBERTVectorizer(device="mps"),
     )
 
@@ -28,7 +31,8 @@ def main(args):
     atl_center = crt.bibtex_to_atlas(bibtex_fp)
 
     if centered:
-        pub = list(atl_center.publications.values())[center_idx]
+        # center must be the sole publication in bibtex file
+        pub, = list(atl_center.publications.values())
         center = pub.identifier
     else:
         center = None
