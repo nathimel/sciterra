@@ -6,7 +6,7 @@ import warnings
 
 import numpy as np
 
-from . import metrics
+from . import topography
 from .atlas import Atlas
 from ..librarians.librarian import Librarian
 from ..vectorization.vectorizer import Vectorizer
@@ -326,7 +326,7 @@ class Cartographer:
         self,
         atl: Atlas,
         publication_indices: np.ndarray = None,
-        metric: str = "smoothing_length",
+        metrics: list[str] = ["density"],
         min_prior_pubs: int = 2,
         kernel_size=16,
         **kwargs,
@@ -340,7 +340,7 @@ class Cartographer:
 
             publication_indices: an np.ndarray of ints representing the indices of publications in the Atlas projection to measure
 
-            metric: What metric to use. Options are...
+            metrics: A list of strings representing the metrics to use. Options are...
                 constant_asymmetry: The asymmetry of a publication $p_i$ w.r.t the entire atlas $\\{ p_j \\forall j \\in \\{1, ..., k\\} \\} where $k$ is the length of the atlas
 
                     $| \\sum_{j}^{k-1}( p_i - p_j ) |$
@@ -358,7 +358,7 @@ class Cartographer:
             kernel_size: the number of publications surrounding the publication for which to compute the topography metric, i.e. k nearest neighbors for k=kernel_size.
 
         Returns:
-            estimates: an np.ndarray of shape `(len(publication_indices))` representing the estimated topography metric values for each publication.
+            estimates: an np.ndarray of shape `(len(publication_indices), len(metrics))` representing the estimated topography metric values for each publication.
         """
         verbose = get_verbose(kwargs)
 
@@ -384,7 +384,7 @@ class Cartographer:
             atl.projection.embeddings,
         )
 
-        print(f"Computing {metric} for {len(publication_indices)} publications.")
+        print(f"Computing {metrics} for {len(publication_indices)} publications.")
         estimates = []
         for idx in tqdm(publication_indices):
             # Get the date of publication
@@ -394,7 +394,7 @@ class Cartographer:
             # Identify prior publications
             is_prior = dates < date
             if is_prior.sum() < min_prior_pubs:
-                estimates.append(np.nan)
+                estimates.append([np.nan for _ in metrics])
                 continue
 
             # Choose valid publications
@@ -402,28 +402,34 @@ class Cartographer:
             is_valid = is_prior & is_other
             valid_indices = publication_indices[is_valid]
 
-            # Get the metric
-            fn = getattr(metrics, f"{metric}_metric")
+            kwargs = {
+                "idx": idx,
+                "cospsi_matrix": cospsi_matrix,
+                "valid_indices": valid_indices,
+                "publication_indices": publication_indices,
+                "embeddings": atl.projection.embeddings,
+                "kernel_size": kernel_size,
+            }
 
-            # Identify arguments to pass
-            fn_args = inspect.getfullargspec(fn)
-            used_kwargs = {}
-            for key, item in kwargs.items():
-                if key in fn_args.args:
-                    used_kwargs[key] = item
-            if "kernel_size" in fn_args.args:
-                used_kwargs["kernel_size"] = kernel_size
+            def call_metric(
+                metric: str,
+                **kwargs,
+            ) -> float:
+                """Wrapper function to simplify topography metric api."""
+                # Get the metric
+                fn = getattr(topography, f"{metric}_metric")
 
-            # Call
-            estimate = fn(
-                idx=idx,
-                cospsi_matrix=cospsi_matrix,
-                valid_indices=valid_indices,
-                **used_kwargs,
-            )
+                # Identify arguments to pass
+                fn_args = inspect.getfullargspec(fn)
+                used_kwargs = {}
+                for key, value in kwargs.items():
+                    if key in fn_args.args:
+                        used_kwargs[key] = value
+                # Call
+                estimate = fn(**used_kwargs)
+                return estimate
 
-            estimates.append(estimate)
-
+            estimates.append([call_metric(metric, **kwargs) for metric in metrics])
         estimates = np.array(estimates)
 
         return estimates

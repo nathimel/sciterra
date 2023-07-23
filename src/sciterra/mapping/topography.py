@@ -1,10 +1,13 @@
 """Functions for measuring topographic properties of (the semantic feature space of publications inside) an Atlas."""
 
+import inspect
 import numpy as np
+
 
 ########################################################################
 # Density metrics
 ########################################################################
+
 
 def smoothing_length_metric(
     idx: int,
@@ -65,21 +68,21 @@ def density_metric(
 
     return density
 
+
 ########################################################################
 # Asymmetry metrics
 ########################################################################
 
-def kernel_constant_asymmetry_metric(
+
+def edginess_metric(
     idx: int,
     cospsi_matrix: np.ndarray,
     valid_indices: np.ndarray,
     publication_indices: np.ndarray,
     embeddings: np.ndarray,
     kernel_size: int = 16,
-):
-    """Estimate the asymmetry of a publication by calculating the difference
-    between that publication's projection and the other publications within
-    the kernel.
+) -> float:
+    """Estimate the asymmetry of a publication by calculating the difference between that publication's projection and the other publications within the kernel. Normalized to between 0 and 1.
 
     Args:
         idx: the index of the vector to calculate the measurement for.
@@ -95,25 +98,66 @@ def kernel_constant_asymmetry_metric(
         kernel_size: number of K nearest neighbors to calculate the measurement on.
 
     Returns:
-        mag: magnitude of the asymmetry metric.
+        a float representing the normalized magnitude of the asymmetry metric.
+
+    """
+    return (
+        kernel_constant_asymmetry_metric(
+            idx,
+            cospsi_matrix,
+            valid_indices,
+            publication_indices,
+            embeddings,
+            kernel_size=kernel_size,
+        )
+        / kernel_size
+    )
+
+
+def kernel_constant_asymmetry_metric(
+    idx: int,
+    cospsi_matrix: np.ndarray,
+    valid_indices: np.ndarray,
+    publication_indices: np.ndarray,
+    embeddings: np.ndarray,
+    kernel_size: int = 16,
+) -> float:
+    """Estimate the asymmetry of a publication by calculating the difference
+    between that publication's projection and the other publications within
+    the kernel.
+
+    Args:
+        idx: an int representing the index of the vector to calculate the measurement for.
+
+        cospsi_matrix: an np.ndarray of shape `(num_pubs, num_pubs)` representing pairwise cosine similarity scores for publication embeddings.
+
+        valid_indices: an np.ndarray of shape `(num_valid_pubs)` representing indices of the other publications used when calculating the measurements, i.e. num_valid_pubs <= num_pubs.
+
+        publication_indices: an np.ndarray of shape `(num_pubs,)` representing indices of all publications in the atlas projection
+
+        embeddings: an np.ndarray of shape `(num_pubs, embedding_dim)` vectors for all publications in the atlas projection
+
+        kernel_size: an int representing the number of K nearest neighbors to calculate the measurement on.
+
+    Returns:
+        mag: a float representing the magnitude of the asymmetry metric.
     """
 
     # We can't have the kernel larger than the number of valid publications
-    if kernel_size > len( valid_indices ):
+    if kernel_size > len(valid_indices):
         return np.nan
 
     # Input
     cospsi = cospsi_matrix[idx][valid_indices]
-    sorted_inds = np.argsort( cospsi )[:kernel_size]
+    sorted_inds = np.argsort(cospsi)[:kernel_size]
     other_inds = publication_indices[valid_indices][sorted_inds]
-    p = embeddings[idx]
-    used_p = embeddings[other_inds]
+    embedding = embeddings[idx]
+    other_embeddings = embeddings[other_inds]
 
     # Differences
-    diff = p - used_p
-    diff_mag = np.linalg.norm( diff, axis=1 )
-    result = ( diff / diff_mag[:,np.newaxis ]).sum( axis=0 )
-    mag = np.linalg.norm( result )
+    diff = embedding - other_embeddings
+    diff_mag = np.linalg.norm(diff, axis=1)
+    result = (diff / diff_mag[:, np.newaxis]).sum(axis=0)
+    mag = np.linalg.norm(result)
 
     return mag
-

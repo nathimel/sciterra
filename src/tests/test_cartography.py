@@ -352,6 +352,12 @@ class TestTopography:
         # Project, necessary for metrics!
         atl_exp_single = TestS2SBExpand.crt.project(atl_exp_single)
 
+        metrics = [
+            "density",
+            "edginess",
+        ]
         measurements = TestTopography.crt.measure_topography(
             atl_exp_single,
+            metrics=metrics,
         )
+        assert measurements.shape == tuple((len(atl_exp_single), len(metrics)))

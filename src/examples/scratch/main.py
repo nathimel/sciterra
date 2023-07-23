@@ -1,4 +1,4 @@
-import util
+from . import util
 
 from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import Cartographer
