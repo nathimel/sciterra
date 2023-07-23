@@ -43,7 +43,19 @@ def get_args() -> argparse.Namespace:
         "--max_pubs_per_expand",
         type=int,
         default=1000,
-        help="The maximum number of publications to query an API for in one expand call.",
+        help="The maximum number of publications to query an API for in one expand call. Increasing this number can help expansion not get stuck, but is also more likely to result in API connection failures and throttling.",
+    )
+    parser.add_argument(
+        "--max_failed_expansions",
+        type=int,
+        default=2,
+        help="The number of times to continue trying to iteratively expanding after Atlas successively gets no new publications.",
+    )
+    parser.add_argument(
+        "--call_size",
+        type=int,
+        default=10,
+        help="The number of papers to request from an API every call. Also, keep in mind rate limits. For example, Semantic Scholar allows up to 5,000 calls per 5 minutes; in practice, however, more than 10 calls per query typically results in connection errors and readtimeouts.",
     )
     parser.add_argument(
         "--centered",
@@ -54,7 +66,10 @@ def get_args() -> argparse.Namespace:
     parser.add_argument(
         "--api",
         type=str,
-        choices=["S2", "ADS",],
+        choices=[
+            "S2",
+            "ADS",
+        ],
         default="S2",
         help="The API, corresponding to a sciterra.librarian.Librarian, to use to retrieve publications.",
     )

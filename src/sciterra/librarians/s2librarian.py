@@ -192,7 +192,7 @@ class SemanticScholarLibrarian(Librarian):
 
         # Parse date from datetime or year
         if paper.publicationDate is not None:
-            publication_date = paper.publicationDate
+            publication_date = paper.publicationDate.date()
         elif paper.year is not None:
             publication_date = date(paper.year, 1, 1)
         else:

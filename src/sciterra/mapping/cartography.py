@@ -1,16 +1,20 @@
 """Functions for manipulating an atlas based on the document embeddings of the abstracts of its publications."""
 
 import bibtexparser
+import inspect
 import warnings
 
 import numpy as np
 
+from . import metrics
 from .atlas import Atlas
 from ..librarians.librarian import Librarian
 from ..vectorization.vectorizer import Vectorizer
 from ..vectorization.projection import Projection, merge, get_empty_projection
 from ..misc.utils import get_verbose, custom_formatwarning
 
+from functools import partial
+from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 
 warnings.formatwarning = custom_formatwarning
@@ -99,7 +103,7 @@ class Cartographer:
         num_empty = len(atl) - len(atl_filtered)
         if num_empty and verbose:
             warnings.warn(
-                f"{num_empty} publications were filtered due to missing crucial data."
+                f"{num_empty} publications were filtered due to missing crucial data. There are now {len(atl_filtered.bad_ids)} total ids that will be excluded in the future."
             )
 
         # Project
@@ -161,9 +165,11 @@ class Cartographer:
     def expand(
         self,
         atl: Atlas,
+        *args,
         center: str = None,
         n_pubs_max: int = 4000,
         n_sources_max: int = None,
+        **kwargs,
     ) -> Atlas:
         """Expand an atlas by retrieving a list of publications resulting from traversal of the citation network.
 
@@ -182,8 +188,8 @@ class Cartographer:
         existing_keys = set(atl.publications.keys())
         expand_keys = existing_keys
         if center is not None:
-            if atl.projection is None:  # If initial atlas
-                # atl.projection = get_empty_projection()
+            # If atlas is initial
+            if atl.projection is None:
                 atl = self.project(atl)
 
             if len(atl.projection):
@@ -203,12 +209,9 @@ class Cartographer:
         # For each publication corresponding to an id in `expand_keys`, collect the ids corresponding to the publication's references and citations.
         ids = set()
         for key in expand_keys:
-            try:
-                ids_i = set(atl[key].references + atl[key].citations)
-            except ValueError as e:
-                breakpoint()
-            # Prune for obvious overlap
-            ids.update(ids_i - existing_keys)
+            ids_i = set(atl[key].references + atl[key].citations)
+            # Prune for obvious overlap, and for ids that have previously failed
+            ids.update(ids_i - existing_keys - atl.bad_ids)
             # Break when the search is centered and we're maxed out
             if len(ids) > n_pubs_max and center is not None:
                 break
@@ -224,13 +227,14 @@ class Cartographer:
         print(f"Expansion will include {len(ids)} new publications.")
 
         # Retrieve publications from ids using a librarian
-        new_publications = self.librarian.get_publications(ids)
+        new_publications = self.librarian.get_publications(ids, *args, **kwargs)
 
         # New atlas
         atl_exp = Atlas(new_publications)
 
         # Update the new atlas
         atl_exp.publications.update(atl.publications)
+        atl_exp.bad_ids = atl.bad_ids
         atl_exp.projection = (
             atl.projection
         )  # new projection will be updated in `project`
@@ -271,6 +275,9 @@ class Cartographer:
 
         filter_ids = invalid_pubs.keys()
 
+        # Keep track of the bad identifiers to skip them in future expansions
+        new_bad_ids = atl.bad_ids.union(filter_ids)
+
         # Filter embeddings, ids from projection
         # if len(atl.projection):
         if atl.projection is None:
@@ -308,4 +315,115 @@ class Cartographer:
 
         # Construct new atlas
         atl_filtered = Atlas(new_publications, new_projection)
+        atl_filtered.bad_ids = new_bad_ids
         return atl_filtered
+
+    ########################################################################
+    # Measure Atlas topography
+    ########################################################################
+
+    def measure_topography(
+        self,
+        atl: Atlas,
+        publication_indices: np.ndarray = None,
+        metric: str = "smoothing_length",
+        min_prior_pubs: int = 2,
+        kernel_size=16,
+        **kwargs,
+    ):
+        """Measure topographic properties of all publications relative to prior
+        publications.
+
+        Args:
+
+            atl: the Atlas to measure
+
+            publication_indices: an np.ndarray of ints representing the indices of publications in the Atlas projection to measure
+
+            metric: What metric to use. Options are...
+                constant_asymmetry: The asymmetry of a publication $p_i$ w.r.t the entire atlas $\\{ p_j \\forall j \\in \\{1, ..., k\\} \\} where $k$ is the length of the atlas
+
+                    $| \\sum_{j}^{k-1}( p_i - p_j ) |$
+
+                kernel_constant_asymmetry: The asymmetry of a publication w.r.t. its kernel, { p_j for all j in {1, ..., k} } where k is `kernel_size`, i.e. the k nearest neighbors.
+
+                density: the density of a publication's surrounding area, estimated by a heuristic inspired by mass / volume = k publications divided by the minimum arc length enclosing the furthest publication.
+
+                    $\\frac{ k }{ smoothing\\_length(k) }$
+
+                smoothing_length: The distance (in radians) to the farthest publication in the kernel, i.e. the kth nearest neighbor.
+
+            min_prior_pubs: The minimum number of publications prior to the target publication for which to calculate the metric.
+
+            kernel_size: the number of publications surrounding the publication for which to compute the topography metric, i.e. k nearest neighbors for k=kernel_size.
+
+        Returns:
+            estimates: an np.ndarray of shape `(len(publication_indices))` representing the estimated topography metric values for each publication.
+        """
+        verbose = get_verbose(kwargs)
+
+        # By default calculate for all publications
+        if publication_indices is None:
+            publication_indices = np.array(
+                list(atl.projection.identifier_to_index.values())
+            )
+
+        # Get publication dates, for filtering
+        dates = np.array(
+            [
+                atl.publications[
+                    atl.projection.index_to_identifier[idx]
+                ].publication_date
+                for idx in publication_indices
+            ]
+        )
+
+        # Compute cosine similarity matrix
+        cospsi_matrix = cosine_similarity(
+            atl.projection.embeddings,
+            atl.projection.embeddings,
+        )
+
+        print(f"Computing {metric} for {len(publication_indices)} publications.")
+        estimates = []
+        for idx in tqdm(publication_indices):
+            # Get the date of publication
+            identifier = atl.projection.index_to_identifier[idx]
+            date = atl[identifier].publication_date
+
+            # Identify prior publications
+            is_prior = dates < date
+            if is_prior.sum() < min_prior_pubs:
+                estimates.append(np.nan)
+                continue
+
+            # Choose valid publications
+            is_other = publication_indices != idx
+            is_valid = is_prior & is_other
+            valid_indices = publication_indices[is_valid]
+
+            # Get the metric
+            fn = getattr(metrics, f"{metric}_metric")
+
+            # Identify arguments to pass
+            fn_args = inspect.getfullargspec(fn)
+            used_kwargs = {}
+            for key, item in kwargs.items():
+                if key in fn_args.args:
+                    used_kwargs[key] = item
+            if "kernel_size" in fn_args.args:
+                used_kwargs["kernel_size"] = kernel_size
+
+            # Call
+            estimate = fn(
+                idx=idx,
+                cospsi_matrix=cospsi_matrix,
+                valid_indices=valid_indices,
+                **used_kwargs,
+            )
+
+            estimates.append(estimate)
+
+        estimates = np.array(estimates)
+
+        return estimates

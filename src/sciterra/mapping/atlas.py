@@ -20,13 +20,16 @@ class Atlas:
         self,
         publications: list[Publication],
         projection: Projection = None,
+        bad_ids: set[str] = set(),
     ) -> None:
         if not isinstance(publications, list):
             raise ValueError
         self.publications: dict[str, Publication] = {
             str(pub): pub for pub in publications
         }
-        self.projection: Projection = projection
+        self.projection = projection
+
+        self.bad_ids = bad_ids
 
     ######################################################################
     # Lookup    ######################################################################
@@ -48,93 +51,63 @@ class Atlas:
     def save(
         self,
         atlas_dirpath: str,
-        *args,
-        publications_fn: str = "publications.pkl",
-        projection_fn: str = "projection.pkl",
-        overwrite_publications: bool = True,
-        overwrite_projection: bool = True,
-        **kwargs,
+        overwrite: bool = True,
     ) -> None:
-        """Write the Atlas to a directory containing a .pkl file of publications and a .pkl file of the projection.
+        """Write the Atlas to a directory containing a .pkl binary for each attribute.
 
         Warnings cannot be silenced.
 
         Args:
             atlas_dirpath: path of directory to save files to.
-
-            publications_fn: name of file to save publications to.
-
-            projection_fn: name of file to save projection to.
-
-            overwrite_publications: whether to overwrite an existing publications file.
-
-            overwrite_projection: whether to overwrite an existing projection file.
-
         """
-        # save publications
-        if self.publications and overwrite_publications:
-            fp = os.path.join(atlas_dirpath, publications_fn)
-            if os.path.isfile(fp):
-                warnings.warn(f"Overwriting existing file at {fp}.")
-            write_pickle(
-                fp, list(self.publications.values())
-            )  # write the list version to be consistent with load and constructor
-        else:
-            warnings.warn("No publications to save, skipping.")
+        if not overwrite:
+            return
 
-        # save projection
-        if self.projection is not None and overwrite_projection:
-            fp = os.path.join(atlas_dirpath, projection_fn)
-            if os.path.isfile(fp):
-                warnings.warn(f"Overwriting existing file at {fp}.")
-            write_pickle(fp, self.projection)
-        else:
-            warnings.warn("No projection to save, skipping.")
+        attributes = {
+            k: getattr(self, k) for k in ["publications", "projection", "bad_ids"]
+        }
+
+        for attribute in attributes:
+            if getattr(self, attribute) is not None:
+                # write the list version to be consistent with load and constructor
+                if attribute == "publications":
+                    attributes[attribute] = list(self.publications.values())
+
+                fn = f"{attribute}.pkl"
+                fp = os.path.join(atlas_dirpath, fn)
+                if os.path.isfile(fp):
+                    warnings.warn(f"Overwriting existing file at {fp}.")
+                write_pickle(fp, attributes[attribute])
+            else:
+                warnings.warn(f"No {attribute} to save, skipping.")
 
     @classmethod
     def load(
         cls,
         atlas_dirpath: str,
-        publications_fn: str = "publications.pkl",
-        projection_fn: str = "projection.pkl",
-        **kwargs,
     ):
-        """Load an Atlas object from a directory containing publications and/or their projection.
+        """Load an Atlas object from a directory containing the .pkl binary for each attribute.
 
         Warnings cannot be silenced.
 
         Args:
             atlas_dirpath: file with vocab, assumed output from `save_to_file`
 
-            publications_fn: name of file to load publications from.
-
-            projection_fn: name of file to load projection from.
         """
+        attributes = {k: None for k in ["publications", "projection", "bad_ids"]}
+        for attribute in attributes:
+            fn = f"{attribute}.pkl"
+            fp = os.path.join(atlas_dirpath, fn)
+            if os.path.isfile(fp):
+                attributes[attribute] = read_pickle(fp)
+            else:
+                warnings.warn(f"No {attribute} to read, skipping.")
 
-        # load publications
-        fp = os.path.join(atlas_dirpath, publications_fn)
-        publications = None
-        if os.path.isfile(fp):
-            publications = read_pickle(fp)
-        else:
-            warnings.warn("No publications to read, skipping.")
-
-        # load projection
-        fp = os.path.join(atlas_dirpath, projection_fn)
-        projection = None
-        if os.path.isfile(fp):
-            projection = read_pickle(fp)
-        else:
-            warnings.warn("No projection to read, skipping.")
-
-        if publications is None:
+        if attributes["publications"] is None:
             warnings.warn("Loading empty atlas.")
-            publications = list()
+            attributes["publications"] = list()
 
-        return cls(
-            publications,
-            projection,
-        )
+        return cls(**attributes)
 
     ######################################################################
     # Other

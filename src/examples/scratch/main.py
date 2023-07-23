@@ -7,14 +7,17 @@ from sciterra.librarians import ADSLibrarian
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
 librarians = {
-    'S2': SemanticScholarLibrarian(),
-    'ADS': ADSLibrarian(),
+    "S2": SemanticScholarLibrarian(),
+    "ADS": ADSLibrarian(),
 }
+
 
 def main(args):
     seed = args.seed
     target = args.target_size
     n_pubs_max = args.max_pubs_per_expand
+    call_size = args.call_size
+    max_failures = args.max_failed_expansions
     centered = args.centered
     librarian = librarians[args.api]
     bibtex_fp = args.bibtex_fp
@@ -32,7 +35,7 @@ def main(args):
 
     if centered:
         # center must be the sole publication in bibtex file
-        pub, = list(atl_center.publications.values())
+        (pub,) = list(atl_center.publications.values())
         center = pub.identifier
     else:
         center = None
@@ -53,11 +56,17 @@ def main(args):
     )
 
     # Expansion loop
+    failures = 0
     while not converged:
         len_prev = len(atl)
 
         # Retrieve up to n_pubs_max citations and references.
-        atl = crt.expand(atl, center=center, n_pubs_max=n_pubs_max)
+        atl = crt.expand(
+            atl,
+            center=center,
+            n_pubs_max=n_pubs_max,
+            call_size=call_size,
+        )
         print_progress(atl)
         atl.save(atlas_dir)
 
@@ -66,7 +75,12 @@ def main(args):
         print_progress(atl)
         atl.save(atlas_dir)
 
-        converged = len(atl) >= target or len_prev == len(atl)
+        if len_prev == len(atl):
+            failures += 0
+        else:
+            failures = 0
+
+        converged = len(atl) >= target or failures >= max_failures
         print()
 
     print(f"Expansion loop exited with atlas size {len(atl)}.")

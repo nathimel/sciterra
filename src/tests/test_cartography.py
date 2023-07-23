@@ -323,3 +323,35 @@ class TestS2SBExpand:
         assert len(atl_exp_double) == 348
 
         atl_exp_double.save(path)
+
+
+class TestTopography:
+    librarian = SemanticScholarLibrarian()
+    vectorizer = SciBERTVectorizer()
+    crt = Cartographer(librarian, vectorizer)
+
+    def test_measure_topography(self):
+        # Load single file from bibtex
+        bibtex_fp = single_pub_bibtex_fp
+
+        # Construct Atlas
+        atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        ids = pub.citations + pub.references
+        center = pub.identifier
+
+        # Expand
+        atl_exp_single = TestTopography.crt.expand(
+            atl,
+            center=center,
+            n_pubs_max=200,
+        )
+        assert len(atl_exp_single) == len(ids)
+
+        # Project, necessary for metrics!
+        atl_exp_single = TestS2SBExpand.crt.project(atl_exp_single)
+
+        measurements = TestTopography.crt.measure_topography(
+            atl_exp_single,
+        )
