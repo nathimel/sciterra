@@ -122,7 +122,7 @@ class SemanticScholarLibrarian(Librarian):
 
             n_attempts_per_query: Number of attempts to access the API per query. Useful when experiencing connection issues.
 
-            call_size: maximum number of papers to call API for in one query; if less than `len(paper_ids)`, chunking will be performed.
+            call_size: maximum number of papers to call API for in one query; if less than `len(paper_ids)`, chunking will be performed. Maximum that S2 allows is 500.
 
             convert: whether to convert each resulting SemanticScholar Paper to sciterra Publications (True by default).
 
