@@ -107,7 +107,7 @@ class Atlas:
             warnings.warn("Loading empty atlas.")
             attributes["publications"] = list()
 
-        return cls(**attributes)
+        return cls(**{k: v for k, v in attributes.items() if v is not None})
 
     ######################################################################
     # Other

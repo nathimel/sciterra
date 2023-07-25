@@ -15,6 +15,7 @@ atl = Atlas.load(atlas_dir)
 vectorizer = SciBERTVectorizer(device="mps")
 crt = Cartographer(vectorizer=vectorizer)
 
+# results in bus error
 measurements = crt.measure_topography(atl, metrics=["density", "edginess"])
 
 np.save(measurements, "measurements.npy")

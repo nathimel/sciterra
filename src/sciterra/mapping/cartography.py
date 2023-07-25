@@ -199,7 +199,9 @@ class Cartographer:
                     atl.projection.embeddings,
                 )
                 # get most similar keys from center, including center itself
-                sort_inds = np.argsort(cospsi_matrix)[0]  # shape (1, num_pubs)
+                sort_inds = np.argsort(cospsi_matrix)[::-1][
+                    0
+                ]  # argsort orders from least to greatest similarity, so reverse
                 expand_keys = atl.projection.indices_to_identifiers(sort_inds)
 
         if n_sources_max is not None:
