@@ -40,7 +40,7 @@ def smoothing_length_metric(
 
     # Get cosine distance to the least similar vector
     # np.sort orders from least to greatest similarity, so reverse after
-    cospsi_max = np.sort(cospsi)[::-1][kernel_size-1]
+    cospsi_max = np.sort(cospsi)[::-1][kernel_size - 1]
 
     # Compute arclength to furthest vector
     return np.arccos(cospsi_max)
