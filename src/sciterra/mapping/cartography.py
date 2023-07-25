@@ -378,6 +378,7 @@ class Cartographer:
             ]
         )
 
+        # breakpoint() # see if bus error occurs by here
         # Compute cosine similarity matrix
         cospsi_matrix = cosine_similarity(
             atl.projection.embeddings,

@@ -35,9 +35,14 @@ def smoothing_length_metric(
     if kernel_size > len(valid_indices):
         return np.nan
 
+    # Get 1D array of similarity scores to idx vector
     cospsi = cospsi_matrix[idx][valid_indices]
-    cospsi_max = np.sort(cospsi)[kernel_size - 1]
 
+    # Get cosine distance to the least similar vector
+    # np.sort orders from least to greatest similarity, so reverse after
+    cospsi_max = np.sort(cospsi)[::-1][kernel_size-1]
+
+    # Compute arclength to furthest vector
     return np.arccos(cospsi_max)
 
 
@@ -149,7 +154,7 @@ def kernel_constant_asymmetry_metric(
 
     # Input
     cospsi = cospsi_matrix[idx][valid_indices]
-    sorted_inds = np.argsort(cospsi)[:kernel_size]
+    sorted_inds = np.argsort(cospsi)[::-1][:kernel_size]
     other_inds = publication_indices[valid_indices][sorted_inds]
     embedding = embeddings[idx]
     other_embeddings = embeddings[other_inds]
