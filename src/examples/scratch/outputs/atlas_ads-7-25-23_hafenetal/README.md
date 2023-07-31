@@ -8,6 +8,6 @@ Got locked out of ADS for too many requests after
 
 Which means
 
-- 3908 publications, 
+- 3908 publications,
 - call_size 100
 - num_pubs_max at 500
