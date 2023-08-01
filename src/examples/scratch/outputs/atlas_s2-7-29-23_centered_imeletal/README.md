@@ -8,3 +8,6 @@ First 41 pubs are ridiculously slow.
 Finished overnight with no issues, though. 
 And second run to 20k does not seem to be too slow either.
 Trying to expand to 30k, things seem to be slowing down. Maybe getting throttled.
+After a little bit things get faster.
+Some rounds of 500 calls take 2 mins, others take more than 20. Not sure why.
+Got to 30k.
