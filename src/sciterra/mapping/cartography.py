@@ -380,12 +380,21 @@ class Cartographer:
             ]
         )
 
-        # breakpoint() # see if bus error occurs by here
-        # Compute cosine similarity matrix
-        cospsi_matrix = cosine_similarity(
-            atl.projection.embeddings,
-            atl.projection.embeddings,
-        )
+        # To avoid memory errors (e.g. bus error, segfaults) resulting from too large arrays, we batch process the construction of the cospsi_matrix.
+        embeddings = atl.projection.embeddings
+        batch_size = min(1000, len(embeddings))  # Define a batch size
+
+        cosine_similarities = None
+        print(f"computing cosine similarity for {len(embeddings)} embeddings with batch size {batch_size}.")
+        for i in tqdm(range(0, len(embeddings), batch_size)):
+            # Process batches to compute cosine similarity
+            batch = embeddings[i:i+batch_size]
+            if cosine_similarities is None:
+                cosine_similarities = cosine_similarity(batch, embeddings)
+            else:
+                cosine_similarities = np.vstack((cosine_similarities, cosine_similarity(batch, embeddings)))
+
+        cospsi_matrix = cosine_similarities
 
         print(f"Computing {metrics} for {len(publication_indices)} publications.")
         estimates = []
