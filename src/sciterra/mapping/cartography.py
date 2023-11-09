@@ -20,8 +20,40 @@ from sklearn.metrics.pairwise import cosine_similarity
 warnings.formatwarning = custom_formatwarning
 
 
+def batch_cospsi_matrix(embeddings: np.ndarray) -> np.ndarray:
+    """Batch-process a pairwise cosine similarity matrix between embeddings.
+    
+    In order to avoid memory errors (e.g. bus error, segfaults) resulting from too large arrays, we batch process the construction of the cospsi_matrix.
+
+    Args:
+        embeddings: a 1D numpy array of embeddings
+
+    Returns:
+        cosine_similarities: a 2D numpy array representing the pairwise cosine similarity between each embedding
+    """
+    batch_size = min(1000, len(embeddings))  # Define a batch size
+
+    cosine_similarities = None
+    print(f"computing cosine similarity for {len(embeddings)} embeddings with batch size {batch_size}.")
+    for i in tqdm(range(0, len(embeddings), batch_size)):
+        # Process batches to compute cosine similarity
+        batch = embeddings[i:i+batch_size]
+        if cosine_similarities is None:
+            cosine_similarities = cosine_similarity(batch, embeddings)
+        else:
+            cosine_similarities = np.vstack((cosine_similarities, cosine_similarity(batch, embeddings)))
+
+    return cosine_similarities
+
+
 class Cartographer:
-    """A basic wrapper for obtaining and updating atlas projections."""
+    """A basic wrapper for obtaining and updating atlas projections.
+    
+    `self.librarian`: the Librarian object used to query a bibliographic database API.
+    `self.vectorizer`: the Vectorizer object used to get a document embedding for each abstract
+    `self.pubs_per_update`: a list of lists of publication str ids, representing the publications that exist at each time step / expansion update.
+    `self.update_history`: an np.array of ints representing when publications were added. A value of -2 indicates no record of being added.
+    """
 
     def __init__(
         self,
@@ -30,6 +62,9 @@ class Cartographer:
     ) -> None:
         self.librarian = librarian
         self.vectorizer = vectorizer
+
+        self.pubs_per_update: list[list[str]] = []
+        self.update_history: np.ndarray = None
 
     ######################################################################
     # Get an Atlas from bibtex
@@ -169,6 +204,7 @@ class Cartographer:
         center: str = None,
         n_pubs_max: int = 4000,
         n_sources_max: int = None,
+        record_pubs_per_update: bool = False,
         **kwargs,
     ) -> Atlas:
         """Expand an atlas by retrieving a list of publications resulting from traversal of the citation network.
@@ -181,6 +217,8 @@ class Cartographer:
             n_pubs_max: maximum number of publications allowed in the expansion.
 
             n_sources_max: maximum number of publications (already in the atlas) to draw references and citations from.
+
+            record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas.
 
         Returns:
             atl_expanded: the expanded atlas
@@ -240,6 +278,10 @@ class Cartographer:
         atl_exp.projection = (
             atl.projection
         )  # new projection will be updated in `project`
+
+        # Record the new list of publications
+        if record_pubs_per_update:
+            self.pubs_per_update.append(list(atl_exp.publications.keys()))
 
         return atl_exp
 
@@ -319,6 +361,100 @@ class Cartographer:
         atl_filtered = Atlas(new_publications, new_projection)
         atl_filtered.bad_ids = new_bad_ids
         return atl_filtered
+    
+    ########################################################################
+    # Record Atlas history
+    ########################################################################
+
+    def record_update_history( 
+        self, 
+        pubs: list[str] = None,
+        pubs_per_update: list[list[str]] = None,
+    ) -> None:
+        """Record when publications were added, by updating atl.update_history. 
+
+        atl.update_history is a np.array of ints representing when publications were added. A value of -2 indicates no record of being added.
+
+        Args:
+            pubs: a list of str ids corresponding to publications at the final update in the update history. By default `None`, and `self.pubs_per_update[-1]` will be used.
+
+            pubs_per_update: a list of which publications existed at which iteration, with the index of the overall list corresponding to the iteration the publication was added. By default `None`, and `self.pubs_per_update` will be used.
+
+        Updates:
+            `self.update_history`: an np.array of ints representing when publications were added. A value of -2 indicates no record of being added.
+        
+        Returns: 
+            `None`
+        """
+        if pubs is None:
+            pubs = np.array(self.pubs_per_update[-1])
+
+        if pubs_per_update is None:
+            pubs_per_update = self.pubs_per_update
+
+        # Loop backwards
+        i_max = len( pubs_per_update ) - 1
+        update_history = np.full(pubs.shape, -2 )
+        for i, pubs_i in enumerate( pubs_per_update[::-1] ):
+            is_in = np.isin( pubs, pubs_i )
+            update_history[is_in] = i_max - i
+
+        self.update_history = update_history
+    
+    ########################################################################
+    # Calculate Atlas convergence
+    ########################################################################
+
+    def converged_kernel_size(self, atl: Atlas) -> np.ndarray:
+        """Calculate the largest size of the kernel that's converged (at differing levels of convergence) for each publication in a sample at each update.
+
+        Args:
+            atl: Atlas containing publications; for each publication we compute the largest converged kernel size at each update
+
+        Returns:
+            kernel_size: an array of ints of shape `(num_pubs, max_update)` representing the kernel size for converged kernels. 
+                - The first column indicates the largest kernel size that hasn't changed since the beginning,
+                - The second column indicates the largest kernel size that hasn't changed since the first update,
+                - etc. for the nth column.
+        """
+
+        if self.update_history is None:
+            raise ValueError('update_history is None; make sure you have called record_update_history()!')
+
+        if -2 in self.update_history:
+            raise ValueError('Incomplete update history as indicated by entries with values of -2.')
+
+        publications = np.array(list(atl.publications.keys()))
+
+        # 1. Loop over each publication
+        cospsi_kernel = []
+        for pub in tqdm(publications):
+            
+            # 2. Identify the similarity with the other publications relative to this publication, and sort accordingly.
+            cospsi = cosine_similarity(
+                atl.projection.identifiers_to_embeddings([pub]),
+                atl.projection.embeddings,
+            ).flatten() # shape `(num_pubs,)`
+            sort_inds = np.argsort(cospsi)[::-1] # shape `(num_pubs,)`
+
+            # 3. Identify the expansion iteration at which those publications were added to the atlas (`sorted_history`).
+            sorted_history = self.update_history[sort_inds] # shape `(num_pubs,)`
+            
+            # 4. Identify the latest iteration at which any publication was added to the atlas; this can be less than the total iterations.
+            last_update = self.update_history.max()
+
+            # 5. Loop through each iteration until `last_update`, and identify which publications were added at or before that iteration.
+            result_2 = [
+                # 6. Compute how many publications out we can go and still only contain publications added at or before that iteration.
+                # Use `argmin` to get the first instance of False
+                # Finally, subtract 1: we want the first index before False.                
+                np.argmin(sorted_history <= update) - 1
+                for update in range(last_update)
+            ]  # shape `(num_pubs, last_update)`
+
+            cospsi_kernel.append(result_2)
+
+        return np.array(cospsi_kernel)
 
     ########################################################################
     # Measure Atlas topography
@@ -380,21 +516,7 @@ class Cartographer:
             ]
         )
 
-        # To avoid memory errors (e.g. bus error, segfaults) resulting from too large arrays, we batch process the construction of the cospsi_matrix.
-        embeddings = atl.projection.embeddings
-        batch_size = min(1000, len(embeddings))  # Define a batch size
-
-        cosine_similarities = None
-        print(f"computing cosine similarity for {len(embeddings)} embeddings with batch size {batch_size}.")
-        for i in tqdm(range(0, len(embeddings), batch_size)):
-            # Process batches to compute cosine similarity
-            batch = embeddings[i:i+batch_size]
-            if cosine_similarities is None:
-                cosine_similarities = cosine_similarity(batch, embeddings)
-            else:
-                cosine_similarities = np.vstack((cosine_similarities, cosine_similarity(batch, embeddings)))
-
-        cospsi_matrix = cosine_similarities
+        cospsi_matrix = batch_cospsi_matrix(atl.projection.embeddings)
 
         print(f"Computing {metrics} for {len(publication_indices)} publications.")
         estimates = []
