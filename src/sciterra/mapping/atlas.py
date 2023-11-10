@@ -18,7 +18,7 @@ warnings.formatwarning = custom_formatwarning
 class Atlas:
 
     """Data structure for storing publications.
-    
+
     `self.projection`: the Projection object containing the embeddings of all publications and their mapping to str identifiers.
 
     `self.bad_ids`: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.
@@ -77,12 +77,13 @@ class Atlas:
             return
 
         attributes = {
-            k: getattr(self, k) for k in [
-                "publications", 
-                "projection", 
-                "bad_ids", 
+            k: getattr(self, k)
+            for k in [
+                "publications",
+                "projection",
+                "bad_ids",
                 "history",
-                ]
+            ]
         }
 
         for attribute in attributes:
@@ -112,12 +113,15 @@ class Atlas:
             atlas_dirpath: directory where .pkl binaries will be read from
 
         """
-        attributes = {k: None for k in [
-            "publications", 
-            "projection", 
-            "bad_ids",
-            "history",
-            ]}
+        attributes = {
+            k: None
+            for k in [
+                "publications",
+                "projection",
+                "bad_ids",
+                "history",
+            ]
+        }
         for attribute in attributes:
             fn = f"{attribute}.pkl"
             fp = os.path.join(atlas_dirpath, fn)

@@ -24,6 +24,7 @@ atlas_dir = "atlas_tmpdir"
 
 # NOTE: Any time you are querying an API for papers, it is not a good idea to have strict tests on the resulting output size, since there is a significant amount of things out of our control, including that the online database may have added new papers.
 
+
 class TestS2BibtexToAtlas:
     """Test functionality that maps a bibtex file to a list of identifiers, and then populates an atlas. The purpose of this functionality is to map a human-readable / very popular dataformat to the Atlas data structure."""
 
@@ -366,10 +367,11 @@ class TestTopography:
         )
         assert measurements.shape == tuple((len(atl_exp_single), len(metrics)))
 
+
 class TestConvergence:
     librarian = SemanticScholarLibrarian()
     vectorizer = SciBERTVectorizer()
-    crt = Cartographer(librarian, vectorizer)    
+    crt = Cartographer(librarian, vectorizer)
 
     def test_record_update_history(self):
         # Construct Atlas
@@ -379,31 +381,44 @@ class TestConvergence:
 
         # Mock expansion/update history data
         input = [
-            ['f2c251056dee4c6f9130b31e5e3e4b3296051c49'], # it=0
+            ["f2c251056dee4c6f9130b31e5e3e4b3296051c49"],  # it=0
+            [
+                "4364af31229f7e9a3d83a289a928b2f2a43d30cb",  # it=1
+                "f2c251056dee4c6f9130b31e5e3e4b3296051c49",
+                "287fa946f30eaa78ea86f9c5bd61d67238202356",
+            ],
+            [
+                "50dea78a96f03ba7fc3398c5deea5174630ef186",  # it=2
+                "54a83cd1d94814b0f37ee48084260a2d1882648d",
+                "4364af31229f7e9a3d83a289a928b2f2a43d30cb",
+                "f2c251056dee4c6f9130b31e5e3e4b3296051c49",
+                "287fa946f30eaa78ea86f9c5bd61d67238202356",
+                "2e6438be4901cb9b42ff23dcc3d433789b37d032",
+                "04da6471743468b6bb1d26dd9a6eac4c03ca73ee",
+            ],
+        ]
 
-            ['4364af31229f7e9a3d83a289a928b2f2a43d30cb', # it=1
-             'f2c251056dee4c6f9130b31e5e3e4b3296051c49', 
-             '287fa946f30eaa78ea86f9c5bd61d67238202356',],
+        TestConvergence.crt.record_update_history(input[-1], pubs_per_update=input)
 
-            ['50dea78a96f03ba7fc3398c5deea5174630ef186', # it=2
-             '54a83cd1d94814b0f37ee48084260a2d1882648d',
-             '4364af31229f7e9a3d83a289a928b2f2a43d30cb', 'f2c251056dee4c6f9130b31e5e3e4b3296051c49', 
-             '287fa946f30eaa78ea86f9c5bd61d67238202356', 
-             '2e6438be4901cb9b42ff23dcc3d433789b37d032', 
-             '04da6471743468b6bb1d26dd9a6eac4c03ca73ee',],
-
+        expected = np.array(
+            [
+                -2,
+                -2,
+                2,
+                2,
+                1,
+                0,
+                1,
+                2,
+                2,
+                -2,
             ]
-        
-        TestConvergence.crt.record_update_history(
-            input[-1], pubs_per_update=input)
-        
-        expected = np.array([-2, -2, 2, 2, 1, 0, 1, 2, 2, -2,])
+        )
         actual = TestConvergence.crt.update_history
 
         assert np.array_equal(expected, actual)
 
     def test_converged_kernel_size(self):
-
         # Construct Atlas
         bibtex_fp = ten_pub_bibtex_fp
         atl = TestConvergence.crt.bibtex_to_atlas(bibtex_fp)
@@ -411,44 +426,61 @@ class TestConvergence:
 
         # Mock expansion/update history data
         input = [
-            ['f2c251056dee4c6f9130b31e5e3e4b3296051c49'], # it=0
+            ["f2c251056dee4c6f9130b31e5e3e4b3296051c49"],  # it=0
+            [
+                "4364af31229f7e9a3d83a289a928b2f2a43d30cb",  # it=1
+                "f2c251056dee4c6f9130b31e5e3e4b3296051c49",
+                "287fa946f30eaa78ea86f9c5bd61d67238202356",
+            ],
+            [
+                "50dea78a96f03ba7fc3398c5deea5174630ef186",  # it=2
+                "54a83cd1d94814b0f37ee48084260a2d1882648d",
+                "4364af31229f7e9a3d83a289a928b2f2a43d30cb",
+                "f2c251056dee4c6f9130b31e5e3e4b3296051c49",
+                "287fa946f30eaa78ea86f9c5bd61d67238202356",
+                "2e6438be4901cb9b42ff23dcc3d433789b37d032",
+                "04da6471743468b6bb1d26dd9a6eac4c03ca73ee",
+            ],
+            list(atl.publications.keys()),  # it=3
+        ]
 
-            ['4364af31229f7e9a3d83a289a928b2f2a43d30cb', # it=1
-             'f2c251056dee4c6f9130b31e5e3e4b3296051c49', 
-             '287fa946f30eaa78ea86f9c5bd61d67238202356',],
-
-            ['50dea78a96f03ba7fc3398c5deea5174630ef186', # it=2
-             '54a83cd1d94814b0f37ee48084260a2d1882648d',
-             '4364af31229f7e9a3d83a289a928b2f2a43d30cb', 'f2c251056dee4c6f9130b31e5e3e4b3296051c49', 
-             '287fa946f30eaa78ea86f9c5bd61d67238202356', 
-             '2e6438be4901cb9b42ff23dcc3d433789b37d032', 
-             '04da6471743468b6bb1d26dd9a6eac4c03ca73ee',],
-
-            list(atl.publications.keys()), # it=3
-            ]
-        
         TestTopography.crt.record_update_history()
-        
-        expected = np.array([3, 3, 2, 2, 1, 0, 1, 2, 2, 3,])
-        actual =  TestTopography.crt.update_history
+
+        expected = np.array(
+            [
+                3,
+                3,
+                2,
+                2,
+                1,
+                0,
+                1,
+                2,
+                2,
+                3,
+            ]
+        )
+        actual = TestTopography.crt.update_history
 
         assert np.array_equal(expected, actual)
 
         # mock center
-        actual = TestConvergence.crt.converged_kernel_size( atl )
-        
+        actual = TestConvergence.crt.converged_kernel_size(atl)
+
         expected = np.array(
-            [[-1, -1, -1],
-            [-1, -1, -1],
-            [-1, -1,  0],
-            [-1, -1,  1],
-            [-1,  0,  3],
-            [ 0,  0,  2],
-            [-1,  0,  0],
-            [-1, -1,  1],
-            [-1, -1,  3],
-            [-1, -1, -1]]
-       )
+            [
+                [-1, -1, -1],
+                [-1, -1, -1],
+                [-1, -1, 0],
+                [-1, -1, 1],
+                [-1, 0, 3],
+                [0, 0, 2],
+                [-1, 0, 0],
+                [-1, -1, 1],
+                [-1, -1, 3],
+                [-1, -1, -1],
+            ]
+        )
 
         assert np.array_equal(actual, expected)
 
@@ -471,24 +503,25 @@ class TestConvergence:
         num_expansions = 10
         for _ in range(num_expansions):
             atl = TestConvergence.crt.expand(
-                atl, center=center, n_pubs_max=10, record_pubs_per_update=True,
+                atl,
+                center=center,
+                n_pubs_max=10,
+                record_pubs_per_update=True,
             )
-        
+
         assert len(TestConvergence.crt.pubs_per_update) == num_expansions
 
         TestConvergence.crt.record_update_history()
 
-        # need to project all pubs before kernel calculations!        
+        # need to project all pubs before kernel calculations!
         atl = TestConvergence.crt.project(atl)
 
-        # test convergence calculations        
+        # test convergence calculations
         result = TestConvergence.crt.converged_kernel_size(atl)
 
 
 class TestIterateExpand:
-
     def test_iterate_expand(self, tmp_path):
-
         librarian = SemanticScholarLibrarian()
         vectorizer = SciBERTVectorizer()
         crt = Cartographer(librarian, vectorizer)
@@ -503,7 +536,7 @@ class TestIterateExpand:
         atl = crt.bibtex_to_atlas(bibtex_fp)
 
         pub = list(atl.publications.values())[0]
-        center = pub.identifier        
+        center = pub.identifier
 
         iterate_expand(
             atl=atl,
