@@ -425,18 +425,17 @@ class Cartographer:
             `None`
         """
         if pubs is None:
-            pubs = np.array(self.pubs_per_update[-1])
+            pubs = self.pubs_per_update[-1]
 
         if pubs_per_update is None:
             pubs_per_update = self.pubs_per_update
 
         # Loop backwards
         i_max = len(pubs_per_update) - 1
-        update_history = np.full(pubs.shape, -2)
+        update_history = np.full(len(pubs), -2)
         for i, pubs_i in enumerate(pubs_per_update[::-1]):
             is_in = np.isin(pubs, pubs_i)
             update_history[is_in] = i_max - i
-
         self.update_history = update_history
 
     ########################################################################

@@ -250,7 +250,8 @@ class SemanticScholarLibrarian(Librarian):
         if not fields:
             fields = Paper.SEARCH_FIELDS
 
-        url = f"{self.sch.api_url}/paper/batch"
+        base_url = self.sch.api_url + self.sch.BASE_PATH_GRAPH
+        url = f"{base_url}/paper/batch"
 
         fields = ",".join(fields)
         parameters = f"&fields={fields}"
@@ -272,12 +273,13 @@ class SemanticScholarLibrarian(Librarian):
         if not fields:
             fields = Paper.FIELDS
 
-        url = f"{self.api_url}/paper/{paper_id}"
+        base_url = self.sch.api_url + self.sch.BASE_PATH_GRAPH
+        url = f"{base_url}/paper/{paper_id}"
 
         fields = ",".join(fields)
         parameters = f"&fields={fields}"
 
-        data = self.sch._requester.get_data(url, parameters, self.auth_header)
+        data = self.sch._requester.get_data(url, parameters, self.sch.auth_header)
         paper = Paper(data) if data is not None else None  # added condition
 
         return paper

@@ -398,7 +398,10 @@ class TestConvergence:
             ],
         ]
 
-        TestConvergence.crt.record_update_history(input[-1], pubs_per_update=input)
+        TestConvergence.crt.record_update_history(
+            list(atl.publications.keys()),
+            pubs_per_update=input,
+        )
 
         expected = np.array(
             [
@@ -444,7 +447,10 @@ class TestConvergence:
             list(atl.publications.keys()),  # it=3
         ]
 
-        TestTopography.crt.record_update_history()
+        TestConvergence.crt.record_update_history(
+            list(atl.publications.keys()),
+            input,
+        )
 
         expected = np.array(
             [
@@ -460,10 +466,9 @@ class TestConvergence:
                 3,
             ]
         )
-        actual = TestTopography.crt.update_history
+        actual = TestConvergence.crt.update_history
 
         assert np.array_equal(expected, actual)
-
         # mock center
         actual = TestConvergence.crt.converged_kernel_size(atl)
 
