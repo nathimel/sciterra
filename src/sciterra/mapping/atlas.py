@@ -16,11 +16,22 @@ warnings.formatwarning = custom_formatwarning
 
 
 class Atlas:
+
+    """Data structure for storing publications.
+    
+    `self.projection`: the Projection object containing the embeddings of all publications and their mapping to str identifiers.
+
+    `self.bad_ids`: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.
+
+    `self.history`: dict of the form {'pubs_per_update': list[list[str]], 'kernel_size': np.ndarray of ints of shape `(num_pubs, last_update)` where last_update <= the total number of expansions performed.}
+    """
+
     def __init__(
         self,
         publications: list[Publication],
         projection: Projection = None,
         bad_ids: set[str] = set(),
+        history: dict[str, Any] = dict(),
     ) -> None:
         if not isinstance(publications, list):
             raise ValueError
@@ -30,6 +41,8 @@ class Atlas:
         self.projection = projection
 
         self.bad_ids = bad_ids
+
+        self.history = history
 
     ######################################################################
     # Lookup    ######################################################################
@@ -64,7 +77,12 @@ class Atlas:
             return
 
         attributes = {
-            k: getattr(self, k) for k in ["publications", "projection", "bad_ids"]
+            k: getattr(self, k) for k in [
+                "publications", 
+                "projection", 
+                "bad_ids", 
+                "history",
+                ]
         }
 
         for attribute in attributes:
@@ -91,10 +109,15 @@ class Atlas:
         Warnings cannot be silenced.
 
         Args:
-            atlas_dirpath: file with vocab, assumed output from `save_to_file`
+            atlas_dirpath: directory where .pkl binaries will be read from
 
         """
-        attributes = {k: None for k in ["publications", "projection", "bad_ids"]}
+        attributes = {k: None for k in [
+            "publications", 
+            "projection", 
+            "bad_ids",
+            "history",
+            ]}
         for attribute in attributes:
             fn = f"{attribute}.pkl"
             fp = os.path.join(atlas_dirpath, fn)

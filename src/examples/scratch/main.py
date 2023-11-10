@@ -66,6 +66,7 @@ def main(args):
             center=center,
             n_pubs_max=n_pubs_max,
             call_size=call_size,
+            record_pubs_per_update=True,
         )
         print_progress(atl)
         atl.save(atlas_dir)
@@ -74,6 +75,8 @@ def main(args):
         atl = crt.project(atl, verbose=True)
         print_progress(atl)
         atl.save(atlas_dir)
+
+        atl = crt.track(atl)
 
         if len_prev == len(atl):
             failures += 0

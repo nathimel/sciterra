@@ -366,6 +366,29 @@ class Cartographer:
     # Record Atlas history
     ########################################################################
 
+    def track(
+        self,
+        atl: Atlas,
+        pubs: list[str] = None,
+        pubs_per_update: list[list[str]] = None,
+    ) -> Atlas:
+        """Overwrite the data associated with tracking degree of convergence of publications in an atlas over multiple expansions. N.B.: the atlas must be fully projected, or else `converged_kernel_size` will raise a KeyError.
+
+        Args:
+            atl: the Atlas that will be updated by overwriting `Atlas.history`
+        """
+        self.record_update_history(pubs, pubs_per_update)
+        kernel_size = self.converged_kernel_size(atl)
+        atl.history = {
+            'pubs_per_update': self.pubs_per_update if pubs_per_update is None else pubs_per_update,
+            'kernel_size': kernel_size,
+        }
+        return atl
+    
+    ########################################################################
+    # Record Atlas history
+    ########################################################################
+
     def record_update_history( 
         self, 
         pubs: list[str] = None,

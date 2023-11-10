@@ -475,7 +475,7 @@ class TestConvergence:
             )
         
         assert len(TestConvergence.crt.pubs_per_update) == num_expansions
-        breakpoint()
+
         TestConvergence.crt.record_update_history()
 
         # need to project all pubs before kernel calculations!        
