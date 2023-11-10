@@ -16,7 +16,7 @@ from semanticscholar import SemanticScholar
 from semanticscholar.Paper import Paper
 
 from requests.exceptions import ReadTimeout, ConnectionError
-from semanticscholar.SemanticScholarException import ObjectNotFoundExeception
+from semanticscholar.SemanticScholarException import ObjectNotFoundException
 
 ##############################################################################
 # Constants
