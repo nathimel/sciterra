@@ -82,7 +82,7 @@ ALLOWED_EXCEPTIONS = (
     Exception,  # "Internal Service Error"
     ReadTimeout,
     ConnectionError,
-    ObjectNotFoundExeception,
+    ObjectNotFoundException,
 )
 CALL_SIZE = 10
 NUM_ATTEMPTS_PER_QUERY = 50
