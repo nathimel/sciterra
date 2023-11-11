@@ -1,7 +1,7 @@
 from examples.scratch import util
 
 from sciterra.mapping.atlas import Atlas
-from sciterra.mapping.cartography import Cartographer
+from sciterra.mapping.cartography import Cartographer, iterate_expand
 from sciterra.librarians import ADSLibrarian, SemanticScholarLibrarian
 from sciterra.librarians import ADSLibrarian
 from sciterra.vectorization.scibert import SciBERTVectorizer
@@ -50,43 +50,17 @@ def main(args):
         print(f"Initializing atlas.")
         atl = atl_center
 
-    converged = False
-    print_progress = lambda atl: print(  # view incremental progress
-        f"Atlas has {len(atl)} publications and {len(atl.projection) if atl.projection is not None else 'None'} embeddings."
+    iterate_expand(
+        atl=atl,
+        crt=crt,
+        atlas_dir=atlas_dir,
+        target_size=target,
+        max_failed_expansions=max_failures,
+        center=center,
+        n_pubs_max=n_pubs_max,
+        call_size=call_size,
+        record_pubs_per_update=True,
     )
-
-    # Expansion loop
-    failures = 0
-    while not converged:
-        len_prev = len(atl)
-
-        # Retrieve up to n_pubs_max citations and references.
-        atl = crt.expand(
-            atl,
-            center=center,
-            n_pubs_max=n_pubs_max,
-            call_size=call_size,
-            record_pubs_per_update=True,
-        )
-        print_progress(atl)
-        atl.save(atlas_dir)
-
-        # Obtain document embeddings for all new abstracts.
-        atl = crt.project(atl, verbose=True)
-        print_progress(atl)
-        atl.save(atlas_dir)
-
-        atl = crt.track(atl)
-
-        if len_prev == len(atl):
-            failures += 0
-        else:
-            failures = 0
-
-        converged = len(atl) >= target or failures >= max_failures
-        print()
-
-    print(f"Expansion loop exited with atlas size {len(atl)}.")
 
 
 if __name__ == "__main__":
