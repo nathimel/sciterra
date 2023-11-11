@@ -6,6 +6,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 requirements = [
     "ads",
     "bibtexparser",
+    "gensim",
     "numpy",
     "torch",
     "transformers",
