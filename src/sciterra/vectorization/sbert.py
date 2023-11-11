@@ -15,12 +15,12 @@ from sentence_transformers import SentenceTransformer
 MPS_DEVICE = torch.device("mps")
 
 # MODEL_PATH = "bert-base-nli-mean-tokens" # NOTE: while Liu and Xu (2020) use this model in a metascience context, huggingface recommends a more recent sentence transformer.
-MODEL_PATH = "all-MiniLM-L6-v2" # All-round model tuned for many use-cases. Trained on a large and diverse dataset of over 1 billion training pairs. Listed as rank 50 on https://huggingface.co/spaces/mteb/leaderboard on 10/11/2023 with an average of 56; rank 1 achieved 64, bert-base-uncased achieved 34; GPT embedding ada-002 achieved 60.
+MODEL_PATH = "all-MiniLM-L6-v2"  # All-round model tuned for many use-cases. Trained on a large and diverse dataset of over 1 billion training pairs. Listed as rank 50 on https://huggingface.co/spaces/mteb/leaderboard on 10/11/2023 with an average of 56; rank 1 achieved 64, bert-base-uncased achieved 34; GPT embedding ada-002 achieved 60.
 EMBEDDING_DIM = 384
 MAX_SEQ_LENGTH = 256
 
-class SBERTVectorizer(Vectorizer):
 
+class SBERTVectorizer(Vectorizer):
     def __init__(self, device="cuda") -> None:
         # Get the model
         self.model = SentenceTransformer(MODEL_PATH)

@@ -10,7 +10,8 @@ Links:
 
 import numpy as np
 import nltk
-nltk.download('punkt')
+
+nltk.download("punkt")
 
 from .vectorizer import Vectorizer
 from tqdm import tqdm
@@ -26,7 +27,6 @@ EMBEDDING_DIM = 300
 
 
 class Word2VecVectorizer(Vectorizer):
-
     def __init__(
         self,
         corpus_path: str,
@@ -35,7 +35,7 @@ class Word2VecVectorizer(Vectorizer):
         min_count: int = 2,
         workers: int = cpu_count(),
         epochs: int = 20,
-        ) -> None:
+    ) -> None:
         """Construct a Word2Vec based document embedding model from a corpus."""
         super().__init__()
 
@@ -49,12 +49,11 @@ class Word2VecVectorizer(Vectorizer):
         self.model = Word2Vec(
             sentences=sentences,
             vector_size=vector_size,
-            window=window, 
-            min_count=min_count, 
-            workers=workers, 
+            window=window,
+            min_count=min_count,
+            workers=workers,
             epochs=epochs,
-            )
-
+        )
 
     def embed_documents(self, docs: list[str], **kwargs) -> np.ndarray:
         """Embed a list of documents (raw text) into word2vec document vectors by averaging the word vectors in each of the documents.
@@ -68,15 +67,20 @@ class Word2VecVectorizer(Vectorizer):
             a numpy array of shape `(num_documents, 300)`
         """
 
-        return np.array([
-            np.mean(
-                [self.model.wv[word] for word in self.tokenizer(doc) if word in self.model.wv], # shape `(300,)`
-                axis=0,
-            )
-            for doc in tqdm(
-                docs,
-                desc="embedding documents",
-                leave=True,
-            )
-        ])
-    
+        return np.array(
+            [
+                np.mean(
+                    [
+                        self.model.wv[word]
+                        for word in self.tokenizer(doc)
+                        if word in self.model.wv
+                    ],  # shape `(300,)`
+                    axis=0,
+                )
+                for doc in tqdm(
+                    docs,
+                    desc="embedding documents",
+                    leave=True,
+                )
+            ]
+        )

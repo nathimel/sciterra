@@ -20,7 +20,7 @@ def main(args):
     max_failures = args.max_failed_expansions
     centered = args.centered
     librarian = librarians[args.api]
-    vectorizer = vectorizers[args.vectorizer]    
+    vectorizer = vectorizers[args.vectorizer]
     bibtex_fp = args.bibtex_fp
     atlas_dir = args.atlas_dir
 
