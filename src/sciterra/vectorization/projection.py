@@ -33,12 +33,14 @@ class Projection:
         return self.embeddings[self.identifiers_to_indices(identifiers)]
 
     # def identifier_to_embedding(self, identifier: str) -> np.ndarray:
-        # """Retrieve the document embedding of a Publication."""
-        # return self.embeddings[self.identifier_to_index[identifier]]
-    
+    # """Retrieve the document embedding of a Publication."""
+    # return self.embeddings[self.identifier_to_index[identifier]]
+
     def identifiers_to_indices(self, identifiers: list[str]) -> np.ndarray:
         """Retrieve the embedding indices for a list of identifiers."""
-        return np.array([self.identifier_to_index[identifier] for identifier in identifiers])
+        return np.array(
+            [self.identifier_to_index[identifier] for identifier in identifiers]
+        )
 
     def __len__(self) -> int:
         return len(self.identifier_to_index)

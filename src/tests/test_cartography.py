@@ -214,7 +214,8 @@ class TestS2SBProjection:
         # 1. Simulate first part of project
         # 'only project publications that have abstracts'
         atl_filtered = TestS2SBProjection.crt.filter_by_attributes(
-            atl_exp_double, attributes=["abstract"],
+            atl_exp_double,
+            attributes=["abstract"],
         )
 
         # 'get only embeddings for publications not already projected in atlas'
@@ -337,7 +338,7 @@ class TestTopography:
 
     def test_measure_topography_full(self):
         bibtex_fp = ten_pub_bibtex_fp
-        atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)        
+        atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)
         atl = TestTopography.crt.project(atl)
         metrics = [
             "density",
@@ -395,7 +396,7 @@ class TestTopography:
             ids=ids,
             metrics=metrics,
         )
-        assert measurements.shape == tuple((len(atl), len(metrics)))          
+        assert measurements.shape == tuple((len(atl), len(metrics)))
 
 
 class TestConvergence:
@@ -585,5 +586,3 @@ class TestIterateExpand:
             n_sources_max=None,
             record_pubs_per_update=True,
         )
-
-

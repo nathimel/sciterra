@@ -197,9 +197,7 @@ class Cartographer:
             for id, pub in atl_filtered.publications.items()
             if id in merged_projection.identifier_to_index
         }
-        assert not set(atl_filtered.ids()) - set(
-            embedded_publications.keys()
-        )
+        assert not set(atl_filtered.ids()) - set(embedded_publications.keys())
 
         # Overwrite atlas data
         atl_filtered.publications = embedded_publications
@@ -309,7 +307,7 @@ class Cartographer:
             "abstract",
             "publication_date",
         ],
-        record_pubs_per_update = False,
+        record_pubs_per_update=False,
         **kwargs,
     ) -> Atlas:
         """Update an atlas by dropping publications (and corresponding data in projection) when certain fields are empty.
@@ -317,7 +315,7 @@ class Cartographer:
         Args:
             atl: the Atlas containing publications to filter
 
-            attributes: the list of attributes to filter publications from the atlas IF any of items are None for a publication. For example, if attributes = ["abstract"], then all publications `pub` such that `pub.abstract is None` is True will be removed from the atlas, along with the corresponding data in the projection. 
+            attributes: the list of attributes to filter publications from the atlas IF any of items are None for a publication. For example, if attributes = ["abstract"], then all publications `pub` such that `pub.abstract is None` is True will be removed from the atlas, along with the corresponding data in the projection.
 
             record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas. This is an important parameter because `self.filter` is called in `self.project`, which typically is called after `self.expand`, where we pass in the same parameter.
 
@@ -341,7 +339,7 @@ class Cartographer:
             self.pubs_per_update[-1] = atl_filtered.ids()
 
         return atl_filtered
-    
+
     def filter_by_ids(
         self,
         atl: Atlas,
@@ -357,15 +355,19 @@ class Cartographer:
 
             drop_ids: the list of publications to filter; all publications in `atl` matching one of these ids will be removed.
         """
-        
+
         if all(x is not None for x in [keep_ids, drop_ids]):
-            raise ValueError("You must pass exactly one of `keep_ids` or `drop_ids`, but both had a value that was not `None`.")
+            raise ValueError(
+                "You must pass exactly one of `keep_ids` or `drop_ids`, but both had a value that was not `None`."
+            )
         if keep_ids is not None:
             filter_ids = set([id for id in atl.ids() if id not in keep_ids])
         elif drop_ids is not None:
             filter_ids = set(drop_ids)
         else:
-            raise ValueError("You must pass exactly one of `keep_ids` or `drop_ids`, but both had value `None`.")
+            raise ValueError(
+                "You must pass exactly one of `keep_ids` or `drop_ids`, but both had value `None`."
+            )
 
         # Keep track of the bad identifiers to skip them in future expansions
         new_bad_ids = atl.bad_ids.union(filter_ids)
@@ -409,7 +411,6 @@ class Cartographer:
         atl_filtered.bad_ids = new_bad_ids
 
         return atl_filtered
-
 
     ########################################################################
     # Record Atlas history
@@ -581,14 +582,12 @@ class Cartographer:
             ids = atl.ids()
         else:
             ids = list(ids)
-        
+
         if not ids:
             raise Exception("No publications to measure topography of.")
 
         # Get publication dates, for filtering
-        dates = np.array([
-            atl[identifier].publication_date for identifier in ids
-        ])
+        dates = np.array([atl[identifier].publication_date for identifier in ids])
 
         # Get pairwise cosine similarities for ids
         embeddings = atl.projection.identifiers_to_embeddings(ids)
@@ -720,8 +719,8 @@ def iterate_expand(
 
         # Obtain document embeddings for all new abstracts.
         atl = crt.project(
-            atl, 
-            verbose=True, 
+            atl,
+            verbose=True,
             record_pubs_per_update=record_pubs_per_update,
         )
         print_progress(atl)

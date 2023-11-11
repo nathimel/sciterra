@@ -9,11 +9,11 @@ from sciterra.vectorization.scibert import SciBERTVectorizer
 
 atlas_dir = "/Users/nathanielimel/uci/projects/sciterra/src/examples/scratch/outputs/atlas_s2-11-10-23_centered_hafenetal"
 
+
 def main():
+    atl = Atlas.load(atlas_dir)
 
-    atl = Atlas.load(atlas_dir)    
-
-    kernels = atl.history['kernel_size']
+    kernels = atl.history["kernel_size"]
 
     con_d = 3
     kernel_size = 10
@@ -21,12 +21,12 @@ def main():
     ids = np.array(atl.projection.index_to_identifier)
     converged_pub_ids = ids[converged_filter]
 
-    crt = Cartographer(vectorizer=SciBERTVectorizer()) 
+    crt = Cartographer(vectorizer=SciBERTVectorizer())
 
     measurements = crt.measure_topography(
-        atl, 
+        atl,
         ids=converged_pub_ids,
-        metrics=["density", "edginess"], 
+        metrics=["density", "edginess"],
         kernel_size=10,
     )
 
