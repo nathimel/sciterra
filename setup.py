@@ -7,6 +7,7 @@ requirements = [
     "ads",
     "bibtexparser",
     "gensim",
+    "nltk",
     "numpy",
     "torch",
     "transformers",
