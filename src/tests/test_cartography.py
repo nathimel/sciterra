@@ -12,9 +12,10 @@ from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
 from sciterra.vectorization.scibert import SciBERTVectorizer
 
-single_pub_bibtex_fp = "src/tests/data/single_publication.bib"
-ten_pub_bibtex_fp = "src/tests/data/ten_publications.bib"
-realistic_bibtex_fp = "src/tests/data/rdsg.bib"
+bib_dir = "src/tests/data/bib"
+single_pub_bibtex_fp = f"{bib_dir}/single_publication.bib"
+ten_pub_bibtex_fp = f"{bib_dir}/ten_publications.bib"
+realistic_bibtex_fp = f"{bib_dir}/rdsg.bib"
 
 ##############################################################################
 # SemanticScholar x SciBERT
@@ -166,8 +167,8 @@ class TestS2SBProjection:
 
         projection = atl_proj.projection
 
-        vector0 = projection.identifier_to_embedding("id_0")
-        vector1 = projection.identifier_to_embedding("id_9")
+        vector0 = projection.identifiers_to_embeddings(["id_0"])
+        vector1 = projection.identifiers_to_embeddings(["id_9"])
         assert np.array_equal(vector0, vector1)
 
     def test_single_projection(self, tmp_path):
@@ -386,6 +387,7 @@ class TestTopography:
 
         # Project, necessary for metrics!
         atl_exp_single = TestTopography.crt.project(atl_exp_single)
+        ids = atl_exp_single.ids()
 
         metrics = [
             "density",
@@ -396,7 +398,7 @@ class TestTopography:
             ids=ids,
             metrics=metrics,
         )
-        assert measurements.shape == tuple((len(atl), len(metrics)))
+        assert measurements.shape == tuple((len(ids), len(metrics)))
 
 
 class TestConvergence:

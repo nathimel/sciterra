@@ -4,7 +4,7 @@ from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import Cartographer, iterate_expand
 from sciterra.librarians import ADSLibrarian, SemanticScholarLibrarian
 from sciterra.librarians import ADSLibrarian
-from sciterra.vectorization.scibert import SciBERTVectorizer
+from sciterra.vectorization import vectorizers
 
 librarians = {
     "S2": SemanticScholarLibrarian(),
@@ -20,6 +20,7 @@ def main(args):
     max_failures = args.max_failed_expansions
     centered = args.centered
     librarian = librarians[args.api]
+    vectorizer = vectorizers[args.vectorizer]    
     bibtex_fp = args.bibtex_fp
     atlas_dir = args.atlas_dir
 
@@ -27,7 +28,7 @@ def main(args):
 
     crt = Cartographer(
         librarian=librarian,
-        vectorizer=SciBERTVectorizer(device="mps"),
+        vectorizer=vectorizer(device="mps"),
     )
 
     # # Get center from file

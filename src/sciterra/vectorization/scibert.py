@@ -20,6 +20,7 @@ MPS_DEVICE = torch.device("mps")
 
 # the SciBERT pretrained model path from Allen AI repo
 MODEL_PATH = "allenai/scibert_scivocab_uncased"
+EMBEDDING_DIM = 768
 
 
 class SciBERTVectorizer(Vectorizer):

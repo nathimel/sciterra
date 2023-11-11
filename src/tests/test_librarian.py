@@ -1,10 +1,6 @@
 """Test basic pipeline functionality with each librarian."""
 
-from sciterra.librarians import adslibrarian, librarian, s2librarian
-
-from multiprocessing import Pool
-
-from tqdm import tqdm
+from sciterra.librarians import adslibrarian, s2librarian
 
 
 ##############################################################################

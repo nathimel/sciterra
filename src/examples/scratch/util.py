@@ -73,6 +73,16 @@ def get_args() -> argparse.Namespace:
         default="S2",
         help="The API, corresponding to a sciterra.librarian.Librarian, to use to retrieve publications.",
     )
+    parser.add_argument(
+        "--vectorizer",
+        type=str,
+        choices=[
+            "SciBERT",
+            "SBERT",
+        ],
+        default="SciBERT",
+        help="The vectorizer, corresponding to a sciterra.vectorization.Vectorizer, to use to get document embeddings for each publication abstract for retrieving (cosine) similar publications.",
+    )    
 
     args = parser.parse_args()
     return args

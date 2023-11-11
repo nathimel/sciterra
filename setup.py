@@ -9,6 +9,7 @@ requirements = [
     "numpy",
     "torch",
     "transformers",
+    "sentence-transformers",
     "semanticscholar",
     "scikit-learn",
     "pandas",

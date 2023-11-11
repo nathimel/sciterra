@@ -1,6 +1,5 @@
 """Test the basic publication wrapper."""
 
-import bibtexparser
 import pytest
 
 from datetime import datetime
