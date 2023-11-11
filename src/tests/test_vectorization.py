@@ -7,6 +7,8 @@ from tqdm import tqdm
 from sciterra.vectorization.vectorizer import Vectorizer
 from sciterra.vectorization import scibert, sbert, word2vec
 
+astro_corpus_1 = "src/tests/data/corpora/astro_1.txt"
+
 abstract_str = "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1. At these low redshifts, LLSs are closely associated with dense gas structures surrounding galaxies, such as galactic winds, dwarf satellites and cool inflows from the intergalactic medium. Our analysis is based on 14 zoom-in simulations covering the halo mass range M<SUB>h</SUB> ≈ 10<SUP>9</SUP>-10<SUP>13</SUP> M<SUB>⊙</SUB> at z = 0, which we convolve with the dark matter halo mass function to produce cosmological statistics. We find that the majority of cosmologically selected LLSs are associated with haloes in the mass range 10<SUP>10</SUP> ≲ M<SUB>h</SUB> ≲ 10<SUP>12</SUP> M<SUB>⊙</SUB>. The incidence and H I column density distribution of simulated absorbers with columns in the range 10^{16.2} ≤ N_{H I} ≤ 2× 10^{20} cm<SUP>-2</SUP> are consistent with observations. High-velocity outflows (with radial velocity exceeding the halo circular velocity by a factor of ≳ 2) tend to have higher metallicities ([X/H] ∼ -0.5) while very low metallicity ([X/H] &lt; -2) LLSs are typically associated with gas infalling from the intergalactic medium. However, most LLSs occupy an intermediate region in metallicity-radial velocity space, for which there is no clear trend between metallicity and radial kinematics. The overall simulated LLS metallicity distribution has a mean (standard deviation) [X/H] = -0.9 (0.4) and does not show significant evidence for bimodality, in contrast to recent observational studies, but consistent with LLSs arising from haloes with a broad range of masses and metallicities."  # 252 tokens
 
 ##############################################################################
@@ -119,9 +121,7 @@ class TestSBERTVectorizer:
 
 
 class TestWord2VecVectorizer:
-    corpus_path = (
-        "/Users/nathanielimel/uci/projects/sciterra/src/tests/data/astro_1.txt"
-    )
+    corpus_path = astro_corpus_1
     vectorizer = word2vec.Word2VecVectorizer(corpus_path)
     embedding_dim = word2vec.EMBEDDING_DIM
 
