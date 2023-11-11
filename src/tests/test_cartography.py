@@ -179,7 +179,7 @@ class TestS2SBProjection:
         atl_proj = TestS2SBProjection.crt.project(atl)
         projection = atl_proj.projection
 
-        identifier = list(atl.publications.keys())[0]
+        identifier = atl.ids()[0]
         assert projection.identifier_to_index == {identifier: 0}
         assert projection.index_to_identifier == (identifier,)
         assert projection.embeddings.shape == (1, 768)  # (num_pubs, embedding_dim)
@@ -213,8 +213,8 @@ class TestS2SBProjection:
 
         # 1. Simulate first part of project
         # 'only project publications that have abstracts'
-        atl_filtered = TestS2SBProjection.crt.filter(
-            atl_exp_double, attributes=["abstract"]
+        atl_filtered = TestS2SBProjection.crt.filter_by_attributes(
+            atl_exp_double, attributes=["abstract"],
         )
 
         # 'get only embeddings for publications not already projected in atlas'
@@ -335,7 +335,37 @@ class TestTopography:
     vectorizer = SciBERTVectorizer()
     crt = Cartographer(librarian, vectorizer)
 
-    def test_measure_topography(self):
+    def test_measure_topography_full(self):
+        bibtex_fp = ten_pub_bibtex_fp
+        atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)        
+        atl = TestTopography.crt.project(atl)
+        metrics = [
+            "density",
+            "edginess",
+        ]
+        measurements = TestTopography.crt.measure_topography(
+            atl,
+            metrics=metrics,
+        )
+        assert measurements.shape == tuple((len(atl), len(metrics)))
+
+    def test_measure_topography_subset(self):
+        bibtex_fp = ten_pub_bibtex_fp
+        atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)
+        atl = TestTopography.crt.project(atl)
+        ids = atl.ids()[:-5]
+        metrics = [
+            "density",
+            "edginess",
+        ]
+        measurements = TestTopography.crt.measure_topography(
+            atl,
+            ids=ids,
+            metrics=metrics,
+        )
+        assert measurements.shape == tuple((len(ids), len(metrics)))
+
+    def test_measure_topography_realistic(self):
         # Load single file from bibtex
         bibtex_fp = single_pub_bibtex_fp
 
@@ -352,10 +382,9 @@ class TestTopography:
             center=center,
             n_pubs_max=200,
         )
-        assert len(atl_exp_single) == len(ids)
 
         # Project, necessary for metrics!
-        atl_exp_single = TestS2SBExpand.crt.project(atl_exp_single)
+        atl_exp_single = TestTopography.crt.project(atl_exp_single)
 
         metrics = [
             "density",
@@ -363,9 +392,10 @@ class TestTopography:
         ]
         measurements = TestTopography.crt.measure_topography(
             atl_exp_single,
+            ids=ids,
             metrics=metrics,
         )
-        assert measurements.shape == tuple((len(atl_exp_single), len(metrics)))
+        assert measurements.shape == tuple((len(atl), len(metrics)))          
 
 
 class TestConvergence:
@@ -399,7 +429,7 @@ class TestConvergence:
         ]
 
         TestConvergence.crt.record_update_history(
-            list(atl.publications.keys()),
+            atl.ids(),
             pubs_per_update=input,
         )
 
@@ -444,11 +474,11 @@ class TestConvergence:
                 "2e6438be4901cb9b42ff23dcc3d433789b37d032",
                 "04da6471743468b6bb1d26dd9a6eac4c03ca73ee",
             ],
-            list(atl.publications.keys()),  # it=3
+            atl.ids(),  # it=3
         ]
 
         TestConvergence.crt.record_update_history(
-            list(atl.publications.keys()),
+            atl.ids(),
             input,
         )
 
@@ -555,3 +585,5 @@ class TestIterateExpand:
             n_sources_max=None,
             record_pubs_per_update=True,
         )
+
+

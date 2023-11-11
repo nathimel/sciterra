@@ -56,6 +56,10 @@ class Atlas:
         if identifier in self.publications:
             return self.publications[identifier]
         raise ValueError(f"Identifier {identifier} not in Atlas.")
+    
+    def ids(self) -> list[str]:
+        """Get a list of all the publication identifiers in the Atlas."""
+        return list(self.publications.keys())
 
     ######################################################################
     # File I/O

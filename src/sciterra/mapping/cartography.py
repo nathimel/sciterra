@@ -147,7 +147,7 @@ class Cartographer:
         verbose = get_verbose(kwargs)
 
         # Only project publications that have abstracts and publication dates
-        atl_filtered = self.filter(atl)
+        atl_filtered = self.filter_by_attributes(atl, **kwargs)
         num_empty = len(atl) - len(atl_filtered)
         if num_empty and verbose:
             warnings.warn(
@@ -197,7 +197,7 @@ class Cartographer:
             for id, pub in atl_filtered.publications.items()
             if id in merged_projection.identifier_to_index
         }
-        assert not set(atl_filtered.publications.keys()) - set(
+        assert not set(atl_filtered.ids()) - set(
             embedded_publications.keys()
         )
 
@@ -236,7 +236,7 @@ class Cartographer:
         Returns:
             atl_expanded: the expanded atlas
         """
-        existing_keys = set(atl.publications.keys())
+        existing_keys = set(atl.ids())
         expand_keys = existing_keys
         if center is not None:
             # If atlas is initial
@@ -294,7 +294,7 @@ class Cartographer:
 
         # Record the new list of publications
         if record_pubs_per_update:
-            self.pubs_per_update.append(list(atl_exp.publications.keys()))
+            self.pubs_per_update.append(list(atl_exp.ids()))
 
         return atl_exp
 
@@ -302,20 +302,24 @@ class Cartographer:
     # Filter Atlas
     ######################################################################
 
-    def filter(
+    def filter_by_attributes(
         self,
         atl: Atlas,
         attributes: list = [
             "abstract",
             "publication_date",
         ],
+        record_pubs_per_update = False,
+        **kwargs,
     ) -> Atlas:
         """Update an atlas by dropping publications (and corresponding data in projection) when certain fields are empty.
 
         Args:
             atl: the Atlas containing publications to filter
 
-            attributes: the list of attributes to filter publications from the atlas if any of items are None for a publication. For example, if attributes = ["abstract"], then all publications `pub` such that `pub.abstract is None` is True will be removed from the atlas, along with the corresponding data in the projection.
+            attributes: the list of attributes to filter publications from the atlas IF any of items are None for a publication. For example, if attributes = ["abstract"], then all publications `pub` such that `pub.abstract is None` is True will be removed from the atlas, along with the corresponding data in the projection. 
+
+            record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas. This is an important parameter because `self.filter` is called in `self.project`, which typically is called after `self.expand`, where we pass in the same parameter.
 
         Returns:
             the filtered atlas
@@ -330,13 +334,43 @@ class Cartographer:
         if not len(invalid_pubs):
             return atl
 
-        filter_ids = invalid_pubs.keys()
+        atl_filtered = self.filter_by_ids(atl, drop_ids=invalid_pubs.keys())
+
+        # Record only the publications in the history that weren't filtered out
+        if record_pubs_per_update:
+            self.pubs_per_update[-1] = atl_filtered.ids()
+
+        return atl_filtered
+    
+    def filter_by_ids(
+        self,
+        atl: Atlas,
+        keep_ids: list[str] = None,
+        drop_ids: list[str] = None,
+    ) -> Atlas:
+        """Update an atlas by dropping publications (and corresponding data in projection).
+
+        Args:
+            atl: the Atlas containing publications to filter
+
+            keep_ids: the list of publication ids to NOT filter; all other publications in `atl` not matching one of these ids will be removed.
+
+            drop_ids: the list of publications to filter; all publications in `atl` matching one of these ids will be removed.
+        """
+        
+        if all(x is not None for x in [keep_ids, drop_ids]):
+            raise ValueError("You must pass exactly one of `keep_ids` or `drop_ids`, but both had a value that was not `None`.")
+        if keep_ids is not None:
+            filter_ids = set([id for id in atl.ids() if id not in keep_ids])
+        elif drop_ids is not None:
+            filter_ids = set(drop_ids)
+        else:
+            raise ValueError("You must pass exactly one of `keep_ids` or `drop_ids`, but both had value `None`.")
 
         # Keep track of the bad identifiers to skip them in future expansions
         new_bad_ids = atl.bad_ids.union(filter_ids)
 
         # Filter embeddings, ids from projection
-        # if len(atl.projection):
         if atl.projection is None:
             new_projection = None
         else:
@@ -373,7 +407,9 @@ class Cartographer:
         # Construct new atlas
         atl_filtered = Atlas(new_publications, new_projection)
         atl_filtered.bad_ids = new_bad_ids
+
         return atl_filtered
+
 
     ########################################################################
     # Record Atlas history
@@ -465,7 +501,7 @@ class Cartographer:
                 "Incomplete update history as indicated by entries with values of -2."
             )
 
-        publications = np.array(list(atl.publications.keys()))
+        publications = np.array(atl.ids())
 
         # 1. Loop over each publication
         cospsi_kernel = []
@@ -503,7 +539,7 @@ class Cartographer:
     def measure_topography(
         self,
         atl: Atlas,
-        publication_indices: np.ndarray = None,
+        ids: list[str] = None,
         metrics: list[str] = ["density"],
         min_prior_pubs: int = 2,
         kernel_size=16,
@@ -541,28 +577,34 @@ class Cartographer:
         verbose = get_verbose(kwargs)
 
         # By default calculate for all publications
-        if publication_indices is None:
-            publication_indices = np.array(
-                list(atl.projection.identifier_to_index.values())
-            )
+        if ids is None:
+            ids = atl.ids()
+        else:
+            ids = list(ids)
+        
+        if not ids:
+            raise Exception("No publications to measure topography of.")
 
         # Get publication dates, for filtering
-        dates = np.array(
-            [
-                atl.publications[
-                    atl.projection.index_to_identifier[idx]
-                ].publication_date
-                for idx in publication_indices
-            ]
-        )
+        dates = np.array([
+            atl[identifier].publication_date for identifier in ids
+        ])
 
-        cospsi_matrix = batch_cospsi_matrix(atl.projection.embeddings)
+        # Get pairwise cosine similarities for ids
+        embeddings = atl.projection.identifiers_to_embeddings(ids)
+        cospsi_matrix = batch_cospsi_matrix(embeddings)
 
-        print(f"Computing {metrics} for {len(publication_indices)} publications.")
+        # From here on, use embedding indices instead of identifiers
+        # our embeddings are already in the correct order, so just use them
+        publication_indices = np.arange(len(embeddings))
+        # publication_indices = atl.projection.identifiers_to_indices(ids)
+
+        print(f"Computing {metrics} for {len(ids)} publications.")
         estimates = []
-        for idx in tqdm(publication_indices):
+        # for idx in tqdm(publication_indices):
+        for idx, identifier in enumerate(ids):
             # Get the date of publication
-            identifier = atl.projection.index_to_identifier[idx]
+            # identifier = atl.projection.index_to_identifier[idx]
             date = atl[identifier].publication_date
 
             # Identify prior publications
@@ -581,7 +623,7 @@ class Cartographer:
                 "cospsi_matrix": cospsi_matrix,
                 "valid_indices": valid_indices,
                 "publication_indices": publication_indices,
-                "embeddings": atl.projection.embeddings,
+                "embeddings": embeddings,
                 "kernel_size": kernel_size,
             }
 
@@ -619,13 +661,13 @@ def iterate_expand(
     crt: Cartographer,
     atlas_dir: str,
     target_size: int,
-    max_failed_expansions: int,
+    max_failed_expansions: int = 2,
     center: str = None,
     n_pubs_max: int = None,
     call_size: int = None,
     n_sources_max: int = None,
     record_pubs_per_update: bool = False,
-) -> None:
+) -> Atlas:
     """Build out an Atlas of publications, i.e. search for similar publications. This is done by iterating a sequence of [expand, save, project, save, track, save].
 
     Args:
@@ -637,7 +679,7 @@ def iterate_expand(
 
         target_size: stop iterating when we reach this number of publications in the Atlas
 
-        max_failed_expansions: stop iterating when we fail to add new publications after this many successive iterations.
+        max_failed_expansions: stop iterating when we fail to add new publications after this many successive iterations. Default is 2.
 
         center: (if given) center the search on this publication, preferentially searching related publications.
 
@@ -649,6 +691,8 @@ def iterate_expand(
 
         record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas.
 
+    Returns:
+        atl: the expanded Atlas
     """
     converged = False
     print_progress = lambda atl: print(  # view incremental progress
@@ -657,7 +701,9 @@ def iterate_expand(
 
     # Expansion loop
     failures = 0
+    its = 0
     while not converged:
+        its += 1
         len_prev = len(atl)
 
         # Retrieve up to n_pubs_max citations and references.
@@ -673,7 +719,11 @@ def iterate_expand(
         atl.save(atlas_dir)
 
         # Obtain document embeddings for all new abstracts.
-        atl = crt.project(atl, verbose=True)
+        atl = crt.project(
+            atl, 
+            verbose=True, 
+            record_pubs_per_update=record_pubs_per_update,
+        )
         print_progress(atl)
         atl.save(atlas_dir)
 
@@ -688,4 +738,5 @@ def iterate_expand(
         converged = len(atl) >= target_size or failures >= max_failed_expansions
         print()
 
-    print(f"Expansion loop exited with atlas size {len(atl)}.")
+    print(f"Expansion loop exited with atlas size {len(atl)} after {its} iterations.")
+    return atl

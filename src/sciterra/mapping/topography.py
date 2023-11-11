@@ -36,7 +36,10 @@ def smoothing_length_metric(
         return np.nan
 
     # Get 1D array of similarity scores to idx vector
-    cospsi = cospsi_matrix[idx][valid_indices]
+    try:
+        cospsi = cospsi_matrix[idx][valid_indices]
+    except IndexError:
+        breakpoint()
 
     # Get cosine distance to the least similar vector
     # np.sort orders from least to greatest similarity, so reverse after
