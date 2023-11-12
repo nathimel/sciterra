@@ -71,9 +71,19 @@
 <a href="./../sciterra.html">sciterra</a><wbr>.librarians    </h1>
 
                 
-                
-                
-                
+                        <input id="mod-librarians-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-librarians-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">1</span></a><span class="kn">from</span> <span class="nn">.librarian</span> <span class="kn">import</span> <span class="n">Librarian</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">2</span></a><span class="kn">from</span> <span class="nn">.adslibrarian</span> <span class="kn">import</span> <span class="n">ADSLibrarian</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">3</span></a><span class="kn">from</span> <span class="nn">.s2librarian</span> <span class="kn">import</span> <span class="n">SemanticScholarLibrarian</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">5</span></a><span class="sd">&quot;&quot;&quot;Why is there not an ArxivLibrarian? For now, we are restricting to APIs that allow us to traverse literature graphs, and arxiv does not have one. While there is a useful pip-installable package for querying the arxiv api for papers, https://pypi.org/project/arxiv/, the returned object does not have information on references and citations. However, it may still be possible to obtain a large sample of publications with abstracts and submission dates (though no citation counts), because the arxiv API&#39;s limit for a single query is 300,000 results.</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">6</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span></pre></div>
+
+
             </section>
     </main>
 <script>

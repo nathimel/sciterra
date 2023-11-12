@@ -89,28 +89,45 @@ class Word2VecVectorizer(Vectorizer):
         """Embed a list of documents (raw text) into word2vec document vectors by averaging the word vectors in each of the documents.
 
         Since there's no speedup via batching like there is in pytorch models, we iterate one document at a time.
-
-        Args:
-            docs: the documents to embed.
-
-        Returns:
-            a numpy array of shape `(num_documents, 300)`
         """
 
-        return np.array(
-            [
-                np.mean(
-                    [
-                        self.model.wv[word]
-                        for word in self.tokenizer(doc)
-                        if word in self.model.wv
-                    ],  # shape `(300,)`
-                    axis=0,
-                )
-                for doc in tqdm(
-                    docs,
-                    desc="embedding documents",
-                    leave=True,
-                )
-            ]
-        )
+        # return np.array(
+        #     [
+        #         np.mean(
+        #             [
+        #                 self.model.wv[word]
+        #                 for word in self.tokenizer(doc)
+        #                 if word in self.model.wv
+        #             ],  # shape `(300,)`
+        #             axis=0,
+        #         )
+        #         for doc in tqdm(
+        #             docs,
+        #             desc="embedding documents",
+        #             leave=True,
+        #         )
+        #     ]
+        # )
+        means = []
+        success_indices = []
+        failed_indices = []
+        for i, doc in tqdm(enumerate(docs), desc="embedding documents", leave=True):
+            mean = np.mean(
+                [
+                    self.model.wv[word]
+                    for word in self.tokenizer(doc)
+                    if word in self.model.wv
+                ],  # shape `(300,)`
+                axis=0,
+            )
+            if np.isnan(mean).any():
+                failed_indices.append(i)
+            else:
+                means.append(mean)
+                success_indices.append(i)
+
+        return {
+            "embeddings": np.array(means),
+            "success_indices": np.array(success_indices),
+            "fail_indices": np.array(failed_indices),
+        }

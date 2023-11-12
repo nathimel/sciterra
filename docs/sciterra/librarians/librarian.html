@@ -138,23 +138,27 @@
 </span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">]:</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing.&quot;&quot;&quot;</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>            <span class="k">return</span> <span class="p">[</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>                    <span class="n">paper</span><span class="p">,</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>                <span class="p">)</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>            <span class="p">]</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>                <span class="n">tqdm</span><span class="p">(</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>                <span class="p">)</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>            <span class="p">)</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>
-</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>        <span class="k">return</span> <span class="n">publications</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>        <span class="c1"># TODO: you need to pass args and kwargs into these</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>            <span class="k">return</span> <span class="p">[</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>                    <span class="n">paper</span><span class="p">,</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>                    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>                <span class="p">)</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>            <span class="p">]</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>                <span class="n">tqdm</span><span class="p">(</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>                <span class="p">)</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>            <span class="p">)</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>        <span class="k">return</span> <span class="n">publications</span>
 </span></pre></div>
 
 
@@ -210,23 +214,27 @@
 </span><span id="Librarian-46"><a href="#Librarian-46"><span class="linenos">46</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">]:</span>
 </span><span id="Librarian-47"><a href="#Librarian-47"><span class="linenos">47</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing.&quot;&quot;&quot;</span>
 </span><span id="Librarian-48"><a href="#Librarian-48"><span class="linenos">48</span></a>
-</span><span id="Librarian-49"><a href="#Librarian-49"><span class="linenos">49</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
-</span><span id="Librarian-50"><a href="#Librarian-50"><span class="linenos">50</span></a>            <span class="k">return</span> <span class="p">[</span>
-</span><span id="Librarian-51"><a href="#Librarian-51"><span class="linenos">51</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
-</span><span id="Librarian-52"><a href="#Librarian-52"><span class="linenos">52</span></a>                    <span class="n">paper</span><span class="p">,</span>
-</span><span id="Librarian-53"><a href="#Librarian-53"><span class="linenos">53</span></a>                <span class="p">)</span>
-</span><span id="Librarian-54"><a href="#Librarian-54"><span class="linenos">54</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
-</span><span id="Librarian-55"><a href="#Librarian-55"><span class="linenos">55</span></a>            <span class="p">]</span>
-</span><span id="Librarian-56"><a href="#Librarian-56"><span class="linenos">56</span></a>
-</span><span id="Librarian-57"><a href="#Librarian-57"><span class="linenos">57</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
-</span><span id="Librarian-58"><a href="#Librarian-58"><span class="linenos">58</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-</span><span id="Librarian-59"><a href="#Librarian-59"><span class="linenos">59</span></a>                <span class="n">tqdm</span><span class="p">(</span>
-</span><span id="Librarian-60"><a href="#Librarian-60"><span class="linenos">60</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
-</span><span id="Librarian-61"><a href="#Librarian-61"><span class="linenos">61</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
-</span><span id="Librarian-62"><a href="#Librarian-62"><span class="linenos">62</span></a>                <span class="p">)</span>
-</span><span id="Librarian-63"><a href="#Librarian-63"><span class="linenos">63</span></a>            <span class="p">)</span>
-</span><span id="Librarian-64"><a href="#Librarian-64"><span class="linenos">64</span></a>
-</span><span id="Librarian-65"><a href="#Librarian-65"><span class="linenos">65</span></a>        <span class="k">return</span> <span class="n">publications</span>
+</span><span id="Librarian-49"><a href="#Librarian-49"><span class="linenos">49</span></a>        <span class="c1"># TODO: you need to pass args and kwargs into these</span>
+</span><span id="Librarian-50"><a href="#Librarian-50"><span class="linenos">50</span></a>
+</span><span id="Librarian-51"><a href="#Librarian-51"><span class="linenos">51</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
+</span><span id="Librarian-52"><a href="#Librarian-52"><span class="linenos">52</span></a>            <span class="k">return</span> <span class="p">[</span>
+</span><span id="Librarian-53"><a href="#Librarian-53"><span class="linenos">53</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
+</span><span id="Librarian-54"><a href="#Librarian-54"><span class="linenos">54</span></a>                    <span class="n">paper</span><span class="p">,</span>
+</span><span id="Librarian-55"><a href="#Librarian-55"><span class="linenos">55</span></a>                    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+</span><span id="Librarian-56"><a href="#Librarian-56"><span class="linenos">56</span></a>                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="Librarian-57"><a href="#Librarian-57"><span class="linenos">57</span></a>                <span class="p">)</span>
+</span><span id="Librarian-58"><a href="#Librarian-58"><span class="linenos">58</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
+</span><span id="Librarian-59"><a href="#Librarian-59"><span class="linenos">59</span></a>            <span class="p">]</span>
+</span><span id="Librarian-60"><a href="#Librarian-60"><span class="linenos">60</span></a>
+</span><span id="Librarian-61"><a href="#Librarian-61"><span class="linenos">61</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+</span><span id="Librarian-62"><a href="#Librarian-62"><span class="linenos">62</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+</span><span id="Librarian-63"><a href="#Librarian-63"><span class="linenos">63</span></a>                <span class="n">tqdm</span><span class="p">(</span>
+</span><span id="Librarian-64"><a href="#Librarian-64"><span class="linenos">64</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
+</span><span id="Librarian-65"><a href="#Librarian-65"><span class="linenos">65</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
+</span><span id="Librarian-66"><a href="#Librarian-66"><span class="linenos">66</span></a>                <span class="p">)</span>
+</span><span id="Librarian-67"><a href="#Librarian-67"><span class="linenos">67</span></a>            <span class="p">)</span>
+</span><span id="Librarian-68"><a href="#Librarian-68"><span class="linenos">68</span></a>
+</span><span id="Librarian-69"><a href="#Librarian-69"><span class="linenos">69</span></a>        <span class="k">return</span> <span class="n">publications</span>
 </span></pre></div>
 
 
@@ -340,23 +348,27 @@
 </span><span id="Librarian.convert_publications-46"><a href="#Librarian.convert_publications-46"><span class="linenos">46</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">]:</span>
 </span><span id="Librarian.convert_publications-47"><a href="#Librarian.convert_publications-47"><span class="linenos">47</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing.&quot;&quot;&quot;</span>
 </span><span id="Librarian.convert_publications-48"><a href="#Librarian.convert_publications-48"><span class="linenos">48</span></a>
-</span><span id="Librarian.convert_publications-49"><a href="#Librarian.convert_publications-49"><span class="linenos">49</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
-</span><span id="Librarian.convert_publications-50"><a href="#Librarian.convert_publications-50"><span class="linenos">50</span></a>            <span class="k">return</span> <span class="p">[</span>
-</span><span id="Librarian.convert_publications-51"><a href="#Librarian.convert_publications-51"><span class="linenos">51</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
-</span><span id="Librarian.convert_publications-52"><a href="#Librarian.convert_publications-52"><span class="linenos">52</span></a>                    <span class="n">paper</span><span class="p">,</span>
-</span><span id="Librarian.convert_publications-53"><a href="#Librarian.convert_publications-53"><span class="linenos">53</span></a>                <span class="p">)</span>
-</span><span id="Librarian.convert_publications-54"><a href="#Librarian.convert_publications-54"><span class="linenos">54</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
-</span><span id="Librarian.convert_publications-55"><a href="#Librarian.convert_publications-55"><span class="linenos">55</span></a>            <span class="p">]</span>
-</span><span id="Librarian.convert_publications-56"><a href="#Librarian.convert_publications-56"><span class="linenos">56</span></a>
-</span><span id="Librarian.convert_publications-57"><a href="#Librarian.convert_publications-57"><span class="linenos">57</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
-</span><span id="Librarian.convert_publications-58"><a href="#Librarian.convert_publications-58"><span class="linenos">58</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
-</span><span id="Librarian.convert_publications-59"><a href="#Librarian.convert_publications-59"><span class="linenos">59</span></a>                <span class="n">tqdm</span><span class="p">(</span>
-</span><span id="Librarian.convert_publications-60"><a href="#Librarian.convert_publications-60"><span class="linenos">60</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
-</span><span id="Librarian.convert_publications-61"><a href="#Librarian.convert_publications-61"><span class="linenos">61</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
-</span><span id="Librarian.convert_publications-62"><a href="#Librarian.convert_publications-62"><span class="linenos">62</span></a>                <span class="p">)</span>
-</span><span id="Librarian.convert_publications-63"><a href="#Librarian.convert_publications-63"><span class="linenos">63</span></a>            <span class="p">)</span>
-</span><span id="Librarian.convert_publications-64"><a href="#Librarian.convert_publications-64"><span class="linenos">64</span></a>
-</span><span id="Librarian.convert_publications-65"><a href="#Librarian.convert_publications-65"><span class="linenos">65</span></a>        <span class="k">return</span> <span class="n">publications</span>
+</span><span id="Librarian.convert_publications-49"><a href="#Librarian.convert_publications-49"><span class="linenos">49</span></a>        <span class="c1"># TODO: you need to pass args and kwargs into these</span>
+</span><span id="Librarian.convert_publications-50"><a href="#Librarian.convert_publications-50"><span class="linenos">50</span></a>
+</span><span id="Librarian.convert_publications-51"><a href="#Librarian.convert_publications-51"><span class="linenos">51</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">multiprocess</span><span class="p">:</span>
+</span><span id="Librarian.convert_publications-52"><a href="#Librarian.convert_publications-52"><span class="linenos">52</span></a>            <span class="k">return</span> <span class="p">[</span>
+</span><span id="Librarian.convert_publications-53"><a href="#Librarian.convert_publications-53"><span class="linenos">53</span></a>                <span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">(</span>
+</span><span id="Librarian.convert_publications-54"><a href="#Librarian.convert_publications-54"><span class="linenos">54</span></a>                    <span class="n">paper</span><span class="p">,</span>
+</span><span id="Librarian.convert_publications-55"><a href="#Librarian.convert_publications-55"><span class="linenos">55</span></a>                    <span class="o">*</span><span class="n">args</span><span class="p">,</span>
+</span><span id="Librarian.convert_publications-56"><a href="#Librarian.convert_publications-56"><span class="linenos">56</span></a>                    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+</span><span id="Librarian.convert_publications-57"><a href="#Librarian.convert_publications-57"><span class="linenos">57</span></a>                <span class="p">)</span>
+</span><span id="Librarian.convert_publications-58"><a href="#Librarian.convert_publications-58"><span class="linenos">58</span></a>                <span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span>
+</span><span id="Librarian.convert_publications-59"><a href="#Librarian.convert_publications-59"><span class="linenos">59</span></a>            <span class="p">]</span>
+</span><span id="Librarian.convert_publications-60"><a href="#Librarian.convert_publications-60"><span class="linenos">60</span></a>
+</span><span id="Librarian.convert_publications-61"><a href="#Librarian.convert_publications-61"><span class="linenos">61</span></a>        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">num_processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+</span><span id="Librarian.convert_publications-62"><a href="#Librarian.convert_publications-62"><span class="linenos">62</span></a>            <span class="n">publications</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span>
+</span><span id="Librarian.convert_publications-63"><a href="#Librarian.convert_publications-63"><span class="linenos">63</span></a>                <span class="n">tqdm</span><span class="p">(</span>
+</span><span id="Librarian.convert_publications-64"><a href="#Librarian.convert_publications-64"><span class="linenos">64</span></a>                    <span class="n">p</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">convert_publication</span><span class="p">,</span> <span class="n">papers</span><span class="p">),</span>
+</span><span id="Librarian.convert_publications-65"><a href="#Librarian.convert_publications-65"><span class="linenos">65</span></a>                    <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">papers</span><span class="p">),</span>
+</span><span id="Librarian.convert_publications-66"><a href="#Librarian.convert_publications-66"><span class="linenos">66</span></a>                <span class="p">)</span>
+</span><span id="Librarian.convert_publications-67"><a href="#Librarian.convert_publications-67"><span class="linenos">67</span></a>            <span class="p">)</span>
+</span><span id="Librarian.convert_publications-68"><a href="#Librarian.convert_publications-68"><span class="linenos">68</span></a>
+</span><span id="Librarian.convert_publications-69"><a href="#Librarian.convert_publications-69"><span class="linenos">69</span></a>        <span class="k">return</span> <span class="n">publications</span>
 </span></pre></div>
 
 

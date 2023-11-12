@@ -51,10 +51,20 @@
 
             <h2>Submodules</h2>
             <ul>
+                    <li><a href="vectorization/preprocessing.html">preprocessing</a></li>
                     <li><a href="vectorization/projection.html">projection</a></li>
+                    <li><a href="vectorization/sbert.html">sbert</a></li>
                     <li><a href="vectorization/scibert.html">scibert</a></li>
                     <li><a href="vectorization/vectorizer.html">vectorizer</a></li>
+                    <li><a href="vectorization/word2vec.html">word2vec</a></li>
             </ul>
+
+            <h2>API Documentation</h2>
+                <ul class="memberlist">
+            <li>
+                    <a class="variable" href="#vectorizers">vectorizers</a>
+            </li>
+    </ul>
 
 
 
@@ -71,10 +81,36 @@
 <a href="./../sciterra.html">sciterra</a><wbr>.vectorization    </h1>
 
                 
-                
-                
-                
+                        <input id="mod-vectorization-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+
+                        <label class="view-source-button" for="mod-vectorization-view-source"><span>View Source</span></label>
+
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">1</span></a><span class="kn">from</span> <span class="nn">.scibert</span> <span class="kn">import</span> <span class="n">SciBERTVectorizer</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">2</span></a><span class="kn">from</span> <span class="nn">.sbert</span> <span class="kn">import</span> <span class="n">SBERTVectorizer</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">3</span></a><span class="kn">from</span> <span class="nn">.word2vec</span> <span class="kn">import</span> <span class="n">Word2VecVectorizer</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">5</span></a><span class="n">vectorizers</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">6</span></a>    <span class="s2">&quot;SciBERT&quot;</span><span class="p">:</span> <span class="n">SciBERTVectorizer</span><span class="p">,</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">7</span></a>    <span class="s2">&quot;SBERT&quot;</span><span class="p">:</span> <span class="n">SBERTVectorizer</span><span class="p">,</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">8</span></a>    <span class="s2">&quot;Word2Vec&quot;</span><span class="p">:</span> <span class="n">Word2VecVectorizer</span><span class="p">,</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">9</span></a><span class="p">}</span>
+</span></pre></div>
+
+
             </section>
+                <section id="vectorizers">
+                    <div class="attr variable">
+            <span class="name">vectorizers</span>        =
+<input id="vectorizers-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+            <label class="view-value-button pdoc-button" for="vectorizers-view-value"></label><span class="default_value">{&#39;SciBERT&#39;: &lt;class &#39;<a href="vectorization/scibert.html#SciBERTVectorizer">sciterra.vectorization.scibert.SciBERTVectorizer</a>&#39;&gt;, &#39;SBERT&#39;: &lt;class &#39;<a href="vectorization/sbert.html#SBERTVectorizer">sciterra.vectorization.sbert.SBERTVectorizer</a>&#39;&gt;, &#39;Word2Vec&#39;: &lt;class &#39;<a href="vectorization/word2vec.html#Word2VecVectorizer">sciterra.vectorization.word2vec.Word2VecVectorizer</a>&#39;&gt;}</span>
+
+        
+    </div>
+    <a class="headerlink" href="#vectorizers"></a>
+    
+    
+
+                </section>
     </main>
 <script>
     function escapeHTML(html) {

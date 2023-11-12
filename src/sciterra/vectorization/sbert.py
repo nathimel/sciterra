@@ -68,4 +68,9 @@ class SBERTVectorizer(Vectorizer):
             pbar.update(batch_size)
         pbar.close()
 
-        return np.array(embeddings)
+        # We don't have to deal with OOV, so we always return full list of ids
+        return {
+            "embeddings": np.array(embeddings),
+            "success_indices": np.arange(len(embeddings)),
+            "fail_indices": np.array([], dtype=int),
+        }

@@ -52,15 +52,10 @@ class SciBERTVectorizer(Vectorizer):
         self.model.eval()
         super().__init__()
 
-    def embed_documents(self, docs: list[str], batch_size: int = 64) -> np.ndarray:
-        """Embed a list of documents (raw text) into SciBERT vectors, by batching.
-
-        Args:
-            docs: the documents to embed.
-
-        Returns:
-            a numpy array of shape `(num_documents, 768)`
-        """
+    def embed_documents(
+        self, docs: list[str], batch_size: int = 64
+    ) -> dict[str, np.ndarray]:
+        """Embed a list of documents (raw text) into SciBERT vectors, by batching."""
 
         embeddings = []
 
@@ -111,4 +106,9 @@ class SciBERTVectorizer(Vectorizer):
             pbar.update(batch_size)
         pbar.close()
 
-        return np.array(embeddings)
+        # We don't have to deal with OOV, so we always return full list of ids
+        return {
+            "embeddings": np.array(embeddings),
+            "success_indices": np.arange(len(embeddings)),
+            "fail_indices": np.array([], dtype=int),
+        }

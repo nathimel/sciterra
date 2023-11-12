@@ -164,6 +164,7 @@ class Cartographer:
             id for id in atl_filtered.publications if id not in previously_embedded_ids
         ]
 
+        fail_ids = set()
         if embed_ids:
             if verbose:
                 if atl_filtered.projection is not None:
@@ -171,22 +172,40 @@ class Cartographer:
                         f"Found {len(atl_filtered.publications) - len(atl_filtered.projection)} publications not contained in Atlas projection."
                     )
                 warnings.warn(f"Embedding {len(embed_ids)} total documents.")
+
             # Embed documents
-            embeddings = self.vectorizer.embed_documents(
+            result = self.vectorizer.embed_documents(
                 [atl_filtered[id].abstract for id in embed_ids]
             )
+            embeddings = result["embeddings"]
+            success_indices = result["success_indices"]
+            fail_indices = result["fail_indices"]
 
-        if embeddings is None and verbose:
+            if fail_indices.tolist() and verbose:
+                warnings.warn(
+                    f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas."
+                )
+
+            # successful_ids = [id for i, id in enumerate(embed_ids) if i in successful_indices]
+            embed_ids_array = np.array(embed_ids)
+            success_ids = embed_ids_array[success_indices]
+            try:
+                fail_ids = set(embed_ids_array[fail_indices])
+            except IndexError:
+                breakpoint()
+
+            # create new projection
+            projection = Projection(
+                identifier_to_index={
+                    identifier: idx for idx, identifier in enumerate(success_ids)
+                },
+                index_to_identifier=tuple(success_ids),
+                embeddings=embeddings,
+            )
+
+        if not embed_ids or embed_ids is None and verbose:
             warnings.warn(f"Obtained no new publication embeddings.")
-
-        # create new projection
-        projection = Projection(
-            identifier_to_index={
-                identifier: idx for idx, identifier in enumerate(embed_ids)
-            },
-            index_to_identifier=tuple(embed_ids),
-            embeddings=embeddings,
-        )
+            projection = get_empty_projection()
 
         # merge existing projection with new projection
         merged_projection = merge(atl_filtered.projection, projection)
@@ -197,11 +216,14 @@ class Cartographer:
             for id, pub in atl_filtered.publications.items()
             if id in merged_projection.identifier_to_index
         }
-        assert not set(atl_filtered.ids()) - set(embedded_publications.keys())
+
+        # get new set of bad ids
+        bad_ids = atl_filtered.bad_ids.union(fail_ids)
 
         # Overwrite atlas data
         atl_filtered.publications = embedded_publications
         atl_filtered.projection = merged_projection
+        atl_filtered.bad_ids = bad_ids
         return atl_filtered
 
     ######################################################################

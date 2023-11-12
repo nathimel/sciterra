@@ -10,7 +10,7 @@ from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import Cartographer, iterate_expand
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
-from sciterra.vectorization.scibert import SciBERTVectorizer
+from sciterra.vectorization import SciBERTVectorizer, Word2VecVectorizer
 
 bib_dir = "src/tests/data/bib"
 single_pub_bibtex_fp = f"{bib_dir}/single_publication.bib"
@@ -170,6 +170,38 @@ class TestS2SBProjection:
         vector0 = projection.identifiers_to_embeddings(["id_0"])
         vector1 = projection.identifiers_to_embeddings(["id_9"])
         assert np.array_equal(vector0, vector1)
+
+    def test_dummy_projection_partial(self):
+        crt = Cartographer(vectorizer=Word2VecVectorizer())
+
+        pubs = [
+            Publication(
+                {
+                    "identifier": f"id_{0}",
+                    "abstract": "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1.",  # everything here should be in the Word2Vec default vocab, since it trains on this abstract.
+                    "publication_date": datetime(2023, 1, 1),
+                }
+            ),
+            Publication(
+                {
+                    "identifier": f"id_{1}",
+                    "abstract": "outofvocabularyitem",  # this should not
+                    "publication_date": datetime(2023, 1, 1),
+                }
+            ),
+            Publication(
+                {
+                    "identifier": f"id_{2}",
+                    "abstract": "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1.",
+                    "publication_date": datetime(2023, 1, 1),
+                }
+            ),
+        ]
+        atl = Atlas(pubs)
+
+        atl_proj = crt.project(atl)
+
+        assert len(atl_proj) == 2
 
     def test_single_projection(self, tmp_path):
         path = tmp_path / atlas_dir
