@@ -13,6 +13,8 @@ jobs:
           python-version: '3.11'
       - name: Install package 
         run: pip install -e .
+      - name: Download spacy English resource
+        run: python3 -m spacy download en_core_web_sm
       - name: Save ADS api key
         run: |
           mkdir ~/.ads
