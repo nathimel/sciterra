@@ -28,7 +28,10 @@ def main(args):
 
     crt = Cartographer(
         librarian=librarian,
-        vectorizer=vectorizer(device="mps"),
+        vectorizer=vectorizer(
+            device="mps",
+            model_path=args.model_path,
+        ),
     )
 
     # # Get center from file

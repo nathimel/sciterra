@@ -21,7 +21,7 @@ MAX_SEQ_LENGTH = 256
 
 
 class SBERTVectorizer(Vectorizer):
-    def __init__(self, device="cuda") -> None:
+    def __init__(self, device="cuda", **kwargs) -> None:
         # Get the model
         self.model = SentenceTransformer(MODEL_PATH)
 

@@ -7,21 +7,21 @@ requirements = [
     "ads",
     "bibtexparser",
     "gensim",
-    "nltk",
     "numpy",
-    "torch",
-    "transformers",
-    "sentence-transformers",
-    "semanticscholar",
-    "scikit-learn",
     "pandas",
     "plotnine",
+    "scikit-learn",
+    "sentence-transformers",
+    "semanticscholar",
+    "spacy",
+    "torch",
+    "transformers",
 ]
 
 test_requirements = [
     "black",
-    "pytest",
     "coverage",
+    "pytest",
 ]
 
 setuptools.setup(

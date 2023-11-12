@@ -24,7 +24,7 @@ EMBEDDING_DIM = 768
 
 
 class SciBERTVectorizer(Vectorizer):
-    def __init__(self, device="cuda") -> None:
+    def __init__(self, device="cuda", **kwargs) -> None:
         # Get tokenizer
         # TODO: does this include the SCIVOCAB or BASEVOCAB?
         self.tokenizer = BertTokenizerFast.from_pretrained(

@@ -79,9 +79,16 @@ def get_args() -> argparse.Namespace:
         choices=[
             "SciBERT",
             "SBERT",
+            "Word2Vec",
         ],
         default="SciBERT",
         help="The vectorizer, corresponding to a sciterra.vectorization.Vectorizer, to use to get document embeddings for each publication abstract for retrieving (cosine) similar publications.",
+    )
+    parser.add_argument(
+        "--model_path",
+        type=str,
+        default=None,
+        help="The path to the file to save/load a vectorizer's trained model. Word2Vec by default trains on a large corpus of scientific text, so loading a pretrained model can save significant time.",
     )
 
     args = parser.parse_args()
