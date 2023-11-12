@@ -1,6 +1,10 @@
 name: tests
 
-on: [push]
+on: 
+  workflow_call:
+    secrets:
+      ADS_API_KEY:
+        required: true
 
 jobs:
   build:
@@ -22,4 +26,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest 
-          pytest src/tests/test_librarian.py
+          pytest
