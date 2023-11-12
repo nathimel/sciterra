@@ -1,6 +1,6 @@
 name: tests
 
-on: workflow_call
+on: [push]
 
 jobs:
   build:
@@ -22,4 +22,4 @@ jobs:
       - name: Test with pytest
         run: |
           pip install pytest 
-          pytest
+          pytest src/tests/test_librarian.py
