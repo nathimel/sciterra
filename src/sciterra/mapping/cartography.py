@@ -186,7 +186,6 @@ class Cartographer:
                     f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas."
                 )
 
-            # successful_ids = [id for i, id in enumerate(embed_ids) if i in successful_indices]
             embed_ids_array = np.array(embed_ids)
             success_ids = embed_ids_array[success_indices]
             try:
@@ -245,7 +244,7 @@ class Cartographer:
         Args:
             atl: the atlas containing the region to expand
 
-            center: (if given) center the search on this publication, preferentially searching related publications.
+            center: (if given) center the search on this publication, preferentially searching related publications. Default is `None`, and the expansion is not centered. To keep a consistent expansion around one center, you should pass `atl.center`.
 
             n_pubs_max: maximum number of publications allowed in the expansion.
 

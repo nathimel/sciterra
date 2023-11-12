@@ -90,24 +90,6 @@ class Word2VecVectorizer(Vectorizer):
 
         Since there's no speedup via batching like there is in pytorch models, we iterate one document at a time.
         """
-
-        # return np.array(
-        #     [
-        #         np.mean(
-        #             [
-        #                 self.model.wv[word]
-        #                 for word in self.tokenizer(doc)
-        #                 if word in self.model.wv
-        #             ],  # shape `(300,)`
-        #             axis=0,
-        #         )
-        #         for doc in tqdm(
-        #             docs,
-        #             desc="embedding documents",
-        #             leave=True,
-        #         )
-        #     ]
-        # )
         means = []
         success_indices = []
         failed_indices = []

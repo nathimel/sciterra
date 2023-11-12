@@ -24,6 +24,8 @@ class Atlas:
     `self.bad_ids`: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.
 
     `self.history`: dict of the form {'pubs_per_update': list[list[str]], 'kernel_size': np.ndarray of ints of shape `(num_pubs, last_update)` where last_update <= the total number of expansions performed.}
+
+    `self.center`: the core, central Publication repeatedly passed to `cartography.Cartographer.expand`. Default is None, which means the Atlas has no internal record of the central publication.
     """
 
     def __init__(
@@ -32,17 +34,18 @@ class Atlas:
         projection: Projection = None,
         bad_ids: set[str] = set(),
         history: dict[str, Any] = dict(),
+        center: Publication = None,
     ) -> None:
         if not isinstance(publications, list):
             raise ValueError
+
         self.publications: dict[str, Publication] = {
             str(pub): pub for pub in publications
         }
         self.projection = projection
-
         self.bad_ids = bad_ids
-
         self.history = history
+        self.center = center
 
     ######################################################################
     # Lookup    ######################################################################
@@ -87,6 +90,7 @@ class Atlas:
                 "projection",
                 "bad_ids",
                 "history",
+                "center",
             ]
         }
 
@@ -124,6 +128,7 @@ class Atlas:
                 "projection",
                 "bad_ids",
                 "history",
+                "center",
             ]
         }
         for attribute in attributes:
