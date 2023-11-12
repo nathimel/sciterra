@@ -2,7 +2,11 @@
 
 import spacy
 
-nlp = spacy.load("en_core_web_sm")
+model = "en_core_web_sm"
+try:
+    nlp = spacy.load(model)
+except OSError:
+    raise OSError(f"Can't find model '{model}'; make sure you have run 'python3 -m spacy download {model}'!")
 
 # Another off the shelf simple tokenizer
 from gensim.utils import simple_preprocess

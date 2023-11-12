@@ -1,13 +1,6 @@
-name: website
+name: docs
 
-# build the documentation whenever there are new commits on main
-on:
-  push:
-    branches:
-      - main
-    # Alternative: only build for tags.
-    # tags:
-    #   - '*'
+on: workflow_call
 
 # security: restrict permissions for CI jobs.
 permissions:
