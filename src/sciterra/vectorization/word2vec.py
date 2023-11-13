@@ -14,7 +14,7 @@ import time
 import numpy as np
 
 from .vectorizer import Vectorizer
-from .preprocessing import custom_preprocess
+from .preprocessing import CustomPreprocessor
 from tqdm import tqdm
 from typing import Callable
 
@@ -43,13 +43,15 @@ class Word2VecVectorizer(Vectorizer):
         min_count: int = 2,
         workers: int = cpu_count(),
         epochs: int = 10,
-        tokenizer: Callable[[str], list[str]] = custom_preprocess,
+        tokenizer: Callable[[str], list[str]] = None,
         **kwargs,
     ) -> None:
         """Construct a Word2Vec based document embedding model from a corpus."""
         super().__init__()
 
-        self.tokenizer = tokenizer
+        if tokenizer is None:
+            preprocessor = CustomPreprocessor()
+            self.tokenizer = preprocessor.custom_preprocess
 
         if (model_path is None) or (not os.path.exists(model_path)):
             start = time.time()
