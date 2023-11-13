@@ -182,11 +182,11 @@ class Cartographer:
             fail_indices = result["fail_indices"]
 
             # get new set of bad ids
-            bad_ids = atl_filtered.bad_ids.union(fail_ids)
+            atl_filtered.bad_ids = atl_filtered.bad_ids.union(fail_ids)
 
             if fail_indices.tolist() and verbose:
                 warnings.warn(
-                    f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas. There are now {len(bad_ids)} total ids that will be excluded in the future."
+                    f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas. There are now {len(atl_filtered.bad_ids)} total ids that will be excluded in the future."
                 )
 
             embed_ids_array = np.array(embed_ids)
@@ -219,7 +219,6 @@ class Cartographer:
         # Overwrite atlas data
         atl_filtered.publications = embedded_publications
         atl_filtered.projection = merged_projection
-        atl_filtered.bad_ids = bad_ids
         return atl_filtered
 
     ######################################################################
