@@ -1,8 +1,8 @@
-# sciterra
+# sciterra: a python library for similarity-based scientometrics
 
 [![build](https://github.com/nathimel/sciterra/actions/workflows/build.yml/badge.svg)](https://github.com/nathimel/sciterra/actions/workflows/build.yml)
 
-Software library to support data-driven analyses of scientific literature.
+Sciterra is a software libary to support data-driven analyses of scientific literature, with a focus on unifying different bibliographic database APIs and document-embedding methods for systematic scientometrics research.
 
 ## Overview
 
@@ -14,9 +14,13 @@ The main purpose of sciterra is to perform similarity-based retrieval of scienti
 
 ## Installing sciterra
 
-1. Download or clone this repository and navigate to the root folder.
+First, set up a virtual environment (e.g. via [miniconda](https://docs.conda.io/projects/miniconda/en/latest/), `conda create -n sciterra`, and `conda activate sciterra`).
 
-2. Install ALTK (We recommend doing this inside a virtual environment)
+1. Install sciterra via git:
+
+    `python -m pip install 'sciterra @ git+https://github.com/nathimel/sciterra.git'`
+
+2. Alternatively, download or clone this repository and navigate to the root folder, and install locally:
 
     `pip install -e .`
 
@@ -58,14 +62,14 @@ from sciterra.librarians import SemanticScholarLibrarian # or ADSLibrarian
 from sciterra.vectorization import SciBERTVectorizer # or Word2VecVectorizer
 
 crt = Cartographer(
-    librarian=SemanticScholarLibrarian,
+    librarian=SemanticScholarLibrarian(),
     vectorizer=SciBERTVectorizer(),
 )
 ```
 
 #### Librarian
 
-Each Librarian subclass is designed to be a wrapper for existing python API service, such as the [ads](https://ads.readthedocs.io/en/latest/) package or the [semanticscholar](https://github.com/danielnsilva/semanticscholar#) client library.
+Each Librarian subclass is designed to be a wrapper for an existing python API service, such as the [ads](https://ads.readthedocs.io/en/latest/) package or the [semanticscholar](https://github.com/danielnsilva/semanticscholar#) client library.
 
 A Librarian subclass also overrides two methods. The first is `get_publications`, which takes a list of identifiers, should query the specific API for that Librarian, and returns a list of Publications. Keywords arguments can be passed to specify the metadata that is kept for each publication (e.g. date, title, journal, authors, etc.) The second method is `convert_publication`, which defines how the result of an API call is converted to a sciterra Publication object.
 
@@ -90,7 +94,7 @@ success_indices = result["success_indices"] # shape `(len(embeddings),)`
 fail_indices = result["fail_indices"] # shape `(len(docs) - len(embeddings))``
 ```
 
-Currently, sciterra has vectorizers using SciBERT, SBERT, and Word2Vec. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
+Currently, sciterra has vectorizers using [SciBERT](https://aclanthology.org/D19-1371/), [SBERT](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models), and [Word2Vec](https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#). Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
 
 ### Putting it all together
 
@@ -120,3 +124,15 @@ This method has a number of useful keyword arguments that enable tracking the At
 ## Acknowledgments
 
 This software is an reimplimentation of Zachary Hafen-Saavedra's library, [cc](https://github.com/zhafen/cc).
+
+To cite sciterra, please use the following workshop paper,
+
+```
+@inproceedings{Imel2023,
+ author = {Imel, Nathaniel, and Hafen, Zachary},
+ title = {Citation-similarity relationships in astrophysics},
+ booktitle = {AI for Scientific Discovery: From Theory to Practice Workshop (AI4Science @ NeurIPS)},
+ year = {2023},
+ url = {https://openreview.net/pdf?id=mISayy7DPI},
+}
+```
