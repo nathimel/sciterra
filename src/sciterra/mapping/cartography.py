@@ -181,9 +181,12 @@ class Cartographer:
             success_indices = result["success_indices"]
             fail_indices = result["fail_indices"]
 
+            # get new set of bad ids
+            bad_ids = atl_filtered.bad_ids.union(fail_ids)
+
             if fail_indices.tolist() and verbose:
                 warnings.warn(
-                    f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas."
+                    f"Failed to get embeddings for all {len(embed_ids)} publications; only {len(embeddings)} will be added to the Atlas. There are now {len(bad_ids)} total ids that will be excluded in the future."
                 )
 
             embed_ids_array = np.array(embed_ids)
@@ -212,9 +215,6 @@ class Cartographer:
             for id, pub in atl_filtered.publications.items()
             if id in merged_projection.identifier_to_index
         }
-
-        # get new set of bad ids
-        bad_ids = atl_filtered.bad_ids.union(fail_ids)
 
         # Overwrite atlas data
         atl_filtered.publications = embedded_publications
@@ -307,6 +307,7 @@ class Cartographer:
         atl_exp.projection = (
             atl.projection
         )  # new projection will be updated in `project`
+        atl_exp.center = atl.center
 
         # Record the new list of publications
         if record_pubs_per_update:
@@ -427,6 +428,11 @@ class Cartographer:
         # Construct new atlas
         atl_filtered = Atlas(new_publications, new_projection)
         atl_filtered.bad_ids = new_bad_ids
+
+        # If the center was filtered out, then reset center
+        atl_filtered.center = atl.center
+        if atl_filtered.center not in atl_filtered.publications:
+            atl_filtered.center = None
 
         return atl_filtered
 

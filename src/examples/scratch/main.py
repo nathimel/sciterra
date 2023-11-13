@@ -3,7 +3,6 @@ from examples.scratch import util
 from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import Cartographer, iterate_expand
 from sciterra.librarians import ADSLibrarian, SemanticScholarLibrarian
-from sciterra.librarians import ADSLibrarian
 from sciterra.vectorization import vectorizers
 
 librarians = {

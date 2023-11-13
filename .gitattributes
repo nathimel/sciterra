@@ -1,2 +1,4 @@
 *.pkl filter=lfs diff=lfs merge=lfs -text
 *.ipynb linguist-vendored
+*.tex linguist-vendored
+*.bib linguist-vendored

@@ -4,4 +4,119 @@
 
 Software library to support data-driven analyses of scientific literature.
 
-This library is a reimplementation of Zach Hafen's [cc](https://github.com/zhafen/cc) library.
+## Overview
+
+The main purpose of sciterra is to perform similarity-based retrieval of scientific publications for metascience/scientometrics research. While there are many services/existing software that makes this simple, this software library exists to
+
+1. Unify the different APIs and vector-based retrieval methods
+
+2. Support scientometrics analyses of citation dynamics, especially with respect to a vectorized 'landscape' of literature.
+
+## Installing sciterra
+
+1. Download or clone this repository and navigate to the root folder.
+
+2. Install ALTK (We recommend doing this inside a virtual environment)
+
+    `pip install -e .`
+
+## Usage
+
+### Atlas
+
+The central object in sciterra is the [`Atlas`](src/sciterra/mapping/atlas.py). This is a basic data structure for containing scientific publications that are returned from calls to various bibliographic database APIs.
+
+An Atlas minimally requires a list of [`Publications`](src/sciterra/mapping/publication.py).
+
+#### Publication
+
+A publication object is a minimal wrapper of the publication data, and minimally should have a string identifier. It is designed to encompass the basic metadata contained in the results from some bibliographic database API.
+
+```python
+from sciterra import Atlas, Publication
+
+atl = Atlas([Publication({"identifier": "id"})])
+```
+
+Alternatively, you can construct an Atlas by passing in a .bib file. The entries in this bibtex file will be parsed for unique identifiers (e.g., DOIs), and sent in an API call, and returned as Publications, which then populate an Atlas.
+
+```python
+atl = crt.bibtex_to_atlas(bibtex_filepath)
+```
+
+In the line of code above, the variable `crt` is an instance of a [`Cartographer`](src/sciterra/mapping/cartography.py) object, which encapsulates the bookkeeping involved in querying a bibliographic database for publications.
+
+### Cartographer
+
+The Cartographer class is named because interfaces with an Atlas to build out a library of publications. Since it does so via similarity-based retrieval, the resulting Atlas can be considered a 'region' of publications.
+
+To do this, a Cartographer needs two things: an API with which to interface, and a way of getting document embeddings. Both are encapsulated, respectively, by the [`Librarian`](src/sciterra/librarians/librarian.py) and the [`Vectorizer`](src/sciterra/vectorization/vectorizer.py) classes.
+
+```python
+from sciterra import Cartographer
+from sciterra.librarians import SemanticScholarLibrarian # or ADSLibrarian
+from sciterra.vectorization import SciBERTVectorizer # or Word2VecVectorizer
+
+crt = Cartographer(
+    librarian=SemanticScholarLibrarian,
+    vectorizer=SciBERTVectorizer(),
+)
+```
+
+#### Librarian
+
+Each Librarian subclass is designed to be a wrapper for existing python API service, such as the [ads](https://ads.readthedocs.io/en/latest/) package or the [semanticscholar](https://github.com/danielnsilva/semanticscholar#) client library.
+
+A Librarian subclass also overrides two methods. The first is `get_publications`, which takes a list of identifiers, should query the specific API for that Librarian, and returns a list of Publications. Keywords arguments can be passed to specify the metadata that is kept for each publication (e.g. date, title, journal, authors, etc.) The second method is `convert_publication`, which defines how the result of an API call is converted to a sciterra Publication object.
+
+Contributions to sciterra in the form of new Librarian subclasses are encouraged and appreciated.
+
+### Vectorizer
+
+Vectorizer subclasses override one function, `embed_documents`, which takes a list of strings, representing the text of a publication (currently, just its abstract), and returns an `np.ndarray` of embeddings.
+
+Under the hood, the `project` method of Cartographer, which is used during similarity-based retrieval, uses the vectorizer roughly as follows
+
+```python
+# Get abstracts
+docs = [atlas[identifier].abstract for identifier in identifiers]
+
+# Embed abstracts
+result = vectorizer.embed_documents(docs)
+embeddings = result["embeddings"]
+
+# depending on the vectorizer, sometimes not all embeddings can be obtained due to out-of-vocab issues
+success_indices = result["success_indices"] # shape `(len(embeddings),)`
+fail_indices = result["fail_indices"] # shape `(len(docs) - len(embeddings))``
+```
+
+Currently, sciterra has vectorizers using SciBERT, SBERT, and Word2Vec. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
+
+### Putting it all together
+
+The main use case for all of these ingredients is to iteratively build out a region of publications. This is done using `iterate_expand`:
+
+```python
+from sciterra.mapping.cartography import iterate_expand
+
+# Assuming the initial atlas contains just one publication
+(atl.center, ) = atl.publications.values()
+# build out an atlas to contain 10,000 publications, with increasing dissimilarity to the initial publication, saving progress in binary files to the directory named "atlas".
+iterate_expand(
+    atl=atl,
+    crt=crt,
+    atlas_dir="atlas",
+    target_size=10000,
+    center=atl.center,
+)
+```
+
+This method has a number of useful keyword arguments that enable tracking the Atlas expansion, limiting the number of publications per expansion, how many times to try to get a response if there are connection issues, etc.
+
+## Additional features
+
+- The [topography](src/sciterra/mapping/topography.py) submodule contains similarity-based metrics for publications, to support scientometrics analyses.
+
+## Acknowledgments
+
+This software is an reimplimentation of Zachary Hafen-Saavedra's library, [cc](https://github.com/zhafen/cc).
