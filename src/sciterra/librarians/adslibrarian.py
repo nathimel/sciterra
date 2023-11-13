@@ -84,7 +84,9 @@ class ADSLibrarian(Librarian):
             return []
 
         total = len(bibcodes)
-        chunked_ids = chunk_ids(bibcodes, call_size=call_size)
+        chunked_ids = chunk_ids(
+            bibcodes, call_size=call_size if call_size is not None else CALL_SIZE
+        )
 
         if None in bibcodes:
             # any Nones should have been handled by this point
