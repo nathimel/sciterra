@@ -134,9 +134,13 @@ class SemanticScholarLibrarian(Librarian):
         if not paper_ids:
             return []
 
+        if call_size is None:
+            call_size = CALL_SIZE
+
         total = len(paper_ids)
         chunked_ids = chunk_ids(
-            paper_ids, call_size=call_size if call_size is not None else CALL_SIZE
+            paper_ids,
+            call_size=call_size,
         )
 
         if None in paper_ids:

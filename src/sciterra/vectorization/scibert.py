@@ -109,6 +109,6 @@ class SciBERTVectorizer(Vectorizer):
         # We don't have to deal with OOV, so we always return full list of ids
         return {
             "embeddings": np.array(embeddings),
-            "success_indices": np.arange(len(embeddings)),
+            "success_indices": np.arange(len(embeddings), dtype=int),
             "fail_indices": np.array([], dtype=int),
         }

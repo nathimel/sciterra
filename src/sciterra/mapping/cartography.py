@@ -188,10 +188,7 @@ class Cartographer:
 
             embed_ids_array = np.array(embed_ids)
             success_ids = embed_ids_array[success_indices]
-            try:
-                fail_ids = set(embed_ids_array[fail_indices])
-            except IndexError:
-                breakpoint()
+            fail_ids = set(embed_ids_array[fail_indices])
 
             # create new projection
             projection = Projection(

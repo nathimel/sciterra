@@ -112,6 +112,6 @@ class Word2VecVectorizer(Vectorizer):
 
         return {
             "embeddings": np.array(means),
-            "success_indices": np.array(success_indices),
-            "fail_indices": np.array(failed_indices),
+            "success_indices": np.array(success_indices, dtype=int),
+            "fail_indices": np.array(failed_indices, dtype=int),
         }
