@@ -6,7 +6,7 @@ Sciterra is a software libary to support data-driven analyses of scientific lite
 
 ## Overview
 
-The main purpose of sciterra is to perform similarity-based retrieval of scientific publications for metascience/scientometrics research. While there are many services/existing software that makes this simple, this software library exists to
+The main purpose of sciterra is to perform similarity-based retrieval of scientific publications for metascience/scientometrics research. While there are many services that can make the individual steps of this simple, this software library exists to
 
 1. Unify the different APIs and vector-based retrieval methods
 
@@ -34,7 +34,7 @@ An Atlas minimally requires a list of [`Publications`](src/sciterra/mapping/publ
 
 #### Publication
 
-A publication object is a minimal wrapper of the publication data, and minimally should have a string identifier. It is designed to encompass the basic metadata contained in the results from some bibliographic database API.
+A publication object is a minimal wrapper around publication data, and should have a string identifier. It is designed to standardize the basic metadata contained in the results from some bibliographic database API.
 
 ```python
 from sciterra import Atlas, Publication
@@ -71,7 +71,7 @@ crt = Cartographer(
 
 Each Librarian subclass is designed to be a wrapper for an existing python API service, such as the [ads](https://ads.readthedocs.io/en/latest/) package or the [semanticscholar](https://github.com/danielnsilva/semanticscholar#) client library.
 
-A Librarian subclass also overrides two methods. The first is `get_publications`, which takes a list of identifiers, should query the specific API for that Librarian, and returns a list of Publications. Keywords arguments can be passed to specify the metadata that is kept for each publication (e.g. date, title, journal, authors, etc.) The second method is `convert_publication`, which defines how the result of an API call is converted to a sciterra Publication object.
+A Librarian subclass also overrides two methods. The first is `get_publications`, which takes a list of identifiers, should query the specific API for that Librarian, and returns a list of Publications. Keyword arguments can be passed to specify the metadata that is kept for each publication (e.g. date, title, journal, authors, etc.) The second method is `convert_publication`, which defines how the result of an API call should be converted to a sciterra Publication object.
 
 Contributions to sciterra in the form of new Librarian subclasses are encouraged and appreciated.
 
@@ -115,7 +115,7 @@ iterate_expand(
 )
 ```
 
-This method has a number of useful keyword arguments that enable tracking the Atlas expansion, limiting the number of publications per expansion, how many times to try to get a response if there are connection issues, etc.
+This method has a number of keyword arguments that enable tracking the Atlas expansion, limiting the number of publications per expansion, how many times to try to get a response if there are connection issues, etc.
 
 ## Additional features
 
@@ -123,7 +123,7 @@ This method has a number of useful keyword arguments that enable tracking the At
 
 ## Acknowledgments
 
-This software is an reimplimentation of Zachary Hafen-Saavedra's library, [cc](https://github.com/zhafen/cc).
+This software is a reimplimentation of Zachary Hafen-Saavedra's library, [cc](https://github.com/zhafen/cc).
 
 To cite sciterra, please use the following workshop paper,
 
