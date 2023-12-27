@@ -80,6 +80,7 @@ def get_args() -> argparse.Namespace:
             "SciBERT",
             "SBERT",
             "Word2Vec",
+            "BOW",
         ],
         default="SciBERT",
         help="The vectorizer, corresponding to a sciterra.vectorization.Vectorizer, to use to get document embeddings for each publication abstract for retrieving (cosine) similar publications.",

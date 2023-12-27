@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_distances
 from tqdm import tqdm
 
 from sciterra.vectorization.vectorizer import Vectorizer
-from sciterra.vectorization import scibert, sbert, word2vec
+from sciterra.vectorization import scibert, sbert, word2vec, bow
 
 astro_corpus_1 = "src/tests/data/corpora/example.txt"
 model_path_1 = "src/tests/data/models/word2vec_model_example.model"
@@ -153,6 +153,73 @@ class TestWord2VecVectorizer:
         assert np.array_equal(result["fail_indices"], np.array([0]))
         assert np.array_equal(result["success_indices"], np.array([]))
         assert np.array_equal(result["embeddings"], np.array([]))
+
+    def test_identity_of_embeddings(self):
+        embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(
+            [abstract_str, abstract_str]
+        )["embeddings"]
+        # check identity
+        assert np.all(embeddings[0] == embeddings[1])
+
+    def test_single_cosine_pair(self):
+        embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(
+            [abstract_str, abstract_str]
+        )["embeddings"]
+
+        # Check that the cosine sim of doc w/ itself is 1
+        # n.b., see sklearn.metrics.pairwise.cosine_similarity
+        sim = float(1 - cosine(embeddings[0], embeddings[1]))
+        assert sim == 1.0
+
+    def test_basic_cosine_matrix(self):
+        # like pair above, but pretending that we have more than 2 publications.
+
+        num_pubs = 300
+
+        embeddings = np.array(
+            [
+                TestWord2VecVectorizer.vectorizer.embed_documents(
+                    [abstract_str] * num_pubs
+                )["embeddings"].flatten()
+            ]
+        )
+        cosine_matrix = cosine_distances(embeddings, embeddings)
+        assert np.all(cosine_matrix == 0)
+
+
+##############################################################################
+# BoW
+##############################################################################
+
+
+class TestBOWVectorizer:
+    corpus_path = astro_corpus_1
+    model_path = model_path_1
+    vectorizer = bow.BOWVectorizer(
+        corpus_path=corpus_path,
+        model_path=model_path,
+    )
+    embedding_dim = vectorizer.embedding_dim
+
+    def test_single_vector(self):
+        embedding = TestBOWVectorizer.vectorizer.embed_documents([abstract_str])[
+            "embeddings"
+        ]
+
+        # Check embedding is of correct type, shape, and has no nans
+        assert isinstance(embedding, np.ndarray)
+        assert embedding.shape == (1, TestBOWVectorizer.embedding_dim)
+        assert not np.isnan(embedding).any()
+
+    def test_failed_embedding(self):
+        result = TestBOWVectorizer.vectorizer.embed_documents(
+            [abstract_str, "outofvocabularyitem"]
+        )
+
+        # Check embedding is of correct type, shape, and has no nans
+        assert np.array_equal(result["fail_indices"], np.array([1]))
+        assert np.array_equal(result["success_indices"], np.array([0]))
+        assert result["embeddings"].shape == (1, TestBOWVectorizer.embedding_dim)
 
     def test_identity_of_embeddings(self):
         embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(

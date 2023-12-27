@@ -10,8 +10,9 @@ from sciterra.vectorization.scibert import SciBERTVectorizer
 
 
 def main():
-    atlas_dir = "outputs/atlas_from_cc_region_8/"
+    # atlas_dir = "outputs/atlas_from_cc_region_8/"
     # atlas_dir = "outputs/atlas_s2-7-29-23_centered_imeletal"
+    atlas_dir = "outputs/atlas_s2-11-11-23_bow-centered_hafenetal"
 
     atl = Atlas.load(atlas_dir)
 

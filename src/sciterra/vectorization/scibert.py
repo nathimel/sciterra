@@ -55,7 +55,15 @@ class SciBERTVectorizer(Vectorizer):
     def embed_documents(
         self, docs: list[str], batch_size: int = 64
     ) -> dict[str, np.ndarray]:
-        """Embed a list of documents (raw text) into SciBERT vectors, by batching."""
+        """Embed a list of documents (raw text) into SciBERT vectors, by batching.
+
+        Args:
+            docs: the documents to embed.
+
+        Returns:
+            a numpy array of shape `(num_documents, 768)`
+
+        """
 
         embeddings = []
 

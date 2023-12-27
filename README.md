@@ -24,6 +24,10 @@ First, set up a virtual environment (e.g. via [miniconda](https://docs.conda.io/
 
     `pip install -e .`
 
+3. It is not yet recommended because sciterra is still in development, but you can also install via pip from pypi:
+
+    `pip install sciterra`
+
 ## Usage
 
 ### Atlas

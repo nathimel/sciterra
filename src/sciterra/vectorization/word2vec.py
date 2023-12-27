@@ -104,6 +104,7 @@ class Word2VecVectorizer(Vectorizer):
                 ],  # shape `(300,)`
                 axis=0,
             )
+            # OOV items become NaN
             if np.isnan(mean).any():
                 failed_indices.append(i)
             else:

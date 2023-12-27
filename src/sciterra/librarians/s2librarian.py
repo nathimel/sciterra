@@ -29,6 +29,7 @@ QUERY_FIELDS = [
     "title",  # useful for inspection
     "externalIds",  # supports ArXiv, MAG, ACL, PubMed, Medline, PubMedCentral, DBLP, DOI
     "citationCount",
+    "fieldsOfStudy", # useful for scoping to a particular field
     "url",  # as a possible external id
     "citations.externalIds",
     "citations.url",
@@ -50,32 +51,6 @@ EXTERNAL_IDS = [
     "PubMedCentral",
     "DBLP",
     "URL",
-]
-
-# for storing the results from above, we avoid dot operator to avoid attribute error, but note that everything above will be included.
-# n.b.: no idea what i meant above here
-STORE_FIELDS = [
-    "abstract",
-    "externalIds",
-    "url",
-    "citations",
-    "references",
-    "citationStyles",
-    "publicationDate",
-]
-
-# Attributes to save via save_data
-ATTRS_TO_SAVE = [
-    "paper",
-    "abstract",
-    "citations",
-    "references",
-    "bibcode",
-    "entry_date",
-    "notes",
-    "unofficial_flag",
-    "citation",
-    "stemmed_content_words",
 ]
 
 ALLOWED_EXCEPTIONS = (
@@ -204,11 +179,6 @@ class SemanticScholarLibrarian(Librarian):
         else:
             publication_date = None
 
-        # get doi from externalids
-        doi = None
-        if "DOI" in paper.externalIds:
-            doi = paper.externalIds["DOI"]
-
         # convert citations/references from lists of Papers to identifiers
         citations = [
             paper.paperId for paper in paper.citations if paper.paperId is not None
@@ -238,8 +208,9 @@ class SemanticScholarLibrarian(Librarian):
             "citations": citations,
             "references": references,
             "citation_count": citation_count,
+            "fields_of_study": paper.fieldsOfStudy if hasattr(paper, "fieldsOfStudy") else None,
             # additional fields
-            "doi": doi,
+            "doi": paper.externalIds["DOI"] if "DOI" in paper.externalIds else None,
             "url": paper.url if hasattr(paper, "url") else None,
             "title": paper.title if hasattr(paper, "title") else None,
             "issn": paper.issn if hasattr(paper, "issn") else None,

@@ -442,16 +442,26 @@ class Cartographer:
     def track(
         self,
         atl: Atlas,
+        calculate_convergence: bool = False,
         pubs: list[str] = None,
         pubs_per_update: list[list[str]] = None,
     ) -> Atlas:
-        """Overwrite the data associated with tracking degree of convergence of publications in an atlas over multiple expansions. N.B.: the atlas must be fully projected, or else `converged_kernel_size` will raise a KeyError.
+        """Overwrite the data associated with tracking degree of convergence of publications in an atlas over multiple expansions. N.B.: the atlas must be fully projected, or else `converged_kernel_size` will raise a KeyError. By default, this function will overwrite the `atl.history` with updated `self.pubs_per_update`, but not `kernel_size`, which requires computing the converged kernel size for every publication in the atlas.
 
         Args:
             atl: the Atlas that will be updated by overwriting `Atlas.history`
+
+            calculate_convergence: whether to call `self.converged_kernel_size`, and store the results in the `atl.history`.
+
+            pubs: the list of publications to pass to `self.record_update_history`. By default `None`, and the most recent list of publications in the `self.update_history` list will be used. 
+
+            pubs_per_update: the list of lists of publications to pass to `self.record_update_history`. By default `None`, adn the full history in `self.update_history` will be used.
+
+        Returns:
+            atl the updated Atlas
         """
         self.record_update_history(pubs, pubs_per_update)
-        kernel_size = self.converged_kernel_size(atl)
+        kernel_size = self.converged_kernel_size(atl) if calculate_convergence else None
         atl.history = {
             "pubs_per_update": self.pubs_per_update
             if pubs_per_update is None
@@ -527,9 +537,11 @@ class Cartographer:
 
         publications = np.array(atl.ids())
 
+        # TODO: This gets slow. It can be parallelized, I think.
+
         # 1. Loop over each publication
         cospsi_kernel = []
-        for pub in tqdm(publications):
+        for pub in tqdm(publications, desc="calculating converged kernel size"):
             # 2. Identify the similarity with the other publications relative to this publication, and sort accordingly.
             cospsi = cosine_similarity(
                 atl.projection.identifiers_to_embeddings([pub]),
@@ -758,7 +770,10 @@ def iterate_expand(
             failures = 0
 
         converged = len(atl) >= target_size or failures >= max_failed_expansions
-        print()
+    
+    print("Calculating degree of convergence for all publications.")
+    atl = crt.track(atl, calculate_convergence=True)
+    atl.save(atlas_dir)
 
     print(f"Expansion loop exited with atlas size {len(atl)} after {its} iterations.")
     return atl
