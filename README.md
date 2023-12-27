@@ -63,7 +63,7 @@ To do this, a Cartographer needs two things: an API with which to interface, and
 ```python
 from sciterra import Cartographer
 from sciterra.librarians import SemanticScholarLibrarian # or ADSLibrarian
-from sciterra.vectorization import SciBERTVectorizer # or Word2VecVectorizer
+from sciterra.vectorization import SciBERTVectorizer # among others
 
 crt = Cartographer(
     librarian=SemanticScholarLibrarian(),
@@ -98,14 +98,14 @@ success_indices = result["success_indices"] # shape `(len(embeddings),)`
 fail_indices = result["fail_indices"] # shape `(len(docs) - len(embeddings))``
 ```
 
-Currently, sciterra has vectorizers using [SciBERT](https://aclanthology.org/D19-1371/), [SBERT](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models), and [Word2Vec](https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#). Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
+Currently, sciterra has vectorizers using [SciBERT](https://aclanthology.org/D19-1371/), [SBERT](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models), [Word2Vec](https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#), and a simple bag-of-words (BOW) vectorizer that uses the same vocabulary as the Word2Vec vectorizer. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
 
 ### Putting it all together
 
 The main use case for all of these ingredients is to iteratively build out a region of publications. This is done using `iterate_expand`:
 
 ```python
-from sciterra.mapping.cartography import iterate_expand
+from sciterra.mapping.tracing import iterate_expand
 
 # Assuming the initial atlas contains just one publication
 (atl.center, ) = atl.publications.values()
@@ -120,6 +120,8 @@ iterate_expand(
 ```
 
 This method has a number of keyword arguments that enable tracking the Atlas expansion, limiting the number of publications per expansion, how many times to try to get a response if there are connection issues, etc.
+
+In practice, it may be helpful to use the [`sciterra.mapping.tracing.AtlasTracer`](src/sciterra/mapping/tracing.py) data structure to reduce most of the loading/initialization boilerplate described above. For an example, see [main.py](src/examples/scratch/main.py).
 
 ## Additional features
 
