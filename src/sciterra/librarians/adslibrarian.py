@@ -192,6 +192,7 @@ class ADSLibrarian(Librarian):
                     warnings.warn("Setting citation_count = {len(citations)}.")
                 citation_count = len(citations)
 
+        # N.B.: we could manually add fields_of_study=['Physics'], but unclear that would be informative. Ads has the field 'arxiv_class', but that's probably more fine-grained than we need.
         data = {
             # primary fields
             "identifier": identifier,

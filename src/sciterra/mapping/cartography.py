@@ -324,6 +324,7 @@ class Cartographer:
         attributes: list = [
             "abstract",
             "publication_date",
+            "fields_of_study",
         ],
         record_pubs_per_update=False,
         **kwargs,
