@@ -70,6 +70,7 @@ class Publication:
         self._abstract = None
         self._publication_date = None
         self._citation_count = None
+        self._fields_of_study = None
 
         # Regularize and store data, including but not limited to above attrs.
         self.init_attributes(data, **kwargs)
@@ -98,6 +99,10 @@ class Publication:
     def citation_count(self) -> int:
         """The citation_count can be different from the length of `citations`, since the number of citations listed for a paper might be different from the number of (valid) citing papers indexed on the relevant API."""
         return self._citation_count
+    
+    @property
+    def fields_of_study(self) -> list[str]:
+        return self._fields_of_study
 
     def __repr__(self) -> str:
         return "sciterra.publication.Publication:{}".format(self.identifier)
@@ -164,6 +169,12 @@ class Publication:
                     "Found an entry for 'citations' but no entry for citation_count; this is unexpected. Inferring value from citation_count."
                 )
                 self._citation_count = len(self.citations)
+        
+        if "fields_of_study" in data:
+            val = data["fields_of_study"]
+            if not isinstance(val, list):
+                raise ValueError
+            self._fields_of_study = val
 
         ######################################################################
         # Other attributes

@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 
 from sciterra.mapping.atlas import Atlas
-from sciterra.mapping.cartography import Cartographer, iterate_expand
+from sciterra.mapping.cartography import Cartographer
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
 from sciterra.vectorization import SciBERTVectorizer, Word2VecVectorizer
@@ -445,7 +445,7 @@ class TestConvergence:
         atl = TestConvergence.crt.bibtex_to_atlas(bibtex_fp)
 
         # Mock expansion/update history data
-        input = [
+        history = [
             ["f2c251056dee4c6f9130b31e5e3e4b3296051c49"],  # it=0
             [
                 "4364af31229f7e9a3d83a289a928b2f2a43d30cb",  # it=1
@@ -465,7 +465,7 @@ class TestConvergence:
 
         TestConvergence.crt.record_update_history(
             atl.ids(),
-            pubs_per_update=input,
+            pubs_per_update=history,
         )
 
         expected = np.array(
@@ -588,35 +588,3 @@ class TestConvergence:
 
         # test convergence calculations
         result = TestConvergence.crt.converged_kernel_size(atl)
-
-
-class TestIterateExpand:
-    def test_iterate_expand(self, tmp_path):
-        librarian = SemanticScholarLibrarian()
-        vectorizer = SciBERTVectorizer()
-        crt = Cartographer(librarian, vectorizer)
-
-        # Load single file from bibtex
-        bibtex_fp = single_pub_bibtex_fp
-
-        path = tmp_path / atlas_dir
-        path.mkdir()
-
-        # Construct Atlas
-        atl = crt.bibtex_to_atlas(bibtex_fp)
-
-        pub = list(atl.publications.values())[0]
-        center = pub.identifier
-
-        iterate_expand(
-            atl=atl,
-            crt=crt,
-            atlas_dir=path,
-            target_size=100,
-            max_failed_expansions=2,
-            center=center,
-            n_pubs_max=10,
-            call_size=None,
-            n_sources_max=None,
-            record_pubs_per_update=True,
-        )

@@ -1,5 +1,6 @@
 from ..mapping.publication import Publication
 
+from functools import partial
 from typing import Any
 from multiprocessing import Pool
 from tqdm import tqdm
@@ -46,7 +47,6 @@ class Librarian:
         """Convet a list of API-specific results to sciterra Publications, possibly using multiprocessing."""
 
         # TODO: you need to pass args and kwargs into these
-
         if not multiprocess:
             return [
                 self.convert_publication(
@@ -56,11 +56,13 @@ class Librarian:
                 )
                 for paper in papers
             ]
-
         with Pool(processes=num_processes) as p:
             publications = list(
                 tqdm(
-                    p.imap(self.convert_publication, papers),
+                    p.map(
+                        partial(self.convert_publication, *args, **kwargs), papers,
+                        chunksize=10,
+                    ),
                     total=len(papers),
                 )
             )
