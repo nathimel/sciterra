@@ -12,7 +12,7 @@ requirements = [
     "plotnine",
     "scikit-learn",
     "sentence-transformers",
-    "semanticscholar",
+    "semanticscholar==0.5.0",  # 0.6.0 has AsyncSemanticScholar which creates difficulties
     "spacy",
     "torch",
     "transformers",
