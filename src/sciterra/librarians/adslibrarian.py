@@ -29,7 +29,7 @@ QUERY_FIELDS = [
     "citation",  # list
     "reference",  # list
     "identifier",  # list of external ids
-    "arxiv_class", # list of arxiv classifiers; interestingly, returned even for DOIs that aren't arxiv
+    "arxiv_class",  # list of arxiv classifiers; interestingly, returned even for DOIs that aren't arxiv
 ]
 
 ALLOWED_EXCEPTIONS = (ads.exceptions.APIResponseError,)
@@ -194,7 +194,9 @@ class ADSLibrarian(Librarian):
                 citation_count = len(citations)
 
         # N.B.: for fields_of_study, manually annotate, and add arxiv classes.
-        fields_of_study = ["ads_dummy_field"] # n.b. there is actually some diversity of fields beyond physics in ADS, e.g. theoretical biology.
+        fields_of_study = [
+            "ads_dummy_field"
+        ]  # n.b. there is actually some diversity of fields beyond physics in ADS, e.g. theoretical biology.
         arxiv_classes = article.arxiv_class if article.arxiv_class is not None else []
         fields_of_study = fields_of_study + arxiv_classes
 

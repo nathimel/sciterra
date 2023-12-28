@@ -257,7 +257,9 @@ class Cartographer:
             if atl.projection is None:
                 atl = self.project(atl)
                 if atl.projection is None:
-                    raise Exception(f"Initial projection of atlas failed; make sure the initial publication has all the required attributes.")
+                    raise Exception(
+                        f"Initial projection of atlas failed; make sure the initial publication has all the required attributes."
+                    )
 
             if len(atl.projection):
                 # build cosine similarity matrix, of shape (1, num_pubs)
@@ -455,7 +457,7 @@ class Cartographer:
 
             calculate_convergence: whether to call `self.converged_kernel_size`, and store the results in the `atl.history`.
 
-            pubs: the list of publications to pass to `self.record_update_history`. By default `None`, and the most recent list of publications in the `self.update_history` list will be used. 
+            pubs: the list of publications to pass to `self.record_update_history`. By default `None`, and the most recent list of publications in the `self.update_history` list will be used.
 
             pubs_per_update: the list of lists of publications to pass to `self.record_update_history`. By default `None`, adn the full history in `self.update_history` will be used.
 
@@ -466,7 +468,9 @@ class Cartographer:
         # Skip expensive convergence calculation if possible
         kernel_size = self.converged_kernel_size(atl) if calculate_convergence else None
         atl.history = {
-            "pubs_per_update": self.pubs_per_update if pubs_per_update is None else pubs_per_update,
+            "pubs_per_update": self.pubs_per_update
+            if pubs_per_update is None
+            else pubs_per_update,
             "kernel_size": kernel_size,
         }
         return atl

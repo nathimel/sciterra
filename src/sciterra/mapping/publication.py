@@ -99,7 +99,7 @@ class Publication:
     def citation_count(self) -> int:
         """The citation_count can be different from the length of `citations`, since the number of citations listed for a paper might be different from the number of (valid) citing papers indexed on the relevant API."""
         return self._citation_count
-    
+
     @property
     def fields_of_study(self) -> list[str]:
         return self._fields_of_study
@@ -169,7 +169,7 @@ class Publication:
                     "Found an entry for 'citations' but no entry for citation_count; this is unexpected. Inferring value from citation_count."
                 )
                 self._citation_count = len(self.citations)
-        
+
         if "fields_of_study" in data:
             val = data["fields_of_study"]
             if not isinstance(val, list):

@@ -4,10 +4,11 @@ from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.vectorization import SciBERTVectorizer
 
 from .test_cartography import (
-    single_pub_bibtex_fp, 
+    single_pub_bibtex_fp,
     atlas_dir,
 )
 from .test_vectorization import astro_corpus_1, model_path_1
+
 
 class TestExpansion:
     def test_iterate_expand(self, tmp_path):
@@ -40,18 +41,16 @@ class TestExpansion:
             record_pubs_per_update=True,
         )
 
-
     def test_atlas_tracer_s2(self, tmp_path):
-
         path = tmp_path / atlas_dir
-        path.mkdir()        
+        path.mkdir()
 
         tracer = AtlasTracer(
             path,
             single_pub_bibtex_fp,
             "S2",
             "Word2Vec",
-            vectorizer_kwargs = {
+            vectorizer_kwargs={
                 "corpus_path": astro_corpus_1,
                 "model_path": model_path_1,
             },
@@ -62,20 +61,19 @@ class TestExpansion:
             n_pubs_max=10,
             call_size=None,
             n_sources_max=None,
-            record_pubs_per_update=True,            
+            record_pubs_per_update=True,
         )
 
     def test_atlas_tracer_ads(self, tmp_path):
-
         path = tmp_path / atlas_dir
-        path.mkdir()        
+        path.mkdir()
 
         tracer = AtlasTracer(
             path,
             single_pub_bibtex_fp,
             "ADS",
             "BOW",
-            vectorizer_kwargs = {
+            vectorizer_kwargs={
                 "corpus_path": astro_corpus_1,
                 "model_path": model_path_1,
             },
@@ -86,5 +84,5 @@ class TestExpansion:
             n_pubs_max=10,
             call_size=None,
             n_sources_max=None,
-            record_pubs_per_update=True,            
+            record_pubs_per_update=True,
         )

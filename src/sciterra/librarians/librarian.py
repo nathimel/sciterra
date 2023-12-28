@@ -60,7 +60,8 @@ class Librarian:
             publications = list(
                 tqdm(
                     p.map(
-                        partial(self.convert_publication, *args, **kwargs), papers,
+                        partial(self.convert_publication, *args, **kwargs),
+                        papers,
                         chunksize=10,
                     ),
                     total=len(papers),

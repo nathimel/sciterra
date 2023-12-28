@@ -9,6 +9,7 @@ from ..vectorization import vectorizers
 # Iterative expansion helper function
 ##############################################################################
 
+
 def iterate_expand(
     atl: Atlas,
     crt: Cartographer,
@@ -89,7 +90,7 @@ def iterate_expand(
             failures = 0
 
         converged = len(atl) >= target_size or failures >= max_failed_expansions
-    
+
     print("Calculating degree of convergence for all publications.")
     atl = crt.track(atl, calculate_convergence=True)
     atl.save(atlas_dir)
@@ -100,6 +101,7 @@ def iterate_expand(
 
 class AtlasTracer:
     """Convenience data structure for bookkeeping expansions of an Atlas that reduces boilerplate and ensures an aligned update history between the Atlas and Cartographer."""
+
     def __init__(
         self,
         atlas_dir: str,
@@ -107,9 +109,9 @@ class AtlasTracer:
         librarian_name: str,
         vectorizer_name: str,
         vectorizer_kwargs: dict = None,
-        ) -> None:
+    ) -> None:
         """Convenience wrapper data structure for tracked expansions, by aligning the history of a Cartographer with an Atlas.
-        
+
         Args:
             atlas_dir: absolute path of the directory to save atlas data in, propogated to `Atlas.load` and `Atlas.save`
 
@@ -131,7 +133,7 @@ class AtlasTracer:
         # Get vectorizer
         vectorizer = vectorizers[vectorizer_name]
         # Get vectorizer kwargs if they are not null in config
-        v_kwargs = {k:v for k,v in vectorizer_kwargs.items() if v is not None}
+        v_kwargs = {k: v for k, v in vectorizer_kwargs.items() if v is not None}
 
         self.cartographer = Cartographer(
             librarian=librarian(),
@@ -163,11 +165,13 @@ class AtlasTracer:
 
             num_entries = len(atl_center.publications.values())
             if num_entries > 1:
-                raise Exception(f"To build out a centered atlas, the center is specified by loading a bibtex file with a single entry. Found {num_entries} entries in {bibtex_fp}")
+                raise Exception(
+                    f"To build out a centered atlas, the center is specified by loading a bibtex file with a single entry. Found {num_entries} entries in {bibtex_fp}"
+                )
 
             # Set the atlas center
             atl = atl_center
-            (atl.center, ) = atl.publications.keys()
+            (atl.center,) = atl.publications.keys()
 
         self.atlas = atl
         self.atlas.save(atlas_dirpath=self.atlas_dir)
@@ -176,7 +180,7 @@ class AtlasTracer:
         self,
         target_size: int,
         **kwargs,
-        ) -> None:
+    ) -> None:
         """Start or continue the expansion of the Atlas by calling `iterate_expand` with aligned Cartographer and Atlas, by default centered on atl.center.
 
         Args:

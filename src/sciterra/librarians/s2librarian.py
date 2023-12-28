@@ -29,8 +29,8 @@ QUERY_FIELDS = [
     "title",  # useful for inspection
     "externalIds",  # supports ArXiv, MAG, ACL, PubMed, Medline, PubMedCentral, DBLP, DOI
     "citationCount",
-    "fieldsOfStudy", # useful for scoping to a particular field
-    "s2FieldsOfStudy", # if above (annotated) is none we can still extract predicted field
+    "fieldsOfStudy",  # useful for scoping to a particular field
+    "s2FieldsOfStudy",  # if above (annotated) is none we can still extract predicted field
     "url",  # as a possible external id
     "citations.externalIds",
     "citations.url",
@@ -200,10 +200,18 @@ class SemanticScholarLibrarian(Librarian):
         ):
             warnings.warn("Setting citation_count = {len(citations)}.")
             citation_count = len(citations)
-        
+
         # Clobber together a field of study from the validated annoatation or s2's model-predicted fields
-        primary_fields = paper.fieldsOfStudy if hasattr(paper, "fieldsOfStudy") and paper.fieldsOfStudy is not None else []
-        addl_fields = [entry["category"] for entry in paper.s2FieldsOfStudy] if hasattr(paper, "s2FieldsOfStudy") and paper.s2FieldsOfStudy is not None else []
+        primary_fields = (
+            paper.fieldsOfStudy
+            if hasattr(paper, "fieldsOfStudy") and paper.fieldsOfStudy is not None
+            else []
+        )
+        addl_fields = (
+            [entry["category"] for entry in paper.s2FieldsOfStudy]
+            if hasattr(paper, "s2FieldsOfStudy") and paper.s2FieldsOfStudy is not None
+            else []
+        )
         fields_of_study = primary_fields + addl_fields
         if not fields_of_study:
             fields_of_study = None
