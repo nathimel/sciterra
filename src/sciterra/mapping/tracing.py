@@ -21,6 +21,7 @@ def iterate_expand(
     call_size: int = None,
     n_sources_max: int = None,
     record_pubs_per_update: bool = False,
+    **project_kwargs,
 ) -> Atlas:
     """Build out an Atlas of publications, i.e. search for similar publications. This is done by iterating a sequence of [expand, save, project, save, track, save].
 
@@ -45,6 +46,8 @@ def iterate_expand(
 
         record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas.
 
+        project_kwargs: keyword args propagated to every `Cartographer.project` call during iterate_expand; see `Cartographer.filter_by_func`.
+
     Returns:
         atl: the expanded Atlas
     """
@@ -56,7 +59,7 @@ def iterate_expand(
     # Expansion loop
     failures = 0
     # Count previous iterations from loaded atlas as part of total
-    its = len(atl.history['pubs_per_update']) if atl.history is not None else 0
+    its = len(atl.history["pubs_per_update"]) if atl.history is not None else 0
     while not converged:
         its += 1
         len_prev = len(atl)
@@ -80,6 +83,7 @@ def iterate_expand(
             atl,
             verbose=True,
             record_pubs_per_update=record_pubs_per_update,
+            **project_kwargs,
         )
         print_progress(atl)
         atl.save(atlas_dir)
@@ -124,7 +128,7 @@ class AtlasTracer:
 
             vectorizer_name: a str name of a vectorizer, one of `vectorization.vectorizers.keys()`, e.g. 'BOW' or 'SciBERT'.
 
-            vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted
+            vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted           
         """
         ######################################################################
         # Initialize cartography tools
@@ -158,7 +162,9 @@ class AtlasTracer:
             # Crucial step: align the history of crt with atl
             if atl.history is not None:
                 self.cartographer.pubs_per_update = atl.history["pubs_per_update"]
-                print(f"Loaded atlas at expansion iteration {len(atl.history['pubs_per_update'])}.")
+                print(
+                    f"Loaded atlas at expansion iteration {len(atl.history['pubs_per_update'])}."
+                )
         else:
             print(f"Initializing atlas.")
 

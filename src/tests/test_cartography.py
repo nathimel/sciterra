@@ -7,7 +7,7 @@ import numpy as np
 from datetime import datetime
 
 from sciterra.mapping.atlas import Atlas
-from sciterra.mapping.cartography import Cartographer
+from sciterra.mapping.cartography import Cartographer, pub_has_attributes, pub_has_fields_of_study
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
 from sciterra.vectorization import SciBERTVectorizer, Word2VecVectorizer
@@ -196,7 +196,7 @@ class TestS2SBProjection:
                     "identifier": f"id_{2}",
                     "abstract": "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1.",
                     "publication_date": datetime(2023, 1, 1),
-                    "fields_of_study": ["dummy_field"],                    
+                    "fields_of_study": ["dummy_field"],
                 }
             ),
         ]
@@ -249,9 +249,12 @@ class TestS2SBProjection:
 
         # 1. Simulate first part of project
         # 'only project publications that have abstracts'
-        atl_filtered = TestS2SBProjection.crt.filter_by_attributes(
+        atl_filtered = TestS2SBProjection.crt.filter_by_func(
             atl_exp_double,
-            attributes=["abstract"],
+            require_func=lambda pub: pub_has_attributes(
+                pub,
+                attributes=["abstract"],
+            ),
         )
 
         # 'get only embeddings for publications not already projected in atlas'

@@ -8,11 +8,13 @@ import numpy as np
 
 from . import topography
 from .atlas import Atlas
+from .publication import Publication
 from ..librarians.librarian import Librarian
 from ..vectorization.vectorizer import Vectorizer
 from ..vectorization.projection import Projection, merge, get_empty_projection
 from ..misc.utils import get_verbose, custom_formatwarning
 
+from typing import Callable
 from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -51,6 +53,26 @@ def batch_cospsi_matrix(embeddings: np.ndarray) -> np.ndarray:
             )
 
     return cosine_similarities
+
+
+# Helper function for filtering
+def pub_has_attributes(
+    pub: Publication, 
+    attributes: list[str],
+    ) -> bool:
+    """Return True if a publication has all `attributes`.
+    
+    Args: 
+        attributes: the list of attributes to check are not `None` for each publication from the atlas. 
+    """
+    return pub is not None and all([getattr(pub, attr) is not None for attr in attributes])
+
+def pub_has_fields_of_study(
+    pub: Publication,
+    fields_of_study: list[str],
+) -> bool:
+    """Return true if any of `pub.fields_of_study` are in passed `fields_of_study`."""
+    return pub is not None and any([field in fields_of_study for field in pub.fields_of_study])
 
 
 ##############################################################################
@@ -140,17 +162,19 @@ class Cartographer:
         Args:
             atl: the Atlas containing publications to project to document embeddings
 
+            kwargs: keyword arguments propagated to `filter_by_func`
+
         Returns:
             the updated atlas containing all nonempty-abstract-containing publications and their projection
         """
         verbose = get_verbose(kwargs)
 
         # Only project publications that have abstracts and publication dates
-        atl_filtered = self.filter_by_attributes(atl, **kwargs)
+        atl_filtered = self.filter_by_func(atl, **kwargs)
         num_empty = len(atl) - len(atl_filtered)
         if num_empty and verbose:
             warnings.warn(
-                f"{num_empty} publications were filtered due to missing crucial data. There are now {len(atl_filtered.bad_ids)} total ids that will be excluded in the future."
+                f"{num_empty} publications were filtered due to missing crucial data or incorrect field of study. There are now {len(atl_filtered.bad_ids)} total ids that will be excluded in the future."
             )
 
         # Project
@@ -321,14 +345,15 @@ class Cartographer:
     # Filter Atlas
     ######################################################################
 
-    def filter_by_attributes(
+    def filter_by_func(
         self,
         atl: Atlas,
-        attributes: list = [
+        require_func: Callable[[Publication], bool] = lambda pub: pub_has_attributes(pub, attributes=[
             "abstract",
             "publication_date",
             "fields_of_study",
-        ],
+            ],
+        ),
         record_pubs_per_update=False,
         **kwargs,
     ) -> Atlas:
@@ -337,7 +362,7 @@ class Cartographer:
         Args:
             atl: the Atlas containing publications to filter
 
-            attributes: the list of attributes to filter publications from the atlas IF any of items are None for a publication. For example, if attributes = ["abstract"], then all publications `pub` such that `pub.abstract is None` is True will be removed from the atlas, along with the corresponding data in the projection.
+            require_func: a function that takes a publication and returns True if it should be kept in the atlas. For example, if `func = lambda pub: pub_has_attributes(pub, ["abstract"])`, then all publications that have `None` for the attribute `abstract` will be removed from the atlas, along with the corresponding data in the projection.
 
             record_pubs_per_update: whether to track all the publications that exist in the resulting atlas to `self.pubs_per_update`. This should only be set to `True` when you need to later filter by degree of convergence of the atlas. This is an important parameter because `self.filter` is called in `self.project`, which typically is called after `self.expand`, where we pass in the same parameter.
 
@@ -348,8 +373,9 @@ class Cartographer:
         invalid_pubs = {
             id: pub
             for id, pub in atl.publications.items()
-            if (pub is None or any([getattr(pub, attr) is None for attr in attributes]))
+            if not require_func(pub)
         }
+
         # Do not update if unnecessary
         if not len(invalid_pubs):
             return atl
