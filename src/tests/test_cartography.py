@@ -157,6 +157,7 @@ class TestS2SBProjection:
                     "identifier": f"id_{i}",
                     "abstract": "blah blah blah",
                     "publication_date": datetime(2023, 1, 1),
+                    "fields_of_study": ["dummy_field"],
                 }
             )
             for i in range(10)
@@ -180,6 +181,7 @@ class TestS2SBProjection:
                     "identifier": f"id_{0}",
                     "abstract": "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1.",  # everything here should be in the Word2Vec default vocab, since it trains on this abstract.
                     "publication_date": datetime(2023, 1, 1),
+                    "fields_of_study": ["dummy_field"],
                 }
             ),
             Publication(
@@ -194,6 +196,7 @@ class TestS2SBProjection:
                     "identifier": f"id_{2}",
                     "abstract": "We use cosmological hydrodynamic simulations with stellar feedback from the FIRE (Feedback In Realistic Environments) project to study the physical nature of Lyman limit systems (LLSs) at z ≤ 1.",
                     "publication_date": datetime(2023, 1, 1),
+                    "fields_of_study": ["dummy_field"],                    
                 }
             ),
         ]

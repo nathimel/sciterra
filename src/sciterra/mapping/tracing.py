@@ -55,10 +55,13 @@ def iterate_expand(
 
     # Expansion loop
     failures = 0
-    its = 0
+    # Count previous iterations from loaded atlas as part of total
+    its = len(atl.history['pubs_per_update']) if atl.history is not None else 0
     while not converged:
         its += 1
         len_prev = len(atl)
+
+        print(f"\nExpansion {its}\n-------------------------------")
 
         # Retrieve up to n_pubs_max citations and references.
         atl = crt.expand(
@@ -153,7 +156,9 @@ class AtlasTracer:
                 f"Loaded atlas has {len(atl)} publications and {len(atl.projection) if atl.projection is not None else 'None'} embeddings.\n"
             )
             # Crucial step: align the history of crt with atl
-            self.cartographer.pubs_per_update = atl.history["pubs_per_update"]
+            if atl.history is not None:
+                self.cartographer.pubs_per_update = atl.history["pubs_per_update"]
+                print(f"Loaded atlas at expansion iteration {len(atl.history['pubs_per_update'])}.")
         else:
             print(f"Initializing atlas.")
 
@@ -162,6 +167,7 @@ class AtlasTracer:
 
             # Get center from file
             atl_center = self.cartographer.bibtex_to_atlas(bibtex_fp)
+            atl_center = self.cartographer.project(atl_center)
 
             num_entries = len(atl_center.publications.values())
             if num_entries > 1:

@@ -33,7 +33,7 @@ class Atlas:
         publications: list[Publication],
         projection: Projection = None,
         bad_ids: set[str] = set(),
-        history: dict[str, Any] = dict(),
+        history: dict[str, Any] = None,
         center: Publication = None,
     ) -> None:
         if not isinstance(publications, list):
@@ -104,6 +104,8 @@ class Atlas:
                 fp = os.path.join(atlas_dirpath, fn)
                 if os.path.isfile(fp):
                     warnings.warn(f"Overwriting existing file at {fp}.")
+                else:
+                    warnings.warn(f"Writing to {fp}.")
                 write_pickle(fp, attributes[attribute])
             else:
                 warnings.warn(f"No {attribute} to save, skipping.")
