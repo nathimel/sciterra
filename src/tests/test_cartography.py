@@ -7,7 +7,11 @@ import numpy as np
 from datetime import datetime
 
 from sciterra.mapping.atlas import Atlas
-from sciterra.mapping.cartography import Cartographer, pub_has_attributes, pub_has_fields_of_study
+from sciterra.mapping.cartography import (
+    Cartographer,
+    pub_has_attributes,
+    pub_has_fields_of_study,
+)
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
 from sciterra.vectorization import SciBERTVectorizer, Word2VecVectorizer

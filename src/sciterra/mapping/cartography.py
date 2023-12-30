@@ -57,22 +57,27 @@ def batch_cospsi_matrix(embeddings: np.ndarray) -> np.ndarray:
 
 # Helper function for filtering
 def pub_has_attributes(
-    pub: Publication, 
+    pub: Publication,
     attributes: list[str],
-    ) -> bool:
+) -> bool:
     """Return True if a publication has all `attributes`.
-    
-    Args: 
-        attributes: the list of attributes to check are not `None` for each publication from the atlas. 
+
+    Args:
+        attributes: the list of attributes to check are not `None` for each publication from the atlas.
     """
-    return pub is not None and all([getattr(pub, attr) is not None for attr in attributes])
+    return pub is not None and all(
+        [getattr(pub, attr) is not None for attr in attributes]
+    )
+
 
 def pub_has_fields_of_study(
     pub: Publication,
     fields_of_study: list[str],
 ) -> bool:
     """Return true if any of `pub.fields_of_study` are in passed `fields_of_study`."""
-    return pub is not None and any([field in fields_of_study for field in pub.fields_of_study])
+    return pub is not None and any(
+        [field in fields_of_study for field in pub.fields_of_study]
+    )
 
 
 ##############################################################################
@@ -348,10 +353,12 @@ class Cartographer:
     def filter_by_func(
         self,
         atl: Atlas,
-        require_func: Callable[[Publication], bool] = lambda pub: pub_has_attributes(pub, attributes=[
-            "abstract",
-            "publication_date",
-            "fields_of_study",
+        require_func: Callable[[Publication], bool] = lambda pub: pub_has_attributes(
+            pub,
+            attributes=[
+                "abstract",
+                "publication_date",
+                "fields_of_study",
             ],
         ),
         record_pubs_per_update=False,
@@ -371,9 +378,7 @@ class Cartographer:
         """
         # Filter publications
         invalid_pubs = {
-            id: pub
-            for id, pub in atl.publications.items()
-            if not require_func(pub)
+            id: pub for id, pub in atl.publications.items() if not require_func(pub)
         }
 
         # Do not update if unnecessary

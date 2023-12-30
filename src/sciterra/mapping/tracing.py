@@ -128,7 +128,7 @@ class AtlasTracer:
 
             vectorizer_name: a str name of a vectorizer, one of `vectorization.vectorizers.keys()`, e.g. 'BOW' or 'SciBERT'.
 
-            vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted           
+            vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted
         """
         ######################################################################
         # Initialize cartography tools
