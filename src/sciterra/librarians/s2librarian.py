@@ -213,6 +213,7 @@ class SemanticScholarLibrarian(Librarian):
             else []
         )
         fields_of_study = primary_fields + addl_fields
+        fields_of_study = list(set(fields_of_study))
         if not fields_of_study:
             fields_of_study = None
 

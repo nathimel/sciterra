@@ -199,6 +199,7 @@ class ADSLibrarian(Librarian):
         ]  # n.b. there is actually some diversity of fields beyond physics in ADS, e.g. theoretical biology.
         arxiv_classes = article.arxiv_class if article.arxiv_class is not None else []
         fields_of_study = fields_of_study + arxiv_classes
+        fields_of_study = list(set(fields_of_study))
 
         data = {
             # primary fields
