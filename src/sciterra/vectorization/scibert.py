@@ -101,7 +101,7 @@ class SciBERTVectorizer(Vectorizer):
 
             # Extract the embeddings
             # index last (13th) BERT layer before the classifier
-            final_hidden_state = encoded_layers[12]  # [batch_size, 256, 768]
+            final_hidden_state = encoded_layers[12]  # [batch_size, seq_len, 768]
             # index first token of sequence, [CLS], for our document embeddings
             batched_embeddings = final_hidden_state[:, 0, :]  # [batch_size, 768]
 
@@ -114,7 +114,7 @@ class SciBERTVectorizer(Vectorizer):
             pbar.update(batch_size)
         pbar.close()
 
-        # We don't have to deal with OOV, so we always return full list of ids
+        # We don't deal with OOV, so we always return full list of ids
         return {
             "embeddings": np.array(embeddings),
             "success_indices": np.arange(len(embeddings), dtype=int),

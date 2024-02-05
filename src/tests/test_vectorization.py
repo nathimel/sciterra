@@ -5,7 +5,7 @@ from sklearn.metrics.pairwise import cosine_distances
 from tqdm import tqdm
 
 from sciterra.vectorization.vectorizer import Vectorizer
-from sciterra.vectorization import scibert, sbert, word2vec, bow
+from sciterra.vectorization import scibert, sbert, word2vec, bow, gpt2
 
 astro_corpus_1 = "src/tests/data/corpora/example.txt"
 model_path_1 = "src/tests/data/models/word2vec_model_example.model"
@@ -37,6 +37,23 @@ class TestSciBERTVectorizer:
         )["embeddings"]
         # check identity
         assert np.all(embeddings[0] == embeddings[1])
+
+    def test_diff_seq_len_batch(self):
+        embeddings = TestSciBERTVectorizer.vectorizer.embed_documents(
+            [
+                abstract_str, 
+                abstract_str,                 
+                abstract_str[:194],
+                abstract_str[:194],                
+            ]
+        )["embeddings"]
+
+        # Check that first two and second two embeddings are the same
+        assert np.array_equal(embeddings[0], embeddings[1])
+        assert np.array_equal(embeddings[2], embeddings[3])
+
+        # Check that second and third embeddings are not the same
+        assert not np.array_equal(embeddings[1], embeddings[2])            
 
     def test_single_cosine_pair(self):
         embeddings = TestSciBERTVectorizer.vectorizer.embed_documents(
@@ -92,6 +109,23 @@ class TestSBERTVectorizer:
         # check identity
         assert np.all(embeddings[0] == embeddings[1])
 
+    def test_diff_seq_len_batch(self):
+        embeddings = TestSBERTVectorizer.vectorizer.embed_documents(
+            [
+                abstract_str, 
+                abstract_str,                 
+                abstract_str[:194],
+                abstract_str[:194],                
+            ]
+        )["embeddings"]
+
+        # Check that first two and second two embeddings are the same
+        assert np.array_equal(embeddings[0], embeddings[1])
+        assert np.array_equal(embeddings[2], embeddings[3])
+
+        # Check that second and third embeddings are not the same
+        assert not np.array_equal(embeddings[1], embeddings[2])        
+
     def test_single_cosine_pair(self):
         embeddings = TestSBERTVectorizer.vectorizer.embed_documents(
             [abstract_str, abstract_str]
@@ -118,6 +152,76 @@ class TestSBERTVectorizer:
         )
         cosine_matrix = cosine_distances(embeddings, embeddings)
         assert np.all(cosine_matrix == 0)
+
+
+##############################################################################
+# GPT-2
+##############################################################################
+
+class TestGPT2Vectorizer:
+    vectorizer = gpt2.GPT2Vectorizer() # don't pass 'mps' for CI tests
+    embedding_dim = gpt2.EMBEDDING_DIM
+
+    def test_single_vector(self):
+        embedding = TestGPT2Vectorizer.vectorizer.embed_documents([abstract_str])[
+            "embeddings"
+        ]
+
+        # Check embedding is of correct type, shape, and has no nans
+        assert isinstance(embedding, np.ndarray)
+        assert embedding.shape == (1, TestGPT2Vectorizer.embedding_dim)
+        assert not np.isnan(embedding).any()   
+
+    def test_identity_of_embeddings(self):
+        embeddings = TestGPT2Vectorizer.vectorizer.embed_documents(
+            [abstract_str, abstract_str]
+        )["embeddings"]
+        # check identity
+        assert np.all(embeddings[0] == embeddings[1])        
+
+    def test_diff_seq_len_batch(self):
+        embeddings = TestGPT2Vectorizer.vectorizer.embed_documents(
+            [
+                abstract_str, 
+                abstract_str,                 
+                abstract_str[:194],
+                abstract_str[:194],                
+            ]
+        )["embeddings"]
+
+        # Check that first two and second two embeddings are the same
+        assert np.array_equal(embeddings[0], embeddings[1])
+        assert np.array_equal(embeddings[2], embeddings[3])
+
+        # Check that second and third embeddings are not the same
+        assert not np.array_equal(embeddings[1], embeddings[2])
+
+    def test_single_cosine_pair(self):
+        embeddings = TestGPT2Vectorizer.vectorizer.embed_documents(
+            [abstract_str, abstract_str]
+        )["embeddings"]
+
+        # Check that the cosine sim of doc w/ itself is 1
+        # n.b., see sklearn.metrics.pairwise.cosine_similarity
+        sim = float(1 - cosine(embeddings[0], embeddings[1]))
+        assert sim == 1.0
+
+    def test_basic_cosine_matrix(self):
+        # like pair above, but pretending that we have more than 2 publications.
+
+        num_pubs = 300
+        # n.b., 1000 typically takes 83.75s with mps; Colab cuda takes just 29s
+        # github actions just uses cpu, so maybe don't waste time stress testing
+
+        embeddings = np.array(
+            [
+                TestGPT2Vectorizer.vectorizer.embed_documents(
+                    [abstract_str] * num_pubs
+                )["embeddings"].flatten()
+            ]
+        )
+        cosine_matrix = cosine_distances(embeddings, embeddings)
+        assert np.all(cosine_matrix == 0)        
 
 
 ##############################################################################
@@ -160,6 +264,23 @@ class TestWord2VecVectorizer:
         )["embeddings"]
         # check identity
         assert np.all(embeddings[0] == embeddings[1])
+
+    def test_diff_seq_len_batch(self):
+        embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(
+            [
+                abstract_str, 
+                abstract_str,                 
+                abstract_str[:194],
+                abstract_str[:194],                
+            ]
+        )["embeddings"]
+
+        # Check that first two and second two embeddings are the same
+        assert np.array_equal(embeddings[0], embeddings[1])
+        assert np.array_equal(embeddings[2], embeddings[3])
+
+        # Check that second and third embeddings are not the same
+        assert not np.array_equal(embeddings[1], embeddings[2])        
 
     def test_single_cosine_pair(self):
         embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(
@@ -227,6 +348,23 @@ class TestBOWVectorizer:
         )["embeddings"]
         # check identity
         assert np.all(embeddings[0] == embeddings[1])
+
+    def test_diff_seq_len_batch(self):
+        embeddings = TestBOWVectorizer.vectorizer.embed_documents(
+            [
+                abstract_str, 
+                abstract_str,                 
+                abstract_str[:194],
+                abstract_str[:194],                
+            ]
+        )["embeddings"]
+
+        # Check that first two and second two embeddings are the same
+        assert np.array_equal(embeddings[0], embeddings[1])
+        assert np.array_equal(embeddings[2], embeddings[3])
+
+        # Check that second and third embeddings are not the same
+        assert not np.array_equal(embeddings[1], embeddings[2])           
 
     def test_single_cosine_pair(self):
         embeddings = TestWord2VecVectorizer.vectorizer.embed_documents(
