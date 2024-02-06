@@ -69,8 +69,18 @@ NUM_ATTEMPTS_PER_QUERY = 50
 
 
 class SemanticScholarLibrarian(Librarian):
-    def __init__(self) -> None:
-        self.sch = SemanticScholar()
+    def __init__(
+        self,
+        api_key: str = None,
+        api_key_fn: str = None,
+    ) -> None:
+        if api_key_fn is not None:
+            print(f"Reading private api key from {api_key_fn}.")
+            # Parse api_key_fn for 40-ch private key
+            with open(api_key_fn, "r") as f:
+                api_key = f.read()
+
+        self.sch = SemanticScholar(api_key=api_key)
         super().__init__()
 
     def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:

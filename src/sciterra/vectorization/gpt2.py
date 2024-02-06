@@ -21,10 +21,9 @@ MPS_DEVICE = torch.device("mps")
 # This is the hidden dimension size
 EMBEDDING_DIM = 768
 
+
 class GPT2Vectorizer(Vectorizer):
-
     def __init__(self, device="cuda", **kwargs) -> None:
-
         # Get tokenizer
         self.tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
 
@@ -74,13 +73,12 @@ class GPT2Vectorizer(Vectorizer):
 
             # A note on padding from Thomas Wolf: https://github.com/huggingface/transformers/issues/808#issuecomment-522932583
 
-
             # Tokenize the batch
             encoded = self.tokenizer(
                 batch,
                 add_special_tokens=True,
                 padding=True,  # pad up to length of longest abstract
-                # truncation=True,  # max length 1024 tokens
+                truncation=True,  # max length 1024 tokens
                 return_tensors="pt",
             )
             # each encoded item of shape [64, 1024]
@@ -99,18 +97,31 @@ class GPT2Vectorizer(Vectorizer):
                 )
 
             # Get the embeddings of each final token in the batch
-                
-            # Get the full last hidden state, 
+
+            # Get the full last hidden state,
             # shape [batch_size, sequence_length, hidden_size=768]
             last_hidden_state = outputs.last_hidden_state
 
-            # Get the varying sequence lengths, 
+            # Get the varying sequence lengths,
             # shape [batch_size,]
-            sequence_lengths = torch.tensor([torch.nonzero(token_ids.eq(50256))[0].item() + 1 if token_ids.eq(50256).any() else len(token_ids) for token_ids in input_ids])
+            sequence_lengths = torch.tensor(
+                [
+                    torch.nonzero(token_ids.eq(self.tokenizer.pad_token_id))[0].item()
+                    + 1
+                    if token_ids.eq(self.tokenizer.pad_token_id).any()
+                    else len(token_ids)
+                    for token_ids in input_ids
+                ]
+            )
 
-            # Get embeddings of each final token, 
+            # Get embeddings of each final token,
             # shape [batch_size, hidden_size]
-            last_hidden_states = torch.stack([last_hidden_state[i, sequence_lengths[i] - 1, :] for i in range(len(sequence_lengths))])
+            last_hidden_states = torch.stack(
+                [
+                    last_hidden_state[i, sequence_lengths[i] - 1, :]
+                    for i in range(len(sequence_lengths))
+                ]
+            )
 
             # Move to the CPU and convert to numpy ndarray
             batched_embeddings = last_hidden_states.detach().cpu().numpy()
@@ -119,7 +130,7 @@ class GPT2Vectorizer(Vectorizer):
             embeddings.extend(batched_embeddings)
 
             pbar.update(batch_size)
-        pbar.close()            
+        pbar.close()
 
         # We don't deal with OOV, so we always return full list of ids
         return {

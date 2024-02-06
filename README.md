@@ -98,7 +98,7 @@ success_indices = result["success_indices"] # shape `(len(embeddings),)`
 fail_indices = result["fail_indices"] # shape `(len(docs) - len(embeddings))``
 ```
 
-Currently, sciterra has vectorizers using [SciBERT](https://aclanthology.org/D19-1371/), [SBERT](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models), [Word2Vec](https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#), and a simple bag-of-words (BOW) vectorizer that uses the same vocabulary as the Word2Vec vectorizer. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
+Currently, sciterra has vectorizers using [SciBERT](https://aclanthology.org/D19-1371/), [SBERT](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models), [GPT-2](https://huggingface.co/docs/transformers/en/model_doc/gpt2), [Word2Vec](https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#), and a simple bag-of-words (BOW) vectorizer that uses the same vocabulary as the Word2Vec vectorizer. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.
 
 ### Putting it all together
 

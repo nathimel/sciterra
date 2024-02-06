@@ -114,6 +114,7 @@ class AtlasTracer:
         atlas_dir: str,
         atlas_center_bibtex: str,
         librarian_name: str,
+        librarian_kwargs: str,
         vectorizer_name: str,
         vectorizer_kwargs: dict = None,
     ) -> None:
@@ -126,6 +127,8 @@ class AtlasTracer:
 
             librarian_name: a str name of a librarian, one of `librarians.librarians.keys()`, e.g. 'S2' or 'ADS'.
 
+            librarian_kwargs: keyword args propogated to a Librarian initialization; if values are `None` they will be omitted
+
             vectorizer_name: a str name of a vectorizer, one of `vectorization.vectorizers.keys()`, e.g. 'BOW' or 'SciBERT'.
 
             vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted
@@ -136,6 +139,7 @@ class AtlasTracer:
 
         # Get librarian
         librarian = librarians[librarian_name]
+        l_kwargs = {k: v for k, v in librarian_kwargs.items() if v is not None}
 
         # Get vectorizer
         vectorizer = vectorizers[vectorizer_name]
@@ -143,7 +147,9 @@ class AtlasTracer:
         v_kwargs = {k: v for k, v in vectorizer_kwargs.items() if v is not None}
 
         self.cartographer = Cartographer(
-            librarian=librarian(),
+            librarian=librarian(
+                **l_kwargs,
+            ),
             vectorizer=vectorizer(
                 **v_kwargs,
             ),

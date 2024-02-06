@@ -203,7 +203,8 @@ class Cartographer:
 
             # Embed documents
             result = self.vectorizer.embed_documents(
-                [atl_filtered[id].abstract for id in embed_ids]
+                [atl_filtered[id].abstract for id in embed_ids],
+                batch_size=kwargs["batch_size"] if "batch_size" in kwargs else None,
             )
             embeddings = result["embeddings"]
             success_indices = result["success_indices"]

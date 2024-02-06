@@ -7,11 +7,15 @@ class Vectorizer:
     def __init__(self) -> None:
         pass
 
-    def embed_documents(self, docs: list[str]) -> dict[str, np.ndarray]:
+    def embed_documents(
+        self, docs: list[str], batch_size: int = 64
+    ) -> dict[str, np.ndarray]:
         """Embed a list of documents into document vectors.
 
         Args:
             docs: the documents to embed.
+
+            batch_size: the batch size to use.
 
         Returns:
             a dict of the form
