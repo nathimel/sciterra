@@ -21,6 +21,9 @@ MPS_DEVICE = torch.device("mps")
 # This is the hidden dimension size
 EMBEDDING_DIM = 768
 
+# Default is small, otherwise memory limits become a problem
+BATCH_SIZE = 8
+
 
 class GPT2Vectorizer(Vectorizer):
     def __init__(self, device="cuda", **kwargs) -> None:
@@ -48,7 +51,9 @@ class GPT2Vectorizer(Vectorizer):
         super().__init__()
 
     def embed_documents(
-        self, docs: list[str], batch_size: int = 64
+        self,
+        docs: list[str],
+        batch_size: int = BATCH_SIZE,
     ) -> dict[str, np.ndarray]:
         """Embed a list of documents (raw text) into GPT-2 vectors, by batching.
 
@@ -59,6 +64,8 @@ class GPT2Vectorizer(Vectorizer):
             a numpy array of shape `(num_documents, embedding_dim)`
 
         """
+        if batch_size is None:
+            batch_size = BATCH_SIZE
 
         embeddings = []
 

@@ -38,7 +38,7 @@ class BOWVectorizer(Vectorizer):
         self.embedding_dim = len(self.vocabulary)
         self.count_vectorizer = CountVectorizer(vocabulary=self.vocabulary)
 
-    def embed_documents(self, docs: list[str]) -> dict[str, ndarray]:
+    def embed_documents(self, docs: list[str], **kwargs) -> dict[str, ndarray]:
         """Embed a list of documents (raw text) into bow document vectors using scikit-learn's CountVectorizer.
 
         Args:

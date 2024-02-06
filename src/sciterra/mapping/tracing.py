@@ -114,8 +114,8 @@ class AtlasTracer:
         atlas_dir: str,
         atlas_center_bibtex: str,
         librarian_name: str,
-        librarian_kwargs: str,
         vectorizer_name: str,
+        librarian_kwargs: dict = None,
         vectorizer_kwargs: dict = None,
     ) -> None:
         """Convenience wrapper data structure for tracked expansions, by aligning the history of a Cartographer with an Atlas.
@@ -127,9 +127,9 @@ class AtlasTracer:
 
             librarian_name: a str name of a librarian, one of `librarians.librarians.keys()`, e.g. 'S2' or 'ADS'.
 
-            librarian_kwargs: keyword args propogated to a Librarian initialization; if values are `None` they will be omitted
-
             vectorizer_name: a str name of a vectorizer, one of `vectorization.vectorizers.keys()`, e.g. 'BOW' or 'SciBERT'.
+
+            librarian_kwargs: keyword args propogated to a Librarian initialization; if values are `None` they will be omitted
 
             vectorizer_kwargs: keyword args propogated to a Vectorizer initialization; if values are `None` they will be omitted
         """

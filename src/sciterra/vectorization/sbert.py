@@ -19,6 +19,8 @@ MODEL_PATH = "all-MiniLM-L6-v2"  # All-round model tuned for many use-cases. Tra
 EMBEDDING_DIM = 384
 MAX_SEQ_LENGTH = 256
 
+BATCH_SIZE = 64
+
 
 class SBERTVectorizer(Vectorizer):
     def __init__(self, device="cuda", **kwargs) -> None:
@@ -38,7 +40,9 @@ class SBERTVectorizer(Vectorizer):
         self.model.eval()
         super().__init__()
 
-    def embed_documents(self, docs: list[str], batch_size: int = 64) -> np.ndarray:
+    def embed_documents(
+        self, docs: list[str], batch_size: int = BATCH_SIZE
+    ) -> np.ndarray:
         """Embed a list of documents (raw text) into SBERT vectors, by batching.
 
         Args:
@@ -47,6 +51,8 @@ class SBERTVectorizer(Vectorizer):
         Returns:
             a numpy array of shape `(num_documents, 384)`
         """
+        if batch_size is None:
+            batch_size = BATCH_SIZE
 
         embeddings = []
 

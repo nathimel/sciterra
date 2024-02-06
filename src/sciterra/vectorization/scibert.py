@@ -22,6 +22,8 @@ MPS_DEVICE = torch.device("mps")
 MODEL_PATH = "allenai/scibert_scivocab_uncased"
 EMBEDDING_DIM = 768
 
+BATCH_SIZE = 64
+
 
 class SciBERTVectorizer(Vectorizer):
     def __init__(self, device="cuda", **kwargs) -> None:
@@ -53,7 +55,7 @@ class SciBERTVectorizer(Vectorizer):
         super().__init__()
 
     def embed_documents(
-        self, docs: list[str], batch_size: int = 64
+        self, docs: list[str], batch_size: int = BATCH_SIZE
     ) -> dict[str, np.ndarray]:
         """Embed a list of documents (raw text) into SciBERT vectors, by batching.
 
@@ -64,6 +66,8 @@ class SciBERTVectorizer(Vectorizer):
             a numpy array of shape `(num_documents, 768)`
 
         """
+        if batch_size is None:
+            batch_size = BATCH_SIZE
 
         embeddings = []
 
