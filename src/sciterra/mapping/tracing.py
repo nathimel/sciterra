@@ -115,8 +115,8 @@ class AtlasTracer:
         atlas_center_bibtex: str,
         librarian_name: str,
         vectorizer_name: str,
-        librarian_kwargs: dict = None,
-        vectorizer_kwargs: dict = None,
+        librarian_kwargs: dict = dict(),
+        vectorizer_kwargs: dict = dict(),
     ) -> None:
         """Convenience wrapper data structure for tracked expansions, by aligning the history of a Cartographer with an Atlas.
 
@@ -139,19 +139,21 @@ class AtlasTracer:
 
         # Get librarian
         librarian = librarians[librarian_name]
-        l_kwargs = {k: v for k, v in librarian_kwargs.items() if v is not None}
+        librarian_kwargs = {k: v for k, v in librarian_kwargs.items() if v is not None}
 
         # Get vectorizer
         vectorizer = vectorizers[vectorizer_name]
         # Get vectorizer kwargs if they are not null in config
-        v_kwargs = {k: v for k, v in vectorizer_kwargs.items() if v is not None}
+        vectorizer_kwargs = {
+            k: v for k, v in vectorizer_kwargs.items() if v is not None
+        }
 
         self.cartographer = Cartographer(
             librarian=librarian(
-                **l_kwargs,
+                **librarian_kwargs,
             ),
             vectorizer=vectorizer(
-                **v_kwargs,
+                **vectorizer_kwargs,
             ),
         )
 
