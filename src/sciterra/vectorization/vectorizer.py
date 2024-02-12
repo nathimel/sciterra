@@ -1,12 +1,11 @@
 """Base class for vectorizing abstracts."""
 
 import numpy as np
+from abc import ABC, abstractmethod
 
+class Vectorizer(ABC):
 
-class Vectorizer:
-    def __init__(self) -> None:
-        pass
-
+    @abstractmethod
     def embed_documents(
         self, docs: list[str], batch_size: int = 64
     ) -> dict[str, np.ndarray]:

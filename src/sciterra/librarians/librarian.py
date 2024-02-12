@@ -1,19 +1,20 @@
 from ..mapping.publication import Publication
 
+from abc import ABC, abstractmethod
 from functools import partial
 from typing import Any
 from multiprocessing import Pool
 from tqdm import tqdm
 
 
-class Librarian:
-    def __init__(self) -> None:
-        pass
+class Librarian(ABC):
 
+    @abstractmethod
     def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:
         """Parse a bibtex entry for a usable unique identifier appropriate to the API."""
         raise NotImplementedError
 
+    @abstractmethod
     def get_publications(
         self,
         identifiers: list[str],
@@ -32,6 +33,7 @@ class Librarian:
         """
         raise NotImplementedError
 
+    @abstractmethod
     def convert_publication(self, pub: Any, *args, **kwargs):
         """Convert an API-specific resulting publication data structure into a sciterra Publication object."""
         raise NotImplementedError
