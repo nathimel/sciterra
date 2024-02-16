@@ -673,7 +673,7 @@ class Cartographer:
         print(f"Computing {metrics} for {len(ids)} publications.")
         estimates = []
         # for idx in tqdm(publication_indices):
-        for idx, identifier in enumerate(ids):
+        for idx, identifier in tqdm(enumerate(ids), total=len(ids)):
             # Get the date of publication
             # identifier = atl.projection.index_to_identifier[idx]
             date = atl[identifier].publication_date
