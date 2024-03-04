@@ -190,19 +190,27 @@ class SemanticScholarLibrarian(Librarian):
         else:
             publication_date = None
 
-        # convert citations/references from lists of Papers to identifiers
-        citations = [
-            paper.paperId for paper in paper.citations if paper.paperId is not None
-        ]  # no point using recursion assuming identifier=paperId
+        # Parse citations
+        citations = None
+        if paper.citations is not None:
+            # convert citations/references from lists of Papers to identifiers
+            citations = [
+                paper.paperId for paper in paper.citations if paper.paperId is not None
+            ]  # no point using recursion assuming identifier=paperId
+
+        
         references = [
             paper.paperId for paper in paper.references if paper.paperId is not None
         ]
 
+        # TODO: same with citationCount
         citation_count = paper.citationCount
         if citation_count != len(citations) and verbose:
             warnings.warn(
                 f"The length of the citations list ({len(citations)}) is different from citation_count ({citation_count})"
             )
+
+        # TODO: What if citations = []?
         if (
             "infer_citation_count" in kwargs
             and kwargs["infer_citation_count"]

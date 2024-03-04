@@ -36,7 +36,7 @@ DEFAULT_CORPUS = os.path.join(corpora_path, ASTROPHYSICS_CORPUS)
 class Word2VecVectorizer(Vectorizer):
     def __init__(
         self,
-        corpus_path: str = DEFAULT_CORPUS,
+        corpus_path: str,
         model_path: str = None,
         vector_size: int = EMBEDDING_DIM,
         window: int = 5,
@@ -59,7 +59,7 @@ class Word2VecVectorizer(Vectorizer):
             print(
                 f"Loading and tokenizing data from {corpus_path} for vocabulary and training..."
             )
-            sentences = [self.tokenizer(line) for line in tqdm(open(corpus_path))]
+            sentences = [self.tokenizer(line) for line in tqdm(open(corpus_path), desc="tokenizing lines")]
 
             print(f"Training Word2Vec model...")
             model = Word2Vec(
@@ -95,7 +95,12 @@ class Word2VecVectorizer(Vectorizer):
         means = []
         success_indices = []
         failed_indices = []
-        for i, doc in tqdm(enumerate(docs), desc="embedding documents", leave=True):
+        for i, doc in tqdm(
+            enumerate(docs), 
+            desc="embedding documents", 
+            leave=True,
+            total=len(docs),
+        ):
             mean = np.mean(
                 [
                     self.model.wv[word]

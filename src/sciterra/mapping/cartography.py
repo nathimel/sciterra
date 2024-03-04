@@ -31,10 +31,10 @@ def batch_cospsi_matrix(embeddings: np.ndarray) -> np.ndarray:
     In order to avoid memory errors (e.g. bus error, segfaults) resulting from too large arrays, we batch process the construction of the cospsi_matrix.
 
     Args:
-        embeddings: a 1D numpy array of embeddings
+        embeddings: a numpy array of embeddings of shape `(num_pubs, embedding_dim)`
 
     Returns:
-        cosine_similarities: a 2D numpy array representing the pairwise cosine similarity between each embedding
+        cosine_similarities: a 2D numpy array of shape `(num_pubs, num_pubs)` representing the pairwise cosine similarity between each embedding
     """
     batch_size = min(1000, len(embeddings))  # Define a batch size
 
@@ -280,7 +280,7 @@ class Cartographer:
         Returns:
             atl_expanded: the expanded atlas
         """
-        existing_keys = set(atl.ids())
+        existing_keys = set(atl.ids)
         expand_keys = existing_keys
         if center is not None:
             # If atlas is initial
@@ -343,7 +343,7 @@ class Cartographer:
 
         # Record the new list of publications
         if record_pubs_per_update:
-            self.pubs_per_update.append(list(atl_exp.ids()))
+            self.pubs_per_update.append(list(atl_exp.ids))
 
         return atl_exp
 
@@ -390,7 +390,7 @@ class Cartographer:
 
         # Record only the publications in the history that weren't filtered out
         if record_pubs_per_update:
-            self.pubs_per_update[-1] = atl_filtered.ids()
+            self.pubs_per_update[-1] = atl_filtered.ids
 
         return atl_filtered
 
@@ -415,7 +415,7 @@ class Cartographer:
                 "You must pass exactly one of `keep_ids` or `drop_ids`, but both had a value that was not `None`."
             )
         if keep_ids is not None:
-            filter_ids = set([id for id in atl.ids() if id not in keep_ids])
+            filter_ids = set([id for id in atl.ids if id not in keep_ids])
         elif drop_ids is not None:
             filter_ids = set(drop_ids)
         else:
@@ -496,6 +496,7 @@ class Cartographer:
         Returns:
             atl the updated Atlas
         """
+        print("Tracking atlas...")
         self.record_update_history(pubs, pubs_per_update)
         # Skip expensive convergence calculation if possible
         kernel_size = self.converged_kernel_size(atl) if calculate_convergence else None
@@ -561,7 +562,7 @@ class Cartographer:
                 - The second column indicates the largest kernel size that hasn't changed since the first update,
                 - etc. for the nth column.
         """
-
+        print("Calculating degree of convergence for all publications.")
         if self.update_history is None:
             raise ValueError(
                 "update_history is None; make sure you have called record_update_history()!"
@@ -570,38 +571,37 @@ class Cartographer:
         if -2 in self.update_history:
             raise ValueError(
                 "Incomplete update history as indicated by entries with values of -2."
-            )
+            )        
 
-        publications = np.array(atl.ids())
+        publications = np.array(atl.ids)
 
-        # TODO: This gets slow. It can be parallelized, I think.
+        # Compute pairwise cosine similarity, shape `(num_pubs,num_pubs)`
+        cospsi_matrix = batch_cospsi_matrix(atl.projection.embeddings)
 
-        # 1. Loop over each publication
-        cospsi_kernel = []
+        # 0. Loop over each publication
+        cospsi_kernel: list[list[int]] = []
         for pub in tqdm(publications, desc="calculating converged kernel size"):
-            # 2. Identify the similarity with the other publications relative to this publication, and sort accordingly.
-            cospsi = cosine_similarity(
-                atl.projection.identifiers_to_embeddings([pub]),
-                atl.projection.embeddings,
-            ).flatten()  # shape `(num_pubs,)`
+            # 1. Identify the similarity with the other publications relative to this publication, and sort accordingly.
+            cospsi = cospsi_matrix[publications == pub].flatten() # shape `(num_pubs,)`
             sort_inds = np.argsort(cospsi)[::-1]  # shape `(num_pubs,)`
 
-            # 3. Identify the expansion iteration at which those publications were added to the atlas (`sorted_history`).
+            # 2. Identify the expansion iteration at which those publications were added to the atlas (`sorted_history`).
             sorted_history = self.update_history[sort_inds]  # shape `(num_pubs,)`
 
-            # 4. Identify the latest iteration at which any publication was added to the atlas; this can be less than the total iterations.
+            # 3. Identify the latest iteration at which any publication was added to the atlas; this can be less than the total iterations.
             last_update = self.update_history.max()
 
-            # 5. Loop through each iteration until `last_update`, and identify which publications were added at or before that iteration.
-            result_2 = [
-                # 6. Compute how many publications out we can go and still only contain publications added at or before that iteration.
+            # 4. Loop through each iteration until `last_update`, and identify which publications were added at or before that iteration.
+            result = [
+                # 5. Compute how many publications out we can go and still only contain publications added at or before that iteration.
                 # Use `argmin` to get the first instance of False
                 # Finally, subtract 1: we want the first index before False.
-                np.argmin(sorted_history <= update) - 1
-                for update in range(last_update)
-            ]  # shape `(num_pubs, last_update)`
+                # See tests.test_cartography.TestConvergence.test_converged_kernel_size for a concrete example.
+                np.argmin(sorted_history <= update_idx) - 1
+                for update_idx in range(last_update)
+            ]  # shape `(last_update, )`
 
-            cospsi_kernel.append(result_2)
+            cospsi_kernel.append(result)
 
         return np.array(cospsi_kernel)
 
@@ -647,11 +647,11 @@ class Cartographer:
         Returns:
             estimates: an np.ndarray of shape `(len(publication_indices), len(metrics))` representing the estimated topography metric values for each publication.
         """
-        verbose = get_verbose(kwargs)
+        _ = get_verbose(kwargs)
 
         # By default calculate for all publications
         if ids is None:
-            ids = atl.ids()
+            ids = atl.ids
         else:
             ids = list(ids)
 
@@ -717,6 +717,7 @@ class Cartographer:
                 return estimate
 
             estimates.append([call_metric(metric, **kwargs) for metric in metrics])
+
         estimates = np.array(estimates)
 
         return estimates

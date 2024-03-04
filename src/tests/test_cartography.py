@@ -20,6 +20,7 @@ bib_dir = "src/tests/data/bib"
 single_pub_bibtex_fp = f"{bib_dir}/single_publication.bib"
 ten_pub_bibtex_fp = f"{bib_dir}/ten_publications.bib"
 realistic_bibtex_fp = f"{bib_dir}/rdsg.bib"
+corpus_path = "src/tests/data/corpora/astro_1.txt"
 
 ##############################################################################
 # SemanticScholar x SciBERT
@@ -177,7 +178,7 @@ class TestS2SBProjection:
         assert np.array_equal(vector0, vector1)
 
     def test_dummy_projection_partial(self):
-        crt = Cartographer(vectorizer=Word2VecVectorizer())
+        crt = Cartographer(vectorizer=Word2VecVectorizer(corpus_path=corpus_path))
 
         pubs = [
             Publication(
@@ -219,7 +220,7 @@ class TestS2SBProjection:
         atl_proj = TestS2SBProjection.crt.project(atl)
         projection = atl_proj.projection
 
-        identifier = atl.ids()[0]
+        identifier = atl.ids[0]
         assert projection.identifier_to_index == {identifier: 0}
         assert projection.index_to_identifier == (identifier,)
         assert projection.embeddings.shape == (1, 768)  # (num_pubs, embedding_dim)
@@ -397,7 +398,7 @@ class TestTopography:
         bibtex_fp = ten_pub_bibtex_fp
         atl = TestTopography.crt.bibtex_to_atlas(bibtex_fp)
         atl = TestTopography.crt.project(atl)
-        ids = atl.ids()[:-5]
+        ids = atl.ids[:-5]
         metrics = [
             "density",
             "edginess",
@@ -429,7 +430,7 @@ class TestTopography:
 
         # Project, necessary for metrics!
         atl_exp_single = TestTopography.crt.project(atl_exp_single)
-        ids = atl_exp_single.ids()
+        ids = atl_exp_single.ids
 
         metrics = [
             "density",
@@ -474,7 +475,7 @@ class TestConvergence:
         ]
 
         TestConvergence.crt.record_update_history(
-            atl.ids(),
+            atl.ids,
             pubs_per_update=history,
         )
 
@@ -519,11 +520,18 @@ class TestConvergence:
                 "2e6438be4901cb9b42ff23dcc3d433789b37d032",
                 "04da6471743468b6bb1d26dd9a6eac4c03ca73ee",
             ],
-            atl.ids(),  # it=3
+            # it=3, len=10. This is equiv to atl.ids
+            [
+                '9d1a233164f27342d316662821e9a6bb855c25b4', 'af6a1c9da102e29fee5d309ec33831207e9f23e5', 
+                # ----- it 2 ----
+                '50dea78a96f03ba7fc3398c5deea5174630ef186', '54a83cd1d94814b0f37ee48084260a2d1882648d', '4364af31229f7e9a3d83a289a928b2f2a43d30cb', 'f2c251056dee4c6f9130b31e5e3e4b3296051c49', '287fa946f30eaa78ea86f9c5bd61d67238202356', '2e6438be4901cb9b42ff23dcc3d433789b37d032', '04da6471743468b6bb1d26dd9a6eac4c03ca73ee',
+                # ----- end it 2 ----
+                '0def4f553107451204b34470890d019b373798b5'
+            ],
         ]
 
         TestConvergence.crt.record_update_history(
-            atl.ids(),
+            atl.ids,
             input,
         )
 

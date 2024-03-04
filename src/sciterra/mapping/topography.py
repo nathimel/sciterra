@@ -73,6 +73,10 @@ def density_metric(
 
     h = smoothing_length_metric(idx, cospsi_matrix, valid_indices, kernel_size)
     density = kernel_size / h
+    
+    # # TODO: there is serious numerical instability for BOW methods. Not sure what the most principled way to deal with them are.
+    # if density > 1e7 and np.isfinite(density):
+    #     breakpoint()
 
     return density
 

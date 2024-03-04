@@ -25,7 +25,7 @@ class Atlas:
 
     `self.history`: dict of the form {'pubs_per_update': list[list[str]], 'kernel_size': np.ndarray of ints of shape `(num_pubs, last_update)` where last_update <= the total number of expansions performed.}
 
-    `self.center`: the core, central Publication repeatedly passed to `cartography.Cartographer.expand`. Default is None, which means the Atlas has no internal record of the central publication.
+    `self.center`: the core, central Publication identifier repeatedly passed to `cartography.Cartographer.expand`. Default is None, which means the Atlas has no internal record of the central publication.
     """
 
     def __init__(
@@ -34,7 +34,7 @@ class Atlas:
         projection: Projection = None,
         bad_ids: set[str] = set(),
         history: dict[str, Any] = None,
-        center: Publication = None,
+        center: str = None,
     ) -> None:
         if not isinstance(publications, list):
             raise ValueError
@@ -59,7 +59,8 @@ class Atlas:
         if identifier in self.publications:
             return self.publications[identifier]
         raise ValueError(f"Identifier {identifier} not in Atlas.")
-
+    
+    @property
     def ids(self) -> list[str]:
         """Get a list of all the publication identifiers in the Atlas."""
         return list(self.publications.keys())
