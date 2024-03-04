@@ -71,7 +71,10 @@
                                 <a class="variable" href="#Atlas.history">history</a>
                         </li>
                         <li>
-                                <a class="function" href="#Atlas.ids">ids</a>
+                                <a class="variable" href="#Atlas.center">center</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Atlas.ids">ids</a>
                         </li>
                         <li>
                                 <a class="function" href="#Atlas.save">save</a>
@@ -131,135 +134,143 @@
 </span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">    `self.bad_ids`: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.</span>
 </span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>
 </span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">    `self.history`: dict of the form {&#39;pubs_per_update&#39;: list[list[str]], &#39;kernel_size&#39;: np.ndarray of ints of shape `(num_pubs, last_update)` where last_update &lt;= the total number of expansions performed.}</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a>
-</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>        <span class="p">}</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
-</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
-</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="c1">######################################################################</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="c1"># Lookup    ######################################################################</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">    `self.center`: the core, central Publication identifier repeatedly passed to `cartography.Cartographer.expand`. Default is None, which means the Atlas has no internal record of the central publication.</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>        <span class="n">center</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>        <span class="p">}</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">center</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>
-</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a publication given its identifier.</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="c1"># Lookup    ######################################################################</span>
 </span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>
-</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a><span class="sd">        Raises:</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="sd">            ValueError: the identifier is not in the Atlas.</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>        <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> not in Atlas.&quot;</span><span class="p">)</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
-</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all the publication identifiers in the Atlas.&quot;&quot;&quot;</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>
-</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>    <span class="c1">######################################################################</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>    <span class="c1"># File I/O</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a publication given its identifier.</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a><span class="sd">        Raises:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a><span class="sd">            ValueError: the identifier is not in the Atlas.</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>        <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> not in Atlas.&quot;</span><span class="p">)</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>    <span class="nd">@property</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all the publication identifiers in the Atlas.&quot;&quot;&quot;</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>
-</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
-</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
-</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">        Args:</span>
-</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>            <span class="k">return</span>
-</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a>
-</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>            <span class="p">]</span>
-</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>        <span class="p">}</span>
-</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
-</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
-</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
-</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
-</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
-</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
-</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>
-</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>    <span class="nd">@classmethod</span>
-</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
-</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>        <span class="bp">cls</span><span class="p">,</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="p">):</span>
-</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>    <span class="c1"># File I/O</span>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="sd">        Args:</span>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a>            <span class="k">return</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>            <span class="p">]</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>        <span class="p">}</span>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing to </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
-</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
-</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a><span class="sd">        Args:</span>
-</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
-</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
-</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
-</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>            <span class="p">]</span>
-</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>        <span class="p">}</span>
-</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>
-</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
-</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>    <span class="c1">######################################################################</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="c1"># Other</span>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="c1">######################################################################</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get length of the Atlas.&quot;&quot;&quot;</span>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">)</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="nd">@classmethod</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>        <span class="bp">cls</span><span class="p">,</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>    <span class="p">):</span>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a><span class="sd">        Args:</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>            <span class="p">]</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>        <span class="p">}</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
 </span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>        <span class="k">return</span> <span class="p">(</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">publications</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">publications</span>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">projection</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>        <span class="p">)</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="c1"># Other</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="c1">######################################################################</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get length of the Atlas.&quot;&quot;&quot;</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">)</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="k">return</span> <span class="p">(</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">publications</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">publications</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">projection</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>        <span class="p">)</span>
 </span></pre></div>
 
 
@@ -284,135 +295,143 @@
 </span><span id="Atlas-25"><a href="#Atlas-25"><span class="linenos"> 25</span></a><span class="sd">    `self.bad_ids`: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.</span>
 </span><span id="Atlas-26"><a href="#Atlas-26"><span class="linenos"> 26</span></a>
 </span><span id="Atlas-27"><a href="#Atlas-27"><span class="linenos"> 27</span></a><span class="sd">    `self.history`: dict of the form {&#39;pubs_per_update&#39;: list[list[str]], &#39;kernel_size&#39;: np.ndarray of ints of shape `(num_pubs, last_update)` where last_update &lt;= the total number of expansions performed.}</span>
-</span><span id="Atlas-28"><a href="#Atlas-28"><span class="linenos"> 28</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="Atlas-29"><a href="#Atlas-29"><span class="linenos"> 29</span></a>
-</span><span id="Atlas-30"><a href="#Atlas-30"><span class="linenos"> 30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-</span><span id="Atlas-31"><a href="#Atlas-31"><span class="linenos"> 31</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="Atlas-32"><a href="#Atlas-32"><span class="linenos"> 32</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
-</span><span id="Atlas-33"><a href="#Atlas-33"><span class="linenos"> 33</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="Atlas-34"><a href="#Atlas-34"><span class="linenos"> 34</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
-</span><span id="Atlas-35"><a href="#Atlas-35"><span class="linenos"> 35</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
-</span><span id="Atlas-36"><a href="#Atlas-36"><span class="linenos"> 36</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas-37"><a href="#Atlas-37"><span class="linenos"> 37</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="Atlas-38"><a href="#Atlas-38"><span class="linenos"> 38</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
-</span><span id="Atlas-39"><a href="#Atlas-39"><span class="linenos"> 39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas-40"><a href="#Atlas-40"><span class="linenos"> 40</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
-</span><span id="Atlas-41"><a href="#Atlas-41"><span class="linenos"> 41</span></a>        <span class="p">}</span>
-</span><span id="Atlas-42"><a href="#Atlas-42"><span class="linenos"> 42</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
-</span><span id="Atlas-43"><a href="#Atlas-43"><span class="linenos"> 43</span></a>
-</span><span id="Atlas-44"><a href="#Atlas-44"><span class="linenos"> 44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
-</span><span id="Atlas-45"><a href="#Atlas-45"><span class="linenos"> 45</span></a>
-</span><span id="Atlas-46"><a href="#Atlas-46"><span class="linenos"> 46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
-</span><span id="Atlas-47"><a href="#Atlas-47"><span class="linenos"> 47</span></a>
-</span><span id="Atlas-48"><a href="#Atlas-48"><span class="linenos"> 48</span></a>    <span class="c1">######################################################################</span>
-</span><span id="Atlas-49"><a href="#Atlas-49"><span class="linenos"> 49</span></a>    <span class="c1"># Lookup    ######################################################################</span>
+</span><span id="Atlas-28"><a href="#Atlas-28"><span class="linenos"> 28</span></a>
+</span><span id="Atlas-29"><a href="#Atlas-29"><span class="linenos"> 29</span></a><span class="sd">    `self.center`: the core, central Publication identifier repeatedly passed to `cartography.Cartographer.expand`. Default is None, which means the Atlas has no internal record of the central publication.</span>
+</span><span id="Atlas-30"><a href="#Atlas-30"><span class="linenos"> 30</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="Atlas-31"><a href="#Atlas-31"><span class="linenos"> 31</span></a>
+</span><span id="Atlas-32"><a href="#Atlas-32"><span class="linenos"> 32</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+</span><span id="Atlas-33"><a href="#Atlas-33"><span class="linenos"> 33</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="Atlas-34"><a href="#Atlas-34"><span class="linenos"> 34</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
+</span><span id="Atlas-35"><a href="#Atlas-35"><span class="linenos"> 35</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas-36"><a href="#Atlas-36"><span class="linenos"> 36</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
+</span><span id="Atlas-37"><a href="#Atlas-37"><span class="linenos"> 37</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas-38"><a href="#Atlas-38"><span class="linenos"> 38</span></a>        <span class="n">center</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas-39"><a href="#Atlas-39"><span class="linenos"> 39</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas-40"><a href="#Atlas-40"><span class="linenos"> 40</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+</span><span id="Atlas-41"><a href="#Atlas-41"><span class="linenos"> 41</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
+</span><span id="Atlas-42"><a href="#Atlas-42"><span class="linenos"> 42</span></a>
+</span><span id="Atlas-43"><a href="#Atlas-43"><span class="linenos"> 43</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas-44"><a href="#Atlas-44"><span class="linenos"> 44</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
+</span><span id="Atlas-45"><a href="#Atlas-45"><span class="linenos"> 45</span></a>        <span class="p">}</span>
+</span><span id="Atlas-46"><a href="#Atlas-46"><span class="linenos"> 46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
+</span><span id="Atlas-47"><a href="#Atlas-47"><span class="linenos"> 47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
+</span><span id="Atlas-48"><a href="#Atlas-48"><span class="linenos"> 48</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+</span><span id="Atlas-49"><a href="#Atlas-49"><span class="linenos"> 49</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">center</span>
 </span><span id="Atlas-50"><a href="#Atlas-50"><span class="linenos"> 50</span></a>
-</span><span id="Atlas-51"><a href="#Atlas-51"><span class="linenos"> 51</span></a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
-</span><span id="Atlas-52"><a href="#Atlas-52"><span class="linenos"> 52</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a publication given its identifier.</span>
+</span><span id="Atlas-51"><a href="#Atlas-51"><span class="linenos"> 51</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-52"><a href="#Atlas-52"><span class="linenos"> 52</span></a>    <span class="c1"># Lookup    ######################################################################</span>
 </span><span id="Atlas-53"><a href="#Atlas-53"><span class="linenos"> 53</span></a>
-</span><span id="Atlas-54"><a href="#Atlas-54"><span class="linenos"> 54</span></a><span class="sd">        Raises:</span>
-</span><span id="Atlas-55"><a href="#Atlas-55"><span class="linenos"> 55</span></a><span class="sd">            ValueError: the identifier is not in the Atlas.</span>
-</span><span id="Atlas-56"><a href="#Atlas-56"><span class="linenos"> 56</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Atlas-57"><a href="#Atlas-57"><span class="linenos"> 57</span></a>        <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span>
-</span><span id="Atlas-58"><a href="#Atlas-58"><span class="linenos"> 58</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
-</span><span id="Atlas-59"><a href="#Atlas-59"><span class="linenos"> 59</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> not in Atlas.&quot;</span><span class="p">)</span>
-</span><span id="Atlas-60"><a href="#Atlas-60"><span class="linenos"> 60</span></a>
-</span><span id="Atlas-61"><a href="#Atlas-61"><span class="linenos"> 61</span></a>    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span id="Atlas-62"><a href="#Atlas-62"><span class="linenos"> 62</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all the publication identifiers in the Atlas.&quot;&quot;&quot;</span>
-</span><span id="Atlas-63"><a href="#Atlas-63"><span class="linenos"> 63</span></a>        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</span><span id="Atlas-64"><a href="#Atlas-64"><span class="linenos"> 64</span></a>
-</span><span id="Atlas-65"><a href="#Atlas-65"><span class="linenos"> 65</span></a>    <span class="c1">######################################################################</span>
-</span><span id="Atlas-66"><a href="#Atlas-66"><span class="linenos"> 66</span></a>    <span class="c1"># File I/O</span>
-</span><span id="Atlas-67"><a href="#Atlas-67"><span class="linenos"> 67</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-54"><a href="#Atlas-54"><span class="linenos"> 54</span></a>    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Publication</span><span class="p">:</span>
+</span><span id="Atlas-55"><a href="#Atlas-55"><span class="linenos"> 55</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a publication given its identifier.</span>
+</span><span id="Atlas-56"><a href="#Atlas-56"><span class="linenos"> 56</span></a>
+</span><span id="Atlas-57"><a href="#Atlas-57"><span class="linenos"> 57</span></a><span class="sd">        Raises:</span>
+</span><span id="Atlas-58"><a href="#Atlas-58"><span class="linenos"> 58</span></a><span class="sd">            ValueError: the identifier is not in the Atlas.</span>
+</span><span id="Atlas-59"><a href="#Atlas-59"><span class="linenos"> 59</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Atlas-60"><a href="#Atlas-60"><span class="linenos"> 60</span></a>        <span class="k">if</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span>
+</span><span id="Atlas-61"><a href="#Atlas-61"><span class="linenos"> 61</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span>
+</span><span id="Atlas-62"><a href="#Atlas-62"><span class="linenos"> 62</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Identifier </span><span class="si">{</span><span class="n">identifier</span><span class="si">}</span><span class="s2"> not in Atlas.&quot;</span><span class="p">)</span>
+</span><span id="Atlas-63"><a href="#Atlas-63"><span class="linenos"> 63</span></a>
+</span><span id="Atlas-64"><a href="#Atlas-64"><span class="linenos"> 64</span></a>    <span class="nd">@property</span>
+</span><span id="Atlas-65"><a href="#Atlas-65"><span class="linenos"> 65</span></a>    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+</span><span id="Atlas-66"><a href="#Atlas-66"><span class="linenos"> 66</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all the publication identifiers in the Atlas.&quot;&quot;&quot;</span>
+</span><span id="Atlas-67"><a href="#Atlas-67"><span class="linenos"> 67</span></a>        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
 </span><span id="Atlas-68"><a href="#Atlas-68"><span class="linenos"> 68</span></a>
-</span><span id="Atlas-69"><a href="#Atlas-69"><span class="linenos"> 69</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
-</span><span id="Atlas-70"><a href="#Atlas-70"><span class="linenos"> 70</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="Atlas-71"><a href="#Atlas-71"><span class="linenos"> 71</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="Atlas-72"><a href="#Atlas-72"><span class="linenos"> 72</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="Atlas-73"><a href="#Atlas-73"><span class="linenos"> 73</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas-74"><a href="#Atlas-74"><span class="linenos"> 74</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
-</span><span id="Atlas-75"><a href="#Atlas-75"><span class="linenos"> 75</span></a>
-</span><span id="Atlas-76"><a href="#Atlas-76"><span class="linenos"> 76</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="Atlas-77"><a href="#Atlas-77"><span class="linenos"> 77</span></a>
-</span><span id="Atlas-78"><a href="#Atlas-78"><span class="linenos"> 78</span></a><span class="sd">        Args:</span>
-</span><span id="Atlas-79"><a href="#Atlas-79"><span class="linenos"> 79</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
-</span><span id="Atlas-80"><a href="#Atlas-80"><span class="linenos"> 80</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Atlas-81"><a href="#Atlas-81"><span class="linenos"> 81</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
-</span><span id="Atlas-82"><a href="#Atlas-82"><span class="linenos"> 82</span></a>            <span class="k">return</span>
-</span><span id="Atlas-83"><a href="#Atlas-83"><span class="linenos"> 83</span></a>
-</span><span id="Atlas-84"><a href="#Atlas-84"><span class="linenos"> 84</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas-85"><a href="#Atlas-85"><span class="linenos"> 85</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-</span><span id="Atlas-86"><a href="#Atlas-86"><span class="linenos"> 86</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="Atlas-87"><a href="#Atlas-87"><span class="linenos"> 87</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="Atlas-88"><a href="#Atlas-88"><span class="linenos"> 88</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="Atlas-89"><a href="#Atlas-89"><span class="linenos"> 89</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="Atlas-90"><a href="#Atlas-90"><span class="linenos"> 90</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="Atlas-91"><a href="#Atlas-91"><span class="linenos"> 91</span></a>            <span class="p">]</span>
-</span><span id="Atlas-92"><a href="#Atlas-92"><span class="linenos"> 92</span></a>        <span class="p">}</span>
-</span><span id="Atlas-93"><a href="#Atlas-93"><span class="linenos"> 93</span></a>
-</span><span id="Atlas-94"><a href="#Atlas-94"><span class="linenos"> 94</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="Atlas-95"><a href="#Atlas-95"><span class="linenos"> 95</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas-96"><a href="#Atlas-96"><span class="linenos"> 96</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
-</span><span id="Atlas-97"><a href="#Atlas-97"><span class="linenos"> 97</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
-</span><span id="Atlas-98"><a href="#Atlas-98"><span class="linenos"> 98</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-</span><span id="Atlas-99"><a href="#Atlas-99"><span class="linenos"> 99</span></a>
-</span><span id="Atlas-100"><a href="#Atlas-100"><span class="linenos">100</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="Atlas-101"><a href="#Atlas-101"><span class="linenos">101</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="Atlas-102"><a href="#Atlas-102"><span class="linenos">102</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="Atlas-103"><a href="#Atlas-103"><span class="linenos">103</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-</span><span id="Atlas-104"><a href="#Atlas-104"><span class="linenos">104</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
-</span><span id="Atlas-105"><a href="#Atlas-105"><span class="linenos">105</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="Atlas-106"><a href="#Atlas-106"><span class="linenos">106</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
-</span><span id="Atlas-107"><a href="#Atlas-107"><span class="linenos">107</span></a>
-</span><span id="Atlas-108"><a href="#Atlas-108"><span class="linenos">108</span></a>    <span class="nd">@classmethod</span>
-</span><span id="Atlas-109"><a href="#Atlas-109"><span class="linenos">109</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
-</span><span id="Atlas-110"><a href="#Atlas-110"><span class="linenos">110</span></a>        <span class="bp">cls</span><span class="p">,</span>
-</span><span id="Atlas-111"><a href="#Atlas-111"><span class="linenos">111</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="Atlas-112"><a href="#Atlas-112"><span class="linenos">112</span></a>    <span class="p">):</span>
-</span><span id="Atlas-113"><a href="#Atlas-113"><span class="linenos">113</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
+</span><span id="Atlas-69"><a href="#Atlas-69"><span class="linenos"> 69</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-70"><a href="#Atlas-70"><span class="linenos"> 70</span></a>    <span class="c1"># File I/O</span>
+</span><span id="Atlas-71"><a href="#Atlas-71"><span class="linenos"> 71</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-72"><a href="#Atlas-72"><span class="linenos"> 72</span></a>
+</span><span id="Atlas-73"><a href="#Atlas-73"><span class="linenos"> 73</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+</span><span id="Atlas-74"><a href="#Atlas-74"><span class="linenos"> 74</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="Atlas-75"><a href="#Atlas-75"><span class="linenos"> 75</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="Atlas-76"><a href="#Atlas-76"><span class="linenos"> 76</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="Atlas-77"><a href="#Atlas-77"><span class="linenos"> 77</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas-78"><a href="#Atlas-78"><span class="linenos"> 78</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
+</span><span id="Atlas-79"><a href="#Atlas-79"><span class="linenos"> 79</span></a>
+</span><span id="Atlas-80"><a href="#Atlas-80"><span class="linenos"> 80</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="Atlas-81"><a href="#Atlas-81"><span class="linenos"> 81</span></a>
+</span><span id="Atlas-82"><a href="#Atlas-82"><span class="linenos"> 82</span></a><span class="sd">        Args:</span>
+</span><span id="Atlas-83"><a href="#Atlas-83"><span class="linenos"> 83</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
+</span><span id="Atlas-84"><a href="#Atlas-84"><span class="linenos"> 84</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Atlas-85"><a href="#Atlas-85"><span class="linenos"> 85</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+</span><span id="Atlas-86"><a href="#Atlas-86"><span class="linenos"> 86</span></a>            <span class="k">return</span>
+</span><span id="Atlas-87"><a href="#Atlas-87"><span class="linenos"> 87</span></a>
+</span><span id="Atlas-88"><a href="#Atlas-88"><span class="linenos"> 88</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas-89"><a href="#Atlas-89"><span class="linenos"> 89</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span><span id="Atlas-90"><a href="#Atlas-90"><span class="linenos"> 90</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="Atlas-91"><a href="#Atlas-91"><span class="linenos"> 91</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="Atlas-92"><a href="#Atlas-92"><span class="linenos"> 92</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="Atlas-93"><a href="#Atlas-93"><span class="linenos"> 93</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="Atlas-94"><a href="#Atlas-94"><span class="linenos"> 94</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="Atlas-95"><a href="#Atlas-95"><span class="linenos"> 95</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="Atlas-96"><a href="#Atlas-96"><span class="linenos"> 96</span></a>            <span class="p">]</span>
+</span><span id="Atlas-97"><a href="#Atlas-97"><span class="linenos"> 97</span></a>        <span class="p">}</span>
+</span><span id="Atlas-98"><a href="#Atlas-98"><span class="linenos"> 98</span></a>
+</span><span id="Atlas-99"><a href="#Atlas-99"><span class="linenos"> 99</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="Atlas-100"><a href="#Atlas-100"><span class="linenos">100</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas-101"><a href="#Atlas-101"><span class="linenos">101</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
+</span><span id="Atlas-102"><a href="#Atlas-102"><span class="linenos">102</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
+</span><span id="Atlas-103"><a href="#Atlas-103"><span class="linenos">103</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</span><span id="Atlas-104"><a href="#Atlas-104"><span class="linenos">104</span></a>
+</span><span id="Atlas-105"><a href="#Atlas-105"><span class="linenos">105</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="Atlas-106"><a href="#Atlas-106"><span class="linenos">106</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="Atlas-107"><a href="#Atlas-107"><span class="linenos">107</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="Atlas-108"><a href="#Atlas-108"><span class="linenos">108</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="Atlas-109"><a href="#Atlas-109"><span class="linenos">109</span></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas-110"><a href="#Atlas-110"><span class="linenos">110</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing to </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="Atlas-111"><a href="#Atlas-111"><span class="linenos">111</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
+</span><span id="Atlas-112"><a href="#Atlas-112"><span class="linenos">112</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas-113"><a href="#Atlas-113"><span class="linenos">113</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
 </span><span id="Atlas-114"><a href="#Atlas-114"><span class="linenos">114</span></a>
-</span><span id="Atlas-115"><a href="#Atlas-115"><span class="linenos">115</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="Atlas-116"><a href="#Atlas-116"><span class="linenos">116</span></a>
-</span><span id="Atlas-117"><a href="#Atlas-117"><span class="linenos">117</span></a><span class="sd">        Args:</span>
-</span><span id="Atlas-118"><a href="#Atlas-118"><span class="linenos">118</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
-</span><span id="Atlas-119"><a href="#Atlas-119"><span class="linenos">119</span></a>
-</span><span id="Atlas-120"><a href="#Atlas-120"><span class="linenos">120</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Atlas-121"><a href="#Atlas-121"><span class="linenos">121</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas-122"><a href="#Atlas-122"><span class="linenos">122</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
-</span><span id="Atlas-123"><a href="#Atlas-123"><span class="linenos">123</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="Atlas-124"><a href="#Atlas-124"><span class="linenos">124</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="Atlas-125"><a href="#Atlas-125"><span class="linenos">125</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="Atlas-126"><a href="#Atlas-126"><span class="linenos">126</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="Atlas-127"><a href="#Atlas-127"><span class="linenos">127</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="Atlas-128"><a href="#Atlas-128"><span class="linenos">128</span></a>            <span class="p">]</span>
-</span><span id="Atlas-129"><a href="#Atlas-129"><span class="linenos">129</span></a>        <span class="p">}</span>
-</span><span id="Atlas-130"><a href="#Atlas-130"><span class="linenos">130</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="Atlas-131"><a href="#Atlas-131"><span class="linenos">131</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="Atlas-132"><a href="#Atlas-132"><span class="linenos">132</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="Atlas-133"><a href="#Atlas-133"><span class="linenos">133</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="Atlas-134"><a href="#Atlas-134"><span class="linenos">134</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-</span><span id="Atlas-135"><a href="#Atlas-135"><span class="linenos">135</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="Atlas-136"><a href="#Atlas-136"><span class="linenos">136</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
-</span><span id="Atlas-137"><a href="#Atlas-137"><span class="linenos">137</span></a>
-</span><span id="Atlas-138"><a href="#Atlas-138"><span class="linenos">138</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas-139"><a href="#Atlas-139"><span class="linenos">139</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
-</span><span id="Atlas-140"><a href="#Atlas-140"><span class="linenos">140</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-</span><span id="Atlas-141"><a href="#Atlas-141"><span class="linenos">141</span></a>
-</span><span id="Atlas-142"><a href="#Atlas-142"><span class="linenos">142</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
-</span><span id="Atlas-143"><a href="#Atlas-143"><span class="linenos">143</span></a>
-</span><span id="Atlas-144"><a href="#Atlas-144"><span class="linenos">144</span></a>    <span class="c1">######################################################################</span>
-</span><span id="Atlas-145"><a href="#Atlas-145"><span class="linenos">145</span></a>    <span class="c1"># Other</span>
-</span><span id="Atlas-146"><a href="#Atlas-146"><span class="linenos">146</span></a>    <span class="c1">######################################################################</span>
-</span><span id="Atlas-147"><a href="#Atlas-147"><span class="linenos">147</span></a>
-</span><span id="Atlas-148"><a href="#Atlas-148"><span class="linenos">148</span></a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-</span><span id="Atlas-149"><a href="#Atlas-149"><span class="linenos">149</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get length of the Atlas.&quot;&quot;&quot;</span>
-</span><span id="Atlas-150"><a href="#Atlas-150"><span class="linenos">150</span></a>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">)</span>
+</span><span id="Atlas-115"><a href="#Atlas-115"><span class="linenos">115</span></a>    <span class="nd">@classmethod</span>
+</span><span id="Atlas-116"><a href="#Atlas-116"><span class="linenos">116</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+</span><span id="Atlas-117"><a href="#Atlas-117"><span class="linenos">117</span></a>        <span class="bp">cls</span><span class="p">,</span>
+</span><span id="Atlas-118"><a href="#Atlas-118"><span class="linenos">118</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="Atlas-119"><a href="#Atlas-119"><span class="linenos">119</span></a>    <span class="p">):</span>
+</span><span id="Atlas-120"><a href="#Atlas-120"><span class="linenos">120</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
+</span><span id="Atlas-121"><a href="#Atlas-121"><span class="linenos">121</span></a>
+</span><span id="Atlas-122"><a href="#Atlas-122"><span class="linenos">122</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="Atlas-123"><a href="#Atlas-123"><span class="linenos">123</span></a>
+</span><span id="Atlas-124"><a href="#Atlas-124"><span class="linenos">124</span></a><span class="sd">        Args:</span>
+</span><span id="Atlas-125"><a href="#Atlas-125"><span class="linenos">125</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
+</span><span id="Atlas-126"><a href="#Atlas-126"><span class="linenos">126</span></a>
+</span><span id="Atlas-127"><a href="#Atlas-127"><span class="linenos">127</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Atlas-128"><a href="#Atlas-128"><span class="linenos">128</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas-129"><a href="#Atlas-129"><span class="linenos">129</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
+</span><span id="Atlas-130"><a href="#Atlas-130"><span class="linenos">130</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="Atlas-131"><a href="#Atlas-131"><span class="linenos">131</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="Atlas-132"><a href="#Atlas-132"><span class="linenos">132</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="Atlas-133"><a href="#Atlas-133"><span class="linenos">133</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="Atlas-134"><a href="#Atlas-134"><span class="linenos">134</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="Atlas-135"><a href="#Atlas-135"><span class="linenos">135</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="Atlas-136"><a href="#Atlas-136"><span class="linenos">136</span></a>            <span class="p">]</span>
+</span><span id="Atlas-137"><a href="#Atlas-137"><span class="linenos">137</span></a>        <span class="p">}</span>
+</span><span id="Atlas-138"><a href="#Atlas-138"><span class="linenos">138</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="Atlas-139"><a href="#Atlas-139"><span class="linenos">139</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="Atlas-140"><a href="#Atlas-140"><span class="linenos">140</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="Atlas-141"><a href="#Atlas-141"><span class="linenos">141</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="Atlas-142"><a href="#Atlas-142"><span class="linenos">142</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+</span><span id="Atlas-143"><a href="#Atlas-143"><span class="linenos">143</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas-144"><a href="#Atlas-144"><span class="linenos">144</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
+</span><span id="Atlas-145"><a href="#Atlas-145"><span class="linenos">145</span></a>
+</span><span id="Atlas-146"><a href="#Atlas-146"><span class="linenos">146</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas-147"><a href="#Atlas-147"><span class="linenos">147</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
+</span><span id="Atlas-148"><a href="#Atlas-148"><span class="linenos">148</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+</span><span id="Atlas-149"><a href="#Atlas-149"><span class="linenos">149</span></a>
+</span><span id="Atlas-150"><a href="#Atlas-150"><span class="linenos">150</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
 </span><span id="Atlas-151"><a href="#Atlas-151"><span class="linenos">151</span></a>
-</span><span id="Atlas-152"><a href="#Atlas-152"><span class="linenos">152</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-</span><span id="Atlas-153"><a href="#Atlas-153"><span class="linenos">153</span></a>        <span class="k">return</span> <span class="p">(</span>
-</span><span id="Atlas-154"><a href="#Atlas-154"><span class="linenos">154</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">publications</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">publications</span>
-</span><span id="Atlas-155"><a href="#Atlas-155"><span class="linenos">155</span></a>            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">projection</span>
-</span><span id="Atlas-156"><a href="#Atlas-156"><span class="linenos">156</span></a>        <span class="p">)</span>
+</span><span id="Atlas-152"><a href="#Atlas-152"><span class="linenos">152</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-153"><a href="#Atlas-153"><span class="linenos">153</span></a>    <span class="c1"># Other</span>
+</span><span id="Atlas-154"><a href="#Atlas-154"><span class="linenos">154</span></a>    <span class="c1">######################################################################</span>
+</span><span id="Atlas-155"><a href="#Atlas-155"><span class="linenos">155</span></a>
+</span><span id="Atlas-156"><a href="#Atlas-156"><span class="linenos">156</span></a>    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span id="Atlas-157"><a href="#Atlas-157"><span class="linenos">157</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get length of the Atlas.&quot;&quot;&quot;</span>
+</span><span id="Atlas-158"><a href="#Atlas-158"><span class="linenos">158</span></a>        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">)</span>
+</span><span id="Atlas-159"><a href="#Atlas-159"><span class="linenos">159</span></a>
+</span><span id="Atlas-160"><a href="#Atlas-160"><span class="linenos">160</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__value</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span id="Atlas-161"><a href="#Atlas-161"><span class="linenos">161</span></a>        <span class="k">return</span> <span class="p">(</span>
+</span><span id="Atlas-162"><a href="#Atlas-162"><span class="linenos">162</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">publications</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">publications</span>
+</span><span id="Atlas-163"><a href="#Atlas-163"><span class="linenos">163</span></a>            <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">==</span> <span class="n">__value</span><span class="o">.</span><span class="n">projection</span>
+</span><span id="Atlas-164"><a href="#Atlas-164"><span class="linenos">164</span></a>        <span class="p">)</span>
 </span></pre></div>
 
 
@@ -423,6 +442,8 @@
 <p><code>self.bad_ids</code>: a list of identifiers that have failed for some reason or other during an expansion, and will be excluded from subsequent expansions.</p>
 
 <p><code>self.history</code>: dict of the form {'pubs_per_update': list[list[str]], 'kernel_size': np.ndarray of ints of shape <code>(num_pubs, last_update)</code> where last_update &lt;= the total number of expansions performed.}</p>
+
+<p><code>self.center</code>: the core, central Publication identifier repeatedly passed to <code>cartography.Cartographer.expand</code>. Default is None, which means the Atlas has no internal record of the central publication.</p>
 </div>
 
 
@@ -430,29 +451,30 @@
                                         <input id="Atlas.__init__-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
-        <span class="name">Atlas</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="publication.html#Publication">sciterra.mapping.publication.Publication</a></span><span class="p">]</span>,</span><span class="param">	<span class="n">projection</span><span class="p">:</span> <span class="n"><a href="../vectorization/projection.html#Projection">sciterra.vectorization.projection.Projection</a></span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>,</span><span class="param">	<span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></span>)</span>
+        <span class="name">Atlas</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n"><a href="publication.html#Publication">sciterra.mapping.publication.Publication</a></span><span class="p">]</span>,</span><span class="param">	<span class="n">projection</span><span class="p">:</span> <span class="n"><a href="../vectorization/projection.html#Projection">sciterra.vectorization.projection.Projection</a></span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>,</span><span class="param">	<span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">typing</span><span class="o">.</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">center</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
                 <label class="view-source-button" for="Atlas.__init__-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#Atlas.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.__init__-30"><a href="#Atlas.__init__-30"><span class="linenos">30</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-</span><span id="Atlas.__init__-31"><a href="#Atlas.__init__-31"><span class="linenos">31</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="Atlas.__init__-32"><a href="#Atlas.__init__-32"><span class="linenos">32</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
-</span><span id="Atlas.__init__-33"><a href="#Atlas.__init__-33"><span class="linenos">33</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-</span><span id="Atlas.__init__-34"><a href="#Atlas.__init__-34"><span class="linenos">34</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
-</span><span id="Atlas.__init__-35"><a href="#Atlas.__init__-35"><span class="linenos">35</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(),</span>
-</span><span id="Atlas.__init__-36"><a href="#Atlas.__init__-36"><span class="linenos">36</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas.__init__-37"><a href="#Atlas.__init__-37"><span class="linenos">37</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-</span><span id="Atlas.__init__-38"><a href="#Atlas.__init__-38"><span class="linenos">38</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
-</span><span id="Atlas.__init__-39"><a href="#Atlas.__init__-39"><span class="linenos">39</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas.__init__-40"><a href="#Atlas.__init__-40"><span class="linenos">40</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
-</span><span id="Atlas.__init__-41"><a href="#Atlas.__init__-41"><span class="linenos">41</span></a>        <span class="p">}</span>
-</span><span id="Atlas.__init__-42"><a href="#Atlas.__init__-42"><span class="linenos">42</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
-</span><span id="Atlas.__init__-43"><a href="#Atlas.__init__-43"><span class="linenos">43</span></a>
-</span><span id="Atlas.__init__-44"><a href="#Atlas.__init__-44"><span class="linenos">44</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
-</span><span id="Atlas.__init__-45"><a href="#Atlas.__init__-45"><span class="linenos">45</span></a>
-</span><span id="Atlas.__init__-46"><a href="#Atlas.__init__-46"><span class="linenos">46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.__init__-32"><a href="#Atlas.__init__-32"><span class="linenos">32</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+</span><span id="Atlas.__init__-33"><a href="#Atlas.__init__-33"><span class="linenos">33</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="Atlas.__init__-34"><a href="#Atlas.__init__-34"><span class="linenos">34</span></a>        <span class="n">publications</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">Publication</span><span class="p">],</span>
+</span><span id="Atlas.__init__-35"><a href="#Atlas.__init__-35"><span class="linenos">35</span></a>        <span class="n">projection</span><span class="p">:</span> <span class="n">Projection</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas.__init__-36"><a href="#Atlas.__init__-36"><span class="linenos">36</span></a>        <span class="n">bad_ids</span><span class="p">:</span> <span class="nb">set</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span>
+</span><span id="Atlas.__init__-37"><a href="#Atlas.__init__-37"><span class="linenos">37</span></a>        <span class="n">history</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas.__init__-38"><a href="#Atlas.__init__-38"><span class="linenos">38</span></a>        <span class="n">center</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span id="Atlas.__init__-39"><a href="#Atlas.__init__-39"><span class="linenos">39</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas.__init__-40"><a href="#Atlas.__init__-40"><span class="linenos">40</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">publications</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+</span><span id="Atlas.__init__-41"><a href="#Atlas.__init__-41"><span class="linenos">41</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span>
+</span><span id="Atlas.__init__-42"><a href="#Atlas.__init__-42"><span class="linenos">42</span></a>
+</span><span id="Atlas.__init__-43"><a href="#Atlas.__init__-43"><span class="linenos">43</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Publication</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas.__init__-44"><a href="#Atlas.__init__-44"><span class="linenos">44</span></a>            <span class="nb">str</span><span class="p">(</span><span class="n">pub</span><span class="p">):</span> <span class="n">pub</span> <span class="k">for</span> <span class="n">pub</span> <span class="ow">in</span> <span class="n">publications</span>
+</span><span id="Atlas.__init__-45"><a href="#Atlas.__init__-45"><span class="linenos">45</span></a>        <span class="p">}</span>
+</span><span id="Atlas.__init__-46"><a href="#Atlas.__init__-46"><span class="linenos">46</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">projection</span> <span class="o">=</span> <span class="n">projection</span>
+</span><span id="Atlas.__init__-47"><a href="#Atlas.__init__-47"><span class="linenos">47</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">bad_ids</span> <span class="o">=</span> <span class="n">bad_ids</span>
+</span><span id="Atlas.__init__-48"><a href="#Atlas.__init__-48"><span class="linenos">48</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">history</span> <span class="o">=</span> <span class="n">history</span>
+</span><span id="Atlas.__init__-49"><a href="#Atlas.__init__-49"><span class="linenos">49</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">center</span> <span class="o">=</span> <span class="n">center</span>
 </span></pre></div>
 
 
@@ -503,23 +525,25 @@
     
 
                             </div>
+                            <div id="Atlas.center" class="classattr">
+                                <div class="attr variable">
+            <span class="name">center</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Atlas.center"></a>
+    
+    
+
+                            </div>
                             <div id="Atlas.ids" class="classattr">
-                                        <input id="Atlas.ids-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-<div class="attr function">
-            
-        <span class="def">def</span>
-        <span class="name">ids</span><span class="signature pdoc-code condensed">(<span class="param"><span class="bp">self</span></span><span class="return-annotation">) -> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>:</span></span>
+                                <div class="attr variable">
+            <span class="name">ids</span><span class="annotation">: list[str]</span>
 
-                <label class="view-source-button" for="Atlas.ids-view-source"><span>View Source</span></label>
-
+        
     </div>
     <a class="headerlink" href="#Atlas.ids"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.ids-61"><a href="#Atlas.ids-61"><span class="linenos">61</span></a>    <span class="k">def</span> <span class="nf">ids</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
-</span><span id="Atlas.ids-62"><a href="#Atlas.ids-62"><span class="linenos">62</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Get a list of all the publication identifiers in the Atlas.&quot;&quot;&quot;</span>
-</span><span id="Atlas.ids-63"><a href="#Atlas.ids-63"><span class="linenos">63</span></a>        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
-</span></pre></div>
-
-
+    
             <div class="docstring"><p>Get a list of all the publication identifiers in the Atlas.</p>
 </div>
 
@@ -536,44 +560,47 @@
 
     </div>
     <a class="headerlink" href="#Atlas.save"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.save-69"><a href="#Atlas.save-69"><span class="linenos"> 69</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
-</span><span id="Atlas.save-70"><a href="#Atlas.save-70"><span class="linenos"> 70</span></a>        <span class="bp">self</span><span class="p">,</span>
-</span><span id="Atlas.save-71"><a href="#Atlas.save-71"><span class="linenos"> 71</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="Atlas.save-72"><a href="#Atlas.save-72"><span class="linenos"> 72</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
-</span><span id="Atlas.save-73"><a href="#Atlas.save-73"><span class="linenos"> 73</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas.save-74"><a href="#Atlas.save-74"><span class="linenos"> 74</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
-</span><span id="Atlas.save-75"><a href="#Atlas.save-75"><span class="linenos"> 75</span></a>
-</span><span id="Atlas.save-76"><a href="#Atlas.save-76"><span class="linenos"> 76</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="Atlas.save-77"><a href="#Atlas.save-77"><span class="linenos"> 77</span></a>
-</span><span id="Atlas.save-78"><a href="#Atlas.save-78"><span class="linenos"> 78</span></a><span class="sd">        Args:</span>
-</span><span id="Atlas.save-79"><a href="#Atlas.save-79"><span class="linenos"> 79</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
-</span><span id="Atlas.save-80"><a href="#Atlas.save-80"><span class="linenos"> 80</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Atlas.save-81"><a href="#Atlas.save-81"><span class="linenos"> 81</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
-</span><span id="Atlas.save-82"><a href="#Atlas.save-82"><span class="linenos"> 82</span></a>            <span class="k">return</span>
-</span><span id="Atlas.save-83"><a href="#Atlas.save-83"><span class="linenos"> 83</span></a>
-</span><span id="Atlas.save-84"><a href="#Atlas.save-84"><span class="linenos"> 84</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas.save-85"><a href="#Atlas.save-85"><span class="linenos"> 85</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
-</span><span id="Atlas.save-86"><a href="#Atlas.save-86"><span class="linenos"> 86</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="Atlas.save-87"><a href="#Atlas.save-87"><span class="linenos"> 87</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="Atlas.save-88"><a href="#Atlas.save-88"><span class="linenos"> 88</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="Atlas.save-89"><a href="#Atlas.save-89"><span class="linenos"> 89</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="Atlas.save-90"><a href="#Atlas.save-90"><span class="linenos"> 90</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="Atlas.save-91"><a href="#Atlas.save-91"><span class="linenos"> 91</span></a>            <span class="p">]</span>
-</span><span id="Atlas.save-92"><a href="#Atlas.save-92"><span class="linenos"> 92</span></a>        <span class="p">}</span>
-</span><span id="Atlas.save-93"><a href="#Atlas.save-93"><span class="linenos"> 93</span></a>
-</span><span id="Atlas.save-94"><a href="#Atlas.save-94"><span class="linenos"> 94</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="Atlas.save-95"><a href="#Atlas.save-95"><span class="linenos"> 95</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas.save-96"><a href="#Atlas.save-96"><span class="linenos"> 96</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
-</span><span id="Atlas.save-97"><a href="#Atlas.save-97"><span class="linenos"> 97</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
-</span><span id="Atlas.save-98"><a href="#Atlas.save-98"><span class="linenos"> 98</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
-</span><span id="Atlas.save-99"><a href="#Atlas.save-99"><span class="linenos"> 99</span></a>
-</span><span id="Atlas.save-100"><a href="#Atlas.save-100"><span class="linenos">100</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="Atlas.save-101"><a href="#Atlas.save-101"><span class="linenos">101</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="Atlas.save-102"><a href="#Atlas.save-102"><span class="linenos">102</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="Atlas.save-103"><a href="#Atlas.save-103"><span class="linenos">103</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-</span><span id="Atlas.save-104"><a href="#Atlas.save-104"><span class="linenos">104</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
-</span><span id="Atlas.save-105"><a href="#Atlas.save-105"><span class="linenos">105</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="Atlas.save-106"><a href="#Atlas.save-106"><span class="linenos">106</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.save-73"><a href="#Atlas.save-73"><span class="linenos"> 73</span></a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span>
+</span><span id="Atlas.save-74"><a href="#Atlas.save-74"><span class="linenos"> 74</span></a>        <span class="bp">self</span><span class="p">,</span>
+</span><span id="Atlas.save-75"><a href="#Atlas.save-75"><span class="linenos"> 75</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="Atlas.save-76"><a href="#Atlas.save-76"><span class="linenos"> 76</span></a>        <span class="n">overwrite</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+</span><span id="Atlas.save-77"><a href="#Atlas.save-77"><span class="linenos"> 77</span></a>    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas.save-78"><a href="#Atlas.save-78"><span class="linenos"> 78</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the Atlas to a directory containing a .pkl binary for each attribute.</span>
+</span><span id="Atlas.save-79"><a href="#Atlas.save-79"><span class="linenos"> 79</span></a>
+</span><span id="Atlas.save-80"><a href="#Atlas.save-80"><span class="linenos"> 80</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="Atlas.save-81"><a href="#Atlas.save-81"><span class="linenos"> 81</span></a>
+</span><span id="Atlas.save-82"><a href="#Atlas.save-82"><span class="linenos"> 82</span></a><span class="sd">        Args:</span>
+</span><span id="Atlas.save-83"><a href="#Atlas.save-83"><span class="linenos"> 83</span></a><span class="sd">            atlas_dirpath: path of directory to save files to.</span>
+</span><span id="Atlas.save-84"><a href="#Atlas.save-84"><span class="linenos"> 84</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Atlas.save-85"><a href="#Atlas.save-85"><span class="linenos"> 85</span></a>        <span class="k">if</span> <span class="ow">not</span> <span class="n">overwrite</span><span class="p">:</span>
+</span><span id="Atlas.save-86"><a href="#Atlas.save-86"><span class="linenos"> 86</span></a>            <span class="k">return</span>
+</span><span id="Atlas.save-87"><a href="#Atlas.save-87"><span class="linenos"> 87</span></a>
+</span><span id="Atlas.save-88"><a href="#Atlas.save-88"><span class="linenos"> 88</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas.save-89"><a href="#Atlas.save-89"><span class="linenos"> 89</span></a>            <span class="n">k</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span><span id="Atlas.save-90"><a href="#Atlas.save-90"><span class="linenos"> 90</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="Atlas.save-91"><a href="#Atlas.save-91"><span class="linenos"> 91</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="Atlas.save-92"><a href="#Atlas.save-92"><span class="linenos"> 92</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="Atlas.save-93"><a href="#Atlas.save-93"><span class="linenos"> 93</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="Atlas.save-94"><a href="#Atlas.save-94"><span class="linenos"> 94</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="Atlas.save-95"><a href="#Atlas.save-95"><span class="linenos"> 95</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="Atlas.save-96"><a href="#Atlas.save-96"><span class="linenos"> 96</span></a>            <span class="p">]</span>
+</span><span id="Atlas.save-97"><a href="#Atlas.save-97"><span class="linenos"> 97</span></a>        <span class="p">}</span>
+</span><span id="Atlas.save-98"><a href="#Atlas.save-98"><span class="linenos"> 98</span></a>
+</span><span id="Atlas.save-99"><a href="#Atlas.save-99"><span class="linenos"> 99</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="Atlas.save-100"><a href="#Atlas.save-100"><span class="linenos">100</span></a>            <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">attribute</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas.save-101"><a href="#Atlas.save-101"><span class="linenos">101</span></a>                <span class="c1"># write the list version to be consistent with load and constructor</span>
+</span><span id="Atlas.save-102"><a href="#Atlas.save-102"><span class="linenos">102</span></a>                <span class="k">if</span> <span class="n">attribute</span> <span class="o">==</span> <span class="s2">&quot;publications&quot;</span><span class="p">:</span>
+</span><span id="Atlas.save-103"><a href="#Atlas.save-103"><span class="linenos">103</span></a>                    <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</span><span id="Atlas.save-104"><a href="#Atlas.save-104"><span class="linenos">104</span></a>
+</span><span id="Atlas.save-105"><a href="#Atlas.save-105"><span class="linenos">105</span></a>                <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="Atlas.save-106"><a href="#Atlas.save-106"><span class="linenos">106</span></a>                <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="Atlas.save-107"><a href="#Atlas.save-107"><span class="linenos">107</span></a>                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="Atlas.save-108"><a href="#Atlas.save-108"><span class="linenos">108</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Overwriting existing file at </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="Atlas.save-109"><a href="#Atlas.save-109"><span class="linenos">109</span></a>                <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas.save-110"><a href="#Atlas.save-110"><span class="linenos">110</span></a>                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Writing to </span><span class="si">{</span><span class="n">fp</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</span><span id="Atlas.save-111"><a href="#Atlas.save-111"><span class="linenos">111</span></a>                <span class="n">write_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">])</span>
+</span><span id="Atlas.save-112"><a href="#Atlas.save-112"><span class="linenos">112</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas.save-113"><a href="#Atlas.save-113"><span class="linenos">113</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to save, skipping.&quot;</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -602,41 +629,42 @@
 
     </div>
     <a class="headerlink" href="#Atlas.load"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.load-108"><a href="#Atlas.load-108"><span class="linenos">108</span></a>    <span class="nd">@classmethod</span>
-</span><span id="Atlas.load-109"><a href="#Atlas.load-109"><span class="linenos">109</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
-</span><span id="Atlas.load-110"><a href="#Atlas.load-110"><span class="linenos">110</span></a>        <span class="bp">cls</span><span class="p">,</span>
-</span><span id="Atlas.load-111"><a href="#Atlas.load-111"><span class="linenos">111</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-</span><span id="Atlas.load-112"><a href="#Atlas.load-112"><span class="linenos">112</span></a>    <span class="p">):</span>
-</span><span id="Atlas.load-113"><a href="#Atlas.load-113"><span class="linenos">113</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
-</span><span id="Atlas.load-114"><a href="#Atlas.load-114"><span class="linenos">114</span></a>
-</span><span id="Atlas.load-115"><a href="#Atlas.load-115"><span class="linenos">115</span></a><span class="sd">        Warnings cannot be silenced.</span>
-</span><span id="Atlas.load-116"><a href="#Atlas.load-116"><span class="linenos">116</span></a>
-</span><span id="Atlas.load-117"><a href="#Atlas.load-117"><span class="linenos">117</span></a><span class="sd">        Args:</span>
-</span><span id="Atlas.load-118"><a href="#Atlas.load-118"><span class="linenos">118</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
-</span><span id="Atlas.load-119"><a href="#Atlas.load-119"><span class="linenos">119</span></a>
-</span><span id="Atlas.load-120"><a href="#Atlas.load-120"><span class="linenos">120</span></a><span class="sd">        &quot;&quot;&quot;</span>
-</span><span id="Atlas.load-121"><a href="#Atlas.load-121"><span class="linenos">121</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
-</span><span id="Atlas.load-122"><a href="#Atlas.load-122"><span class="linenos">122</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
-</span><span id="Atlas.load-123"><a href="#Atlas.load-123"><span class="linenos">123</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
-</span><span id="Atlas.load-124"><a href="#Atlas.load-124"><span class="linenos">124</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
-</span><span id="Atlas.load-125"><a href="#Atlas.load-125"><span class="linenos">125</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
-</span><span id="Atlas.load-126"><a href="#Atlas.load-126"><span class="linenos">126</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
-</span><span id="Atlas.load-127"><a href="#Atlas.load-127"><span class="linenos">127</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
-</span><span id="Atlas.load-128"><a href="#Atlas.load-128"><span class="linenos">128</span></a>            <span class="p">]</span>
-</span><span id="Atlas.load-129"><a href="#Atlas.load-129"><span class="linenos">129</span></a>        <span class="p">}</span>
-</span><span id="Atlas.load-130"><a href="#Atlas.load-130"><span class="linenos">130</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
-</span><span id="Atlas.load-131"><a href="#Atlas.load-131"><span class="linenos">131</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
-</span><span id="Atlas.load-132"><a href="#Atlas.load-132"><span class="linenos">132</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
-</span><span id="Atlas.load-133"><a href="#Atlas.load-133"><span class="linenos">133</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
-</span><span id="Atlas.load-134"><a href="#Atlas.load-134"><span class="linenos">134</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
-</span><span id="Atlas.load-135"><a href="#Atlas.load-135"><span class="linenos">135</span></a>            <span class="k">else</span><span class="p">:</span>
-</span><span id="Atlas.load-136"><a href="#Atlas.load-136"><span class="linenos">136</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
-</span><span id="Atlas.load-137"><a href="#Atlas.load-137"><span class="linenos">137</span></a>
-</span><span id="Atlas.load-138"><a href="#Atlas.load-138"><span class="linenos">138</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Atlas.load-139"><a href="#Atlas.load-139"><span class="linenos">139</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
-</span><span id="Atlas.load-140"><a href="#Atlas.load-140"><span class="linenos">140</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
-</span><span id="Atlas.load-141"><a href="#Atlas.load-141"><span class="linenos">141</span></a>
-</span><span id="Atlas.load-142"><a href="#Atlas.load-142"><span class="linenos">142</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Atlas.load-115"><a href="#Atlas.load-115"><span class="linenos">115</span></a>    <span class="nd">@classmethod</span>
+</span><span id="Atlas.load-116"><a href="#Atlas.load-116"><span class="linenos">116</span></a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span>
+</span><span id="Atlas.load-117"><a href="#Atlas.load-117"><span class="linenos">117</span></a>        <span class="bp">cls</span><span class="p">,</span>
+</span><span id="Atlas.load-118"><a href="#Atlas.load-118"><span class="linenos">118</span></a>        <span class="n">atlas_dirpath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span id="Atlas.load-119"><a href="#Atlas.load-119"><span class="linenos">119</span></a>    <span class="p">):</span>
+</span><span id="Atlas.load-120"><a href="#Atlas.load-120"><span class="linenos">120</span></a><span class="w">        </span><span class="sd">&quot;&quot;&quot;Load an Atlas object from a directory containing the .pkl binary for each attribute.</span>
+</span><span id="Atlas.load-121"><a href="#Atlas.load-121"><span class="linenos">121</span></a>
+</span><span id="Atlas.load-122"><a href="#Atlas.load-122"><span class="linenos">122</span></a><span class="sd">        Warnings cannot be silenced.</span>
+</span><span id="Atlas.load-123"><a href="#Atlas.load-123"><span class="linenos">123</span></a>
+</span><span id="Atlas.load-124"><a href="#Atlas.load-124"><span class="linenos">124</span></a><span class="sd">        Args:</span>
+</span><span id="Atlas.load-125"><a href="#Atlas.load-125"><span class="linenos">125</span></a><span class="sd">            atlas_dirpath: directory where .pkl binaries will be read from</span>
+</span><span id="Atlas.load-126"><a href="#Atlas.load-126"><span class="linenos">126</span></a>
+</span><span id="Atlas.load-127"><a href="#Atlas.load-127"><span class="linenos">127</span></a><span class="sd">        &quot;&quot;&quot;</span>
+</span><span id="Atlas.load-128"><a href="#Atlas.load-128"><span class="linenos">128</span></a>        <span class="n">attributes</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="Atlas.load-129"><a href="#Atlas.load-129"><span class="linenos">129</span></a>            <span class="n">k</span><span class="p">:</span> <span class="kc">None</span>
+</span><span id="Atlas.load-130"><a href="#Atlas.load-130"><span class="linenos">130</span></a>            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">[</span>
+</span><span id="Atlas.load-131"><a href="#Atlas.load-131"><span class="linenos">131</span></a>                <span class="s2">&quot;publications&quot;</span><span class="p">,</span>
+</span><span id="Atlas.load-132"><a href="#Atlas.load-132"><span class="linenos">132</span></a>                <span class="s2">&quot;projection&quot;</span><span class="p">,</span>
+</span><span id="Atlas.load-133"><a href="#Atlas.load-133"><span class="linenos">133</span></a>                <span class="s2">&quot;bad_ids&quot;</span><span class="p">,</span>
+</span><span id="Atlas.load-134"><a href="#Atlas.load-134"><span class="linenos">134</span></a>                <span class="s2">&quot;history&quot;</span><span class="p">,</span>
+</span><span id="Atlas.load-135"><a href="#Atlas.load-135"><span class="linenos">135</span></a>                <span class="s2">&quot;center&quot;</span><span class="p">,</span>
+</span><span id="Atlas.load-136"><a href="#Atlas.load-136"><span class="linenos">136</span></a>            <span class="p">]</span>
+</span><span id="Atlas.load-137"><a href="#Atlas.load-137"><span class="linenos">137</span></a>        <span class="p">}</span>
+</span><span id="Atlas.load-138"><a href="#Atlas.load-138"><span class="linenos">138</span></a>        <span class="k">for</span> <span class="n">attribute</span> <span class="ow">in</span> <span class="n">attributes</span><span class="p">:</span>
+</span><span id="Atlas.load-139"><a href="#Atlas.load-139"><span class="linenos">139</span></a>            <span class="n">fn</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">.pkl&quot;</span>
+</span><span id="Atlas.load-140"><a href="#Atlas.load-140"><span class="linenos">140</span></a>            <span class="n">fp</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">atlas_dirpath</span><span class="p">,</span> <span class="n">fn</span><span class="p">)</span>
+</span><span id="Atlas.load-141"><a href="#Atlas.load-141"><span class="linenos">141</span></a>            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">fp</span><span class="p">):</span>
+</span><span id="Atlas.load-142"><a href="#Atlas.load-142"><span class="linenos">142</span></a>                <span class="n">attributes</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">=</span> <span class="n">read_pickle</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+</span><span id="Atlas.load-143"><a href="#Atlas.load-143"><span class="linenos">143</span></a>            <span class="k">else</span><span class="p">:</span>
+</span><span id="Atlas.load-144"><a href="#Atlas.load-144"><span class="linenos">144</span></a>                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No </span><span class="si">{</span><span class="n">attribute</span><span class="si">}</span><span class="s2"> to read, skipping.&quot;</span><span class="p">)</span>
+</span><span id="Atlas.load-145"><a href="#Atlas.load-145"><span class="linenos">145</span></a>
+</span><span id="Atlas.load-146"><a href="#Atlas.load-146"><span class="linenos">146</span></a>        <span class="k">if</span> <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Atlas.load-147"><a href="#Atlas.load-147"><span class="linenos">147</span></a>            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Loading empty atlas.&quot;</span><span class="p">)</span>
+</span><span id="Atlas.load-148"><a href="#Atlas.load-148"><span class="linenos">148</span></a>            <span class="n">attributes</span><span class="p">[</span><span class="s2">&quot;publications&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+</span><span id="Atlas.load-149"><a href="#Atlas.load-149"><span class="linenos">149</span></a>
+</span><span id="Atlas.load-150"><a href="#Atlas.load-150"><span class="linenos">150</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attributes</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">v</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">})</span>
 </span></pre></div>
 
 

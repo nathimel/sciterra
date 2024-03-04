@@ -7,17 +7,18 @@ from ..mapping.atlas import Atlas
 from ..mapping.cartography import Cartographer
 from ..vectorization.vectorizer import Vectorizer
 
+
 def atlas_to_measurements(
     atl: Atlas,
     vectorizer: Vectorizer,
     con_d: float,
-    kernel_size =  16, # TODO: find a principled way of selecting this value., i.e. Fig. 5 from Imel & Hafen (2023). https://openreview.net/pdf?id=mISayy7DPI.
+    kernel_size=16,  # TODO: find a principled way of selecting this value., i.e. Fig. 5 from Imel & Hafen (2023). https://openreview.net/pdf?id=mISayy7DPI.
     metrics: list[str] = ["density", "edginess"],
-    fields_of_study = None,
-    max_year: int = 2023, # consider 2022
+    fields_of_study=None,
+    max_year: int = 2023,  # consider 2022
 ) -> pd.DataFrame:
     """Compute the density, edginess, and citations per year metrics for each publicaation in an atlas w.r.t. a vectorizer and convergence configurations, and return the results in a dataframe.
-    
+
     Args:
         atl: the Atlas to measure
 
@@ -32,7 +33,9 @@ def atlas_to_measurements(
         metrics: the list of str names corresponding to metrics to compute for the atlas. See `sciterra.mapping.topography` for possible metrics.
 
     """
-    kernels = atl.history['kernel_size'] # shape `(num_pubs, max_update)`, where `max_update` is typically the total number of updates if this function is called after the atlas has been sufficiently built out.
+    kernels = atl.history[
+        "kernel_size"
+    ]  # shape `(num_pubs, max_update)`, where `max_update` is typically the total number of updates if this function is called after the atlas has been sufficiently built out.
     max_update = kernels.shape[1]
 
     # Get all publications that have not changed neighborhoods up to kernel_size for the last con_d updates
@@ -46,22 +49,31 @@ def atlas_to_measurements(
 
     # Optionally filter only to `field_of_study` publications
     if fields_of_study is not None:
-        converged_pub_ids = [id for id in converged_pub_ids if any(fld in atl[id].fields_of_study for fld in atl[id].fields_of_study)]
+        converged_pub_ids = [
+            id
+            for id in converged_pub_ids
+            if any(fld in atl[id].fields_of_study for fld in atl[id].fields_of_study)
+        ]
 
     # Compute density, edginess
     crt = Cartographer(
         vectorizer=vectorizer,
     )
     measurements = crt.measure_topography(
-        atl, 
+        atl,
         ids=converged_pub_ids,
         metrics=metrics,
         kernel_size=kernel_size,
     )
 
     # Get citations
-    citations_per_year = [ 
-        atl[id].citation_count / (max_year - atl[id].publication_date.year) if (atl[id].publication_date.year < max_year and atl[id].citation_count is not None) else 0.
+    citations_per_year = [
+        atl[id].citation_count / (max_year - atl[id].publication_date.year)
+        if (
+            atl[id].publication_date.year < max_year
+            and atl[id].citation_count is not None
+        )
+        else 0.0
         for id in converged_pub_ids
     ]
 
@@ -70,7 +82,10 @@ def atlas_to_measurements(
 
     if not any(is_center):
         import warnings
-        warnings.warn(f"The center publication is not within the set of convered publications.")
+
+        warnings.warn(
+            f"The center publication is not within the set of convered publications."
+        )
 
     df = pd.DataFrame(
         measurements,
@@ -79,10 +94,12 @@ def atlas_to_measurements(
     df["citations_per_year"] = citations_per_year
     df["is_center"] = is_center
 
-    df = df[~np.isinf(df["density"])] # drop infs which occur for BOW vectorizer
+    df = df[~np.isinf(df["density"])]  # drop infs which occur for BOW vectorizer
     # TODO what about other very high densities that result from close to 0?
 
-    df.dropna(inplace=True, )
+    df.dropna(
+        inplace=True,
+    )
 
     print(f"There are {len(df)} total observations after filtering.")
 

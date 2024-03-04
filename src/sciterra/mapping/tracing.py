@@ -105,10 +105,10 @@ def iterate_expand(
             failures = 0
 
         converged = (
-            len(atl) >= target_size 
+            len(atl) >= target_size
             or failures >= max_failed_expansions
             or convergence_func(atl)
-            )
+        )
 
     print(f"Exiting loop.")
     atl = crt.track(atl, calculate_convergence=True)
@@ -119,7 +119,9 @@ def iterate_expand(
         "max_failed_expansions": failures >= max_failed_expansions,
         "convergence_func": convergence_func(atl),
     }
-    print(f"Expansion loop exited with atlas size {len(atl)} after {its} iterations meeting criteria: {converged_dict}.")
+    print(
+        f"Expansion loop exited with atlas size {len(atl)} after {its} iterations meeting criteria: {converged_dict}."
+    )
 
     return atl
 
@@ -130,7 +132,7 @@ def search_converged_ids(
     kernel_size: int = 16,
 ) -> list[str]:
     """Get all publication ids such that they did not change neighborhood identity over the duration of the addition of the last `num_pubs_added` publications added to the atlas during previous `Cartographer.expand` calls.
-    
+
     Args:
         atl: Atlas to search for converged publications
 
@@ -138,33 +140,38 @@ def search_converged_ids(
 
         kernel_size: the minimum required size of the neighborhood that we will require to not have changed, w.r.t. `cond_d`. Default is 16.
 
-    Returns: 
+    Returns:
         converged_pub_ids: a list of Publication identifiers corresponding to publications that have converged acording to the criterion.
     """
-    kernels = atl.history['kernel_size'] # shape `(num_pubs, max_update)`
-    max_update = kernels.shape[1] # total number of updates to an Atlas
+    kernels = atl.history["kernel_size"]  # shape `(num_pubs, max_update)`
+    max_update = kernels.shape[1]  # total number of updates to an Atlas
+    if not max_update:  # if there has not been any updates
+        return []
 
-    # Define the update index to be the update such that greater than or equal to `num_pubs_added` have been added between this update and the final one. 
-    # This is clearly dependent on the size of the update; for example, if each update in the history added many publications, or if `num_pubs_added` is small, this update_ind might in practice be max_update-1. 
+    # Define the update index to be the update such that greater than or equal to `num_pubs_added` have been added between this update and the final one.
+    # This is clearly dependent on the size of the update; for example, if each update in the history added many publications, or if `num_pubs_added` is small, this update_ind might in practice be max_update-1.
     update_ind = None
-    history = atl.history["pubs_per_update"][:-1] # exclude the final update
+    history = atl.history["pubs_per_update"][:-1]  # exclude the final update
     for reverse_idx, ids_at_update in enumerate(history[::-1]):
         num_diff_from_final = len(set(atl.ids) - set(ids_at_update))
         if num_diff_from_final >= num_pubs_added:
             update_ind = max_update - reverse_idx - 1
             break
 
-
     if update_ind is None:
-        print(f"Failed to find an update index > 0 such that {num_pubs_added} were added between then and the final update ({max_update-1}).")
+        print(
+            f"Failed to find an update index > 0 such that {num_pubs_added} were added between then and the final update ({max_update-1})."
+        )
         update_ind = 0
     else:
-        print(f"Between update {update_ind} and the final update ({max_update-1}) there were {num_diff_from_final} publications added to the Atlas.")
+        print(
+            f"Between update {update_ind} and the final update ({max_update-1}) there were {num_diff_from_final} publications added to the Atlas."
+        )
 
     # Get all publications that have not changed neighborhoods up to kernel_size for the last con_d updates
     converged_filter = kernels[:, update_ind] >= kernel_size
     ids = np.array(atl.projection.index_to_identifier)
-    converged_pub_ids = ids[converged_filter]    
+    converged_pub_ids = ids[converged_filter]
 
     criterion = dict(num_pubs_added=num_pubs_added, kernel_size=kernel_size)
 

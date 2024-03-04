@@ -88,6 +88,8 @@ class SemanticScholarLibrarian(Librarian):
         identifier = None
         if "paper_id" in bibtex_entry:
             identifier = bibtex_entry["paper_id"]
+        elif "corpus_id" in bibtex_entry:
+            identifier = f"CorpusID:{bibtex_entry['corpus_id']}"
         elif "doi" in bibtex_entry:
             identifier = f"DOI:{bibtex_entry['doi']}"
         return identifier
@@ -198,7 +200,6 @@ class SemanticScholarLibrarian(Librarian):
                 paper.paperId for paper in paper.citations if paper.paperId is not None
             ]  # no point using recursion assuming identifier=paperId
 
-        
         references = [
             paper.paperId for paper in paper.references if paper.paperId is not None
         ]

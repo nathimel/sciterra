@@ -45,7 +45,14 @@
 
             <h2>Contents</h2>
             <ul>
-  <li><a href="#sciterra">sciterra</a></li>
+  <li><a href="#sciterra-a-python-library-for-similarity-based-scientometrics">sciterra: a python library for similarity-based scientometrics</a>
+  <ul>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#installing-sciterra">Installing sciterra</a></li>
+    <li><a href="#usage">Usage</a></li>
+    <li><a href="#additional-features">Additional features</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ul></li>
 </ul>
 
 
@@ -75,13 +82,157 @@
                     <h1 class="modulename">
 sciterra    </h1>
 
-                        <div class="docstring"><h1 id="sciterra">sciterra</h1>
+                        <div class="docstring"><h1 id="sciterra-a-python-library-for-similarity-based-scientometrics">sciterra: a python library for similarity-based scientometrics</h1>
 
-<p><a href="https://github.com/nathimel/sciterra/actions/workflows/test.yml"><img src="https://github.com/nathimel/sciterra/actions/workflows/test.yml/badge.svg" alt="build" /></a></p>
+<p><a href="https://github.com/nathimel/sciterra/actions/workflows/build.yml"><img src="https://github.com/nathimel/sciterra/actions/workflows/build.yml/badge.svg" alt="build" /></a></p>
 
-<p>Software library to support data-driven analyses of scientific literature.</p>
+<p>Sciterra is a software libary to support data-driven analyses of scientific literature, with a focus on unifying different bibliographic database APIs and document-embedding methods for systematic scientometrics research.</p>
 
-<p>This library is a reimplementation of Zach Hafen's <a href="https://github.com/zhafen/cc">cc</a> library.</p>
+<h2 id="overview">Overview</h2>
+
+<p>The main purpose of sciterra is to perform similarity-based retrieval of scientific publications for metascience/scientometrics research. While there are many services that can make the individual steps of this simple, this software library exists to</p>
+
+<ol>
+<li><p>Unify the different APIs and vector-based retrieval methods</p></li>
+<li><p>Support scientometrics analyses of citation dynamics, especially with respect to a vectorized 'landscape' of literature.</p></li>
+</ol>
+
+<h2 id="installing-sciterra">Installing sciterra</h2>
+
+<p>First, set up a virtual environment (e.g. via <a href="https://docs.conda.io/projects/miniconda/en/latest/">miniconda</a>, <code>conda create -n sciterra</code>, and <code>conda activate sciterra</code>).</p>
+
+<ol>
+<li><p>Install sciterra via git:</p>
+
+<p><code>python -m pip install 'sciterra @ git+https://github.com/nathimel/sciterra.git'</code></p></li>
+<li><p>Alternatively, download or clone this repository and navigate to the root folder, and install locally:</p>
+
+<p><code>pip install -e .</code></p></li>
+<li><p>It is not yet recommended because sciterra is still in development, but you can also install via pip from pypi:</p>
+
+<p><code>pip install sciterra</code></p></li>
+</ol>
+
+<h2 id="usage">Usage</h2>
+
+<h3 id="atlas">Atlas</h3>
+
+<p>The central object in sciterra is the <a href="src/sciterra/mapping/atlas.py"><code>Atlas</code></a>. This is a basic data structure for containing scientific publications that are returned from calls to various bibliographic database APIs.</p>
+
+<p>An Atlas minimally requires a list of <a href="src/sciterra/mapping/publication.py"><code>Publications</code></a>.</p>
+
+<h4 id="publication">Publication</h4>
+
+<p>A publication object is a minimal wrapper around publication data, and should have a string identifier. It is designed to standardize the basic metadata contained in the results from some bibliographic database API.</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span> <span class="nn">sciterra</span> <span class="kn">import</span> <span class="n">Atlas</span><span class="p">,</span> <span class="n">Publication</span>
+
+<span class="n">atl</span> <span class="o">=</span> <span class="n">Atlas</span><span class="p">([</span><span class="n">Publication</span><span class="p">({</span><span class="s2">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;id&quot;</span><span class="p">})])</span>
+</code></pre>
+</div>
+
+<p>Alternatively, you can construct an Atlas by passing in a .bib file. The entries in this bibtex file will be parsed for unique identifiers (e.g., DOIs), and sent in an API call, and returned as Publications, which then populate an Atlas.</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="n">atl</span> <span class="o">=</span> <span class="n">crt</span><span class="o">.</span><span class="n">bibtex_to_atlas</span><span class="p">(</span><span class="n">bibtex_filepath</span><span class="p">)</span>
+</code></pre>
+</div>
+
+<p>In the line of code above, the variable <code>crt</code> is an instance of a <a href="src/sciterra/mapping/cartography.py"><code>Cartographer</code></a> object, which encapsulates the bookkeeping involved in querying a bibliographic database for publications.</p>
+
+<h3 id="cartographer">Cartographer</h3>
+
+<p>The Cartographer class is named because interfaces with an Atlas to build out a library of publications. Since it does so via similarity-based retrieval, the resulting Atlas can be considered a 'region' of publications.</p>
+
+<p>To do this, a Cartographer needs two things: an API with which to interface, and a way of getting document embeddings. Both are encapsulated, respectively, by the <a href="src/sciterra/librarians/librarian.py"><code>Librarian</code></a> and the <a href="src/sciterra/vectorization/vectorizer.py"><code>Vectorizer</code></a> classes.</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span> <span class="nn">sciterra</span> <span class="kn">import</span> <span class="n">Cartographer</span>
+<span class="kn">from</span> <span class="nn"><a href="sciterra/librarians.html">sciterra.librarians</a></span> <span class="kn">import</span> <span class="n">SemanticScholarLibrarian</span> <span class="c1"># or ADSLibrarian</span>
+<span class="kn">from</span> <span class="nn"><a href="sciterra/vectorization.html">sciterra.vectorization</a></span> <span class="kn">import</span> <span class="n">SciBERTVectorizer</span> <span class="c1"># among others</span>
+
+<span class="n">crt</span> <span class="o">=</span> <span class="n">Cartographer</span><span class="p">(</span>
+    <span class="n">librarian</span><span class="o">=</span><span class="n">SemanticScholarLibrarian</span><span class="p">(),</span>
+    <span class="n">vectorizer</span><span class="o">=</span><span class="n">SciBERTVectorizer</span><span class="p">(),</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+<h4 id="librarian">Librarian</h4>
+
+<p>Each Librarian subclass is designed to be a wrapper for an existing python API service, such as the <a href="https://ads.readthedocs.io/en/latest/">ads</a> package or the <a href="https://github.com/danielnsilva/semanticscholar#">semanticscholar</a> client library.</p>
+
+<p>A Librarian subclass also overrides two methods. The first is <code>get_publications</code>, which takes a list of identifiers, should query the specific API for that Librarian, and returns a list of Publications. Keyword arguments can be passed to specify the metadata that is kept for each publication (e.g. date, title, journal, authors, etc.) The second method is <code>convert_publication</code>, which defines how the result of an API call should be converted to a sciterra Publication object.</p>
+
+<p>Contributions to sciterra in the form of new Librarian subclasses are encouraged and appreciated.</p>
+
+<h3 id="vectorizer">Vectorizer</h3>
+
+<p>Vectorizer subclasses override one function, <code>embed_documents</code>, which takes a list of strings, representing the text of a publication (currently, just its abstract), and returns an <code>np.ndarray</code> of embeddings.</p>
+
+<p>Under the hood, the <code>project</code> method of Cartographer, which is used during similarity-based retrieval, uses the vectorizer roughly as follows</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="c1"># Get abstracts</span>
+<span class="n">docs</span> <span class="o">=</span> <span class="p">[</span><span class="n">atlas</span><span class="p">[</span><span class="n">identifier</span><span class="p">]</span><span class="o">.</span><span class="n">abstract</span> <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">identifiers</span><span class="p">]</span>
+
+<span class="c1"># Embed abstracts</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">vectorizer</span><span class="o">.</span><span class="n">embed_documents</span><span class="p">(</span><span class="n">docs</span><span class="p">)</span>
+<span class="n">embeddings</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;embeddings&quot;</span><span class="p">]</span>
+
+<span class="c1"># depending on the vectorizer, sometimes not all embeddings can be obtained due to out-of-vocab issues</span>
+<span class="n">success_indices</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;success_indices&quot;</span><span class="p">]</span> <span class="c1"># shape `(len(embeddings),)`</span>
+<span class="n">fail_indices</span> <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s2">&quot;fail_indices&quot;</span><span class="p">]</span> <span class="c1"># shape `(len(docs) - len(embeddings))``</span>
+</code></pre>
+</div>
+
+<p>Currently, sciterra has vectorizers using <a href="https://aclanthology.org/D19-1371/">SciBERT</a>, <a href="https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models">SBERT</a>, <a href="https://huggingface.co/docs/transformers/en/model_doc/gpt2">GPT-2</a>, <a href="https://radimrehurek.com/gensim/auto_examples/tutorials/run_word2vec.html#">Word2Vec</a>, and a simple bag-of-words (BOW) vectorizer that uses the same vocabulary as the Word2Vec vectorizer. Contributions to sciterra in the form of new Vectorizer subclasses are also encouraged and appreciated.</p>
+
+<h3 id="putting-it-all-together">Putting it all together</h3>
+
+<p>The main use case for all of these ingredients is to iteratively build out a region of publications. This is done using <code>iterate_expand</code>:</p>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="kn">from</span> <span class="nn"><a href="sciterra/mapping/tracing.html">sciterra.mapping.tracing</a></span> <span class="kn">import</span> <span class="n">iterate_expand</span>
+
+<span class="c1"># Assuming the initial atlas contains just one publication</span>
+<span class="p">(</span><span class="n">atl</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="n">atl</span><span class="o">.</span><span class="n">publications</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+<span class="c1"># build out an atlas to contain 10,000 publications, with increasing dissimilarity to the initial publication, saving progress in binary files to the directory named &quot;atlas&quot;.</span>
+<span class="n">iterate_expand</span><span class="p">(</span>
+    <span class="n">atl</span><span class="o">=</span><span class="n">atl</span><span class="p">,</span>
+    <span class="n">crt</span><span class="o">=</span><span class="n">crt</span><span class="p">,</span>
+    <span class="n">atlas_dir</span><span class="o">=</span><span class="s2">&quot;atlas&quot;</span><span class="p">,</span>
+    <span class="n">target_size</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+    <span class="n">center</span><span class="o">=</span><span class="n">atl</span><span class="o">.</span><span class="n">center</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+
+<p>This method has a number of keyword arguments that enable tracking the Atlas expansion, limiting the number of publications per expansion, how many times to try to get a response if there are connection issues, etc.</p>
+
+<p>In practice, it may be helpful to use the <a href="src/sciterra/mapping/tracing.py"><code><a href="sciterra/mapping/tracing.html#AtlasTracer">sciterra.mapping.tracing.AtlasTracer</a></code></a> data structure to reduce most of the loading/initialization boilerplate described above. For an example, see <a href="src/examples/scratch/main.py">main.py</a>.</p>
+
+<h2 id="additional-features">Additional features</h2>
+
+<ul>
+<li>The <a href="src/sciterra/mapping/topography.py">topography</a> submodule contains similarity-based metrics for publications, to support scientometrics analyses.</li>
+</ul>
+
+<h2 id="acknowledgments">Acknowledgments</h2>
+
+<p>This software is a reimplimentation of Zachary Hafen-Saavedra's library, <a href="https://github.com/zhafen/cc">cc</a>.</p>
+
+<p>To cite sciterra, please use the following workshop paper,</p>
+
+<pre><code>@inproceedings{Imel2023,
+ author = {Imel, Nathaniel, and Hafen, Zachary},
+ title = {Citation-similarity relationships in astrophysics},
+ booktitle = {AI for Scientific Discovery: From Theory to Practice Workshop (AI4Science @ NeurIPS)},
+ year = {2023},
+ url = {https://openreview.net/pdf?id=mISayy7DPI},
+}
+</code></pre>
 </div>
 
                         <input id="mod-sciterra-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">

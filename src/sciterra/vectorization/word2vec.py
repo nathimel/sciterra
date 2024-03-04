@@ -59,7 +59,10 @@ class Word2VecVectorizer(Vectorizer):
             print(
                 f"Loading and tokenizing data from {corpus_path} for vocabulary and training..."
             )
-            sentences = [self.tokenizer(line) for line in tqdm(open(corpus_path), desc="tokenizing lines")]
+            sentences = [
+                self.tokenizer(line)
+                for line in tqdm(open(corpus_path), desc="tokenizing lines")
+            ]
 
             print(f"Training Word2Vec model...")
             model = Word2Vec(
@@ -96,8 +99,8 @@ class Word2VecVectorizer(Vectorizer):
         success_indices = []
         failed_indices = []
         for i, doc in tqdm(
-            enumerate(docs), 
-            desc="embedding documents", 
+            enumerate(docs),
+            desc="embedding documents",
             leave=True,
             total=len(docs),
         ):

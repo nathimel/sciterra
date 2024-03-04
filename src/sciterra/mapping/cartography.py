@@ -571,7 +571,7 @@ class Cartographer:
         if -2 in self.update_history:
             raise ValueError(
                 "Incomplete update history as indicated by entries with values of -2."
-            )        
+            )
 
         publications = np.array(atl.ids)
 
@@ -582,7 +582,7 @@ class Cartographer:
         cospsi_kernel: list[list[int]] = []
         for pub in tqdm(publications, desc="calculating converged kernel size"):
             # 1. Identify the similarity with the other publications relative to this publication, and sort accordingly.
-            cospsi = cospsi_matrix[publications == pub].flatten() # shape `(num_pubs,)`
+            cospsi = cospsi_matrix[publications == pub].flatten()  # shape `(num_pubs,)`
             sort_inds = np.argsort(cospsi)[::-1]  # shape `(num_pubs,)`
 
             # 2. Identify the expansion iteration at which those publications were added to the atlas (`sorted_history`).

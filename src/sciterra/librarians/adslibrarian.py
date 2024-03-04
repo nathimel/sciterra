@@ -218,8 +218,9 @@ class ADSLibrarian(Librarian):
 
         return Publication(data)
 
+
 # TODO: consider implementing `random_publications`
-# We are interested in determining whether the distribution of density is normal, even when not doing the iterative similarity-based expansion loop. To do this, we need a sample of publications that aren't necessarily similar to each other. 
+# We are interested in determining whether the distribution of density is normal, even when not doing the iterative similarity-based expansion loop. To do this, we need a sample of publications that aren't necessarily similar to each other.
 
 # This has already been implemented by Zach in his `background_distribution` step, using cc and ADS. While it would be better to use S2, since that's the source of publications for our analysis, we cannot randomly search S2 in the way we do for ADS. TODO: double check this.
 

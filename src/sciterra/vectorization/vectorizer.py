@@ -3,8 +3,8 @@
 import numpy as np
 from abc import ABC, abstractmethod
 
-class Vectorizer(ABC):
 
+class Vectorizer(ABC):
     @abstractmethod
     def embed_documents(
         self, docs: list[str], batch_size: int = 64

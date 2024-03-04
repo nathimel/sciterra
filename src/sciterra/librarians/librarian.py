@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 
 class Librarian(ABC):
-
     @abstractmethod
     def bibtex_entry_identifier(self, bibtex_entry: dict) -> str:
         """Parse a bibtex entry for a usable unique identifier appropriate to the API."""

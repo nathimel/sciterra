@@ -522,11 +522,18 @@ class TestConvergence:
             ],
             # it=3, len=10. This is equiv to atl.ids
             [
-                '9d1a233164f27342d316662821e9a6bb855c25b4', 'af6a1c9da102e29fee5d309ec33831207e9f23e5', 
+                "9d1a233164f27342d316662821e9a6bb855c25b4",
+                "af6a1c9da102e29fee5d309ec33831207e9f23e5",
                 # ----- it 2 ----
-                '50dea78a96f03ba7fc3398c5deea5174630ef186', '54a83cd1d94814b0f37ee48084260a2d1882648d', '4364af31229f7e9a3d83a289a928b2f2a43d30cb', 'f2c251056dee4c6f9130b31e5e3e4b3296051c49', '287fa946f30eaa78ea86f9c5bd61d67238202356', '2e6438be4901cb9b42ff23dcc3d433789b37d032', '04da6471743468b6bb1d26dd9a6eac4c03ca73ee',
+                "50dea78a96f03ba7fc3398c5deea5174630ef186",
+                "54a83cd1d94814b0f37ee48084260a2d1882648d",
+                "4364af31229f7e9a3d83a289a928b2f2a43d30cb",
+                "f2c251056dee4c6f9130b31e5e3e4b3296051c49",
+                "287fa946f30eaa78ea86f9c5bd61d67238202356",
+                "2e6438be4901cb9b42ff23dcc3d433789b37d032",
+                "04da6471743468b6bb1d26dd9a6eac4c03ca73ee",
                 # ----- end it 2 ----
-                '0def4f553107451204b34470890d019b373798b5'
+                "0def4f553107451204b34470890d019b373798b5",
             ],
         ]
 
