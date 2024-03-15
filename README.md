@@ -28,6 +28,14 @@ First, set up a virtual environment (e.g. via [miniconda](https://docs.conda.io/
 
     `pip install sciterra`
 
+## Tests
+
+To run all the unit tests for sciterra, found at [src/tests](https://github.com/nathimel/sciterra/tree/main/src/tests), run the following command at the root of the repository:
+
+`pytest`
+
+This may take up to several hours in total, due to slow api calls in `test_cartography` and `test_tracing`.
+
 ## Usage
 
 ### Atlas
