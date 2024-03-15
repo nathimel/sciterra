@@ -11,7 +11,7 @@ from ..vectorization.vectorizer import Vectorizer
 def atlas_to_measurements(
     atl: Atlas,
     vectorizer: Vectorizer,
-    con_d: float,
+    con_d: int,
     kernel_size=16,  # TODO: find a principled way of selecting this value., i.e. Fig. 5 from Imel & Hafen (2023). https://openreview.net/pdf?id=mISayy7DPI.
     metrics: list[str] = ["density", "edginess"],
     fields_of_study=None,
