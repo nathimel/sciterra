@@ -28,6 +28,10 @@ First, set up a virtual environment (e.g. via [miniconda](https://docs.conda.io/
 
     `pip install sciterra`
 
+You will also need to download a trained pipeline for [spacy](https://spacy.io/usage):
+
+`python -m spacy download en_core_web_sm`    
+
 ## Tests
 
 To run all the unit tests for sciterra, found at [src/tests](https://github.com/nathimel/sciterra/tree/main/src/tests), run the following command at the root of the repository:
