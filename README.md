@@ -32,6 +32,9 @@ You will also need to download a trained pipeline for [spacy](https://spacy.io/u
 
 `python -m spacy download en_core_web_sm`    
 
+Optional: If you plan on querying the NASA Astrophysical Data System (ADS), you must have an ADS API key saved at `~/.ads/dev_key`.
+To generate an ADS API key navigate to [the ADS web interface](https://ui.adsabs.harvard.edu/), create and sign in to an ADS account, and navigate to [Settings > API Token](https://ui.adsabs.harvard.edu/user/settings/token).
+
 ## Tests
 
 To run all the unit tests for sciterra, found at [src/tests](https://github.com/nathimel/sciterra/tree/main/src/tests), run the following command at the root of the repository:
@@ -39,6 +42,10 @@ To run all the unit tests for sciterra, found at [src/tests](https://github.com/
 `pytest`
 
 This may take up to several hours in total, due to slow api calls in `test_cartography` and `test_tracing`.
+
+Note: If you opted not to set up authentication for ADS during the set up, the tests in `test_librarian.TestADSLibrarian` and the test `test_tracing.TestExpansion.test_atlas_tracer_ads` will fail.
+<!-- TODO: Add an `--ads` flag to the pytests that is turned off by default. Turn it on if the user is using ADS. -->
+
 
 ## Usage
 
