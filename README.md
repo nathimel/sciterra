@@ -127,7 +127,7 @@ The main use case for all of these ingredients is to iteratively build out a reg
 from sciterra.mapping.tracing import iterate_expand
 
 # Assuming the initial atlas contains just one publication
-(atl.center, ) = atl.publications.values()
+(atl.center, ) = atl.publications.keys()
 # build out an atlas to contain 10,000 publications, with increasing dissimilarity to the initial publication, saving progress in binary files to the directory named "atlas".
 iterate_expand(
     atl=atl,
