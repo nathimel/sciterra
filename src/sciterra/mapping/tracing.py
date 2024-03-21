@@ -21,7 +21,7 @@ def iterate_expand(
     max_failed_expansions: int = 2,
     convergence_func: Callable[[Atlas], bool] = lambda _: False,
     center: str = None,
-    n_pubs_max: int = None,
+    n_pubs_per_exp_max: int = 4000,
     call_size: int = None,
     n_sources_max: int = None,
     record_pubs_per_update: bool = False,
@@ -46,7 +46,7 @@ def iterate_expand(
 
         center: (if given) center the search on this publication, preferentially searching related publications.
 
-        n_pubs_max: maximum number of publications allowed in the expansion.
+        n_pubs_per_exp_max: maximum number of publications allowed in a single expansion.
 
         call_size: maximum number of papers to call API for in one query; if less than `len(paper_ids)`, chunking will be performed.
 
@@ -78,7 +78,7 @@ def iterate_expand(
         atl = crt.expand(
             atl,
             center=center,
-            n_pubs_max=n_pubs_max,
+            n_pubs_max=n_pubs_per_exp_max,
             call_size=call_size,
             n_sources_max=n_sources_max,
             record_pubs_per_update=record_pubs_per_update,
