@@ -81,8 +81,13 @@ class Atlas:
         Args:
             atlas_dirpath: path of directory to save files to.
         """
-        if not overwrite:
-            return
+
+        # Create directory as needed, or overwrite existing files
+        if os.path.isdir(atlas_dirpath):
+            if not overwrite:
+                return
+        else:
+            os.makedirs(atlas_dirpath)
 
         attributes = {
             k: getattr(self, k)
