@@ -24,7 +24,7 @@ def iterate_expand(
     n_pubs_per_exp_max: int = 4000,
     call_size: int = None,
     n_sources_max: int = None,
-    record_pubs_per_update: bool = False,
+    record_pubs_per_update: bool = True,
     **project_kwargs,
 ) -> Atlas:
     """Build out an Atlas of publications, i.e. search for similar publications. This is done by iterating a sequence of [expand, save, project, save, track, save]. The convergence criterion is:
