@@ -38,7 +38,7 @@ class TestExpansion:
             target_size=100,
             max_failed_expansions=2,
             center=center,
-            n_pubs_max=10,
+            n_pubs_per_exp_max=10,
             call_size=None,
             n_sources_max=None,
             record_pubs_per_update=True,
