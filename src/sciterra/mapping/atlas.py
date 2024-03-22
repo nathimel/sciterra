@@ -85,8 +85,10 @@ class Atlas:
         # Create directory as needed, or overwrite existing files
         if os.path.isdir(atlas_dirpath):
             if not overwrite:
+                warnings.warn(f"Skipping overwrite of atlas data found at {atlas_dirpath}.")
                 return
         else:
+            warnings.warn(f"Recursively creating atlas data directory at {atlas_dirpath}.")
             os.makedirs(atlas_dirpath)
 
         attributes = {
