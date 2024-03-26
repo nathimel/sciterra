@@ -301,6 +301,7 @@ class TestS2SBSort:
         assert len(sorted_keys) == 10
         assert sorted_keys[0] == center
         assert sorted_values[0] > sorted_values[1]
+        assert sorted_values[1] > sorted_values[-1]
 
 
 class TestS2SBExpand:

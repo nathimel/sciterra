@@ -288,9 +288,8 @@ class Cartographer:
                 atl.projection.embeddings,
             )
             # get most similar keys from center, including center itself
-            sort_inds = np.argsort(cospsi_matrix)[::-1][
-                0
-            ][::-1]  # argsort orders from least to greatest similarity, so reverse
+            sort_inds = np.argsort(cospsi_matrix)[-1][::-1]
+            # argsort orders from least to greatest similarity, so reverse
             sorted_keys = atl.projection.indices_to_identifiers(sort_inds)
             sorted_values = cospsi_matrix[0][sort_inds]
 
