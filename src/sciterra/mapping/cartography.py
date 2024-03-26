@@ -269,7 +269,7 @@ class Cartographer:
             center: center the search on this publication
 
         Returns:
-            expand_keys: keys in descending order of similarity to the center publication
+            sort_keys: keys in descending order of similarity to the center publication
         """
 
         # If atlas is initial
@@ -290,9 +290,9 @@ class Cartographer:
             sort_inds = np.argsort(cospsi_matrix)[::-1][
                 0
             ]  # argsort orders from least to greatest similarity, so reverse
-            expand_keys = atl.projection.indices_to_identifiers(sort_inds)
+            sort_keys = atl.projection.indices_to_identifiers(sort_inds)
 
-            return expand_keys
+            return sort_keys
 
     ######################################################################
     # Expand Atlas
