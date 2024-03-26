@@ -329,11 +329,11 @@ class Cartographer:
         # Get the keys to expand
         expand_keys = None
         if center is not None:
-            expand_keys = self.argsort(atl, center, n_sources_max)
+            expand_keys = self.sort(atl, center)[0]
 
         # If that didn't work, just use all the keys
+        existing_keys = set(atl.ids)
         if expand_keys is None:
-            existing_keys = set(atl.ids)
             expand_keys = existing_keys
 
         if n_sources_max is not None:

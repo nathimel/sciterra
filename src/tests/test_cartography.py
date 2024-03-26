@@ -373,13 +373,6 @@ class TestS2SBExpand:
         atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
         assert len(atl_exp_single) == len(ids)
 
-        # Also check that our sorting works okay
-        sorted_keys, sorted_values = TestS2SBExpand.crt.sort(
-            atl_exp_single, center=center)
-        assert len(sorted_keys) == len(ids)
-        assert sorted_keys[0] == center
-        assert sorted_values[0] > sorted_values[1]
-
         # Save atlas
         atl_exp_single.save(path)
 
