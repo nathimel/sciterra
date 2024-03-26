@@ -284,7 +284,7 @@ class TestS2SBSort:
 
         # Load single file from bibtex
         # Load expected values
-        bibtex_fp = single_pub_bibtex_fp
+        bibtex_fp = ten_pub_bibtex_fp
         with open(bibtex_fp, "r") as f:
             bib_database = bibtexparser.load(f)
 
@@ -294,12 +294,11 @@ class TestS2SBSort:
         atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
 
         pub = list(atl.publications.values())[0]
-        ids = pub.citations + pub.references
         center = pub.identifier
 
         sorted_keys, sorted_values = TestS2SBSort.crt.sort(
             atl, center=center)
-        assert len(sorted_keys) == len(ids)
+        assert len(sorted_keys) == 10
         assert sorted_keys[0] == center
         assert sorted_values[0] > sorted_values[1]
 
