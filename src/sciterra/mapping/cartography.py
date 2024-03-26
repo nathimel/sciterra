@@ -14,7 +14,7 @@ from ..vectorization.vectorizer import Vectorizer
 from ..vectorization.projection import Projection, merge, get_empty_projection
 from ..misc.utils import get_verbose, custom_formatwarning
 
-from typing import Callable
+from typing import Callable, Tuple
 from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -254,11 +254,11 @@ class Cartographer:
     # Sort Atlas
     ######################################################################
 
-    def argsort(
+    def sort(
         self,
         atl: Atlas,
         center: str,
-    ) -> list[str]:
+    ) -> Tuple[list[str], list[str]]:
         """Sort an atlas according to cosine similarity to a center publication.
         Like numpy argsort, this returns identifiers that can be used to
         index the original atlas.
@@ -269,7 +269,8 @@ class Cartographer:
             center: center the search on this publication
 
         Returns:
-            sort_keys: keys in descending order of similarity to the center publication
+            sorted_keys: keys in descending order of similarity to the center publication
+            sorted_values: values in descending order of similarity to the center publication
         """
 
         # If atlas is initial
@@ -290,9 +291,10 @@ class Cartographer:
             sort_inds = np.argsort(cospsi_matrix)[::-1][
                 0
             ]  # argsort orders from least to greatest similarity, so reverse
-            sort_keys = atl.projection.indices_to_identifiers(sort_inds)
+            sorted_keys = atl.projection.indices_to_identifiers(sort_inds)
+            sorted_values = cospsi_matrix[0][sort_inds]
 
-            return sort_keys
+            return sorted_keys, sorted_values
 
     ######################################################################
     # Expand Atlas
