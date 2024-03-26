@@ -280,6 +280,8 @@ class TestS2SBSort:
     crt = Cartographer(librarian, vectorizer)
 
     def test_argsort(self, tmp_path):
+        # TODO: This takes a while, and we can probably reduce the time
+
         # Load single file from bibtex
         # Load expected values
         bibtex_fp = single_pub_bibtex_fp
@@ -295,9 +297,11 @@ class TestS2SBSort:
         ids = pub.citations + pub.references
         center = pub.identifier
 
-        sorted_keys = TestS2SBSort.crt.argsort(atl, center=center)
+        sorted_keys, sorted_values = TestS2SBSort.crt.sort(
+            atl, center=center)
         assert len(sorted_keys) == len(ids)
         assert sorted_keys[0] == center
+        assert sorted_values[0] > sorted_values[1]
 
 
 class TestS2SBExpand:
@@ -365,9 +369,16 @@ class TestS2SBExpand:
         pub = list(atl.publications.values())[0]
         ids = pub.citations + pub.references
         center = pub.identifier
-
+ 
         atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
         assert len(atl_exp_single) == len(ids)
+
+        # Also check that our sorting works okay
+        sorted_keys, sorted_values = TestS2SBExpand.crt.sort(
+            atl_exp_single, center=center)
+        assert len(sorted_keys) == len(ids)
+        assert sorted_keys[0] == center
+        assert sorted_values[0] > sorted_values[1]
 
         # Save atlas
         atl_exp_single.save(path)
