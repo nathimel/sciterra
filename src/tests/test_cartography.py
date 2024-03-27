@@ -274,6 +274,36 @@ class TestS2SBProjection:
         assert len(embed_ids) <= after - before
 
 
+class TestS2SBSort:
+    librarian = SemanticScholarLibrarian()
+    vectorizer = SciBERTVectorizer()
+    crt = Cartographer(librarian, vectorizer)
+
+    def test_argsort(self, tmp_path):
+        # TODO: This takes a while, and we can probably reduce the time
+
+        # Load single file from bibtex
+        # Load expected values
+        bibtex_fp = ten_pub_bibtex_fp
+        with open(bibtex_fp, "r") as f:
+            bib_database = bibtexparser.load(f)
+
+        path = tmp_path / atlas_dir
+        path.mkdir()
+        # Construct Atlas
+        atl = TestS2SBExpand.crt.bibtex_to_atlas(bibtex_fp)
+
+        pub = list(atl.publications.values())[0]
+        center = pub.identifier
+
+        sorted_keys, sorted_values = TestS2SBSort.crt.sort(
+            atl, center=center)
+        assert len(sorted_keys) == 10
+        assert sorted_keys[0] == center
+        assert sorted_values[0] > sorted_values[1]
+        assert sorted_values[1] > sorted_values[-1]
+
+
 class TestS2SBExpand:
     librarian = SemanticScholarLibrarian()
     vectorizer = SciBERTVectorizer()
@@ -339,7 +369,7 @@ class TestS2SBExpand:
         pub = list(atl.publications.values())[0]
         ids = pub.citations + pub.references
         center = pub.identifier
-
+ 
         atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
         assert len(atl_exp_single) == len(ids)
 

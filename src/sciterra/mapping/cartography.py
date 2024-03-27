@@ -14,7 +14,7 @@ from ..vectorization.vectorizer import Vectorizer
 from ..vectorization.projection import Projection, merge, get_empty_projection
 from ..misc.utils import get_verbose, custom_formatwarning
 
-from typing import Callable
+from typing import Callable, Tuple
 from tqdm import tqdm
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -251,6 +251,51 @@ class Cartographer:
         return atl_filtered
 
     ######################################################################
+    # Sort Atlas
+    ######################################################################
+
+    def sort(
+        self,
+        atl: Atlas,
+        center: str,
+    ) -> Tuple[list[str], list[str]]:
+        """Sort an atlas according to cosine similarity to a center publication.
+        Like numpy argsort, this returns identifiers that can be used to
+        index the original atlas.
+
+        Args:
+            atl: the atlas to sort
+
+            center: center the search on this publication
+
+        Returns:
+            sorted_keys: keys in descending order of similarity to the center publication
+            sorted_values: values in descending order of similarity to the center publication
+        """
+
+        # If atlas is initial
+        if atl.projection is None:
+            atl = self.project(atl)
+            if atl.projection is None:
+                raise Exception(
+                    f"Initial projection of atlas failed; make sure the initial publication has all the required attributes."
+                )
+
+        if len(atl.projection):
+            # build cosine similarity matrix, of shape (1, num_pubs)
+            cospsi_matrix = cosine_similarity(
+                atl.projection.identifiers_to_embeddings([center]),
+                atl.projection.embeddings,
+            )
+            # get most similar keys from center, including center itself
+            sort_inds = np.argsort(cospsi_matrix)[-1][::-1]
+            # argsort orders from least to greatest similarity, so reverse
+            sorted_keys = atl.projection.indices_to_identifiers(sort_inds)
+            sorted_values = cospsi_matrix[0][sort_inds]
+
+            return sorted_keys, sorted_values
+
+    ######################################################################
     # Expand Atlas
     ######################################################################
 
@@ -280,28 +325,16 @@ class Cartographer:
         Returns:
             atl_expanded: the expanded atlas
         """
-        existing_keys = set(atl.ids)
-        expand_keys = existing_keys
-        if center is not None:
-            # If atlas is initial
-            if atl.projection is None:
-                atl = self.project(atl)
-                if atl.projection is None:
-                    raise Exception(
-                        f"Initial projection of atlas failed; make sure the initial publication has all the required attributes."
-                    )
 
-            if len(atl.projection):
-                # build cosine similarity matrix, of shape (1, num_pubs)
-                cospsi_matrix = cosine_similarity(
-                    atl.projection.identifiers_to_embeddings([center]),
-                    atl.projection.embeddings,
-                )
-                # get most similar keys from center, including center itself
-                sort_inds = np.argsort(cospsi_matrix)[::-1][
-                    0
-                ]  # argsort orders from least to greatest similarity, so reverse
-                expand_keys = atl.projection.indices_to_identifiers(sort_inds)
+        # Get the keys to expand
+        expand_keys = None
+        if center is not None:
+            expand_keys = self.sort(atl, center)[0]
+
+        # If that didn't work, just use all the keys
+        existing_keys = set(atl.ids)
+        if expand_keys is None:
+            expand_keys = existing_keys
 
         if n_sources_max is not None:
             expand_keys = expand_keys[:n_sources_max]
