@@ -4,8 +4,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 requirements = [
+    "pytest",
     "ads",
     "bibtexparser",
+    "scipy==1.12",  # Fix to 1.12 to enable use of scipy.linalg.triu by gensim
     "gensim",
     "numpy",
     "pandas",
