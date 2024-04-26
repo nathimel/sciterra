@@ -1,0 +1,24 @@
+services:
+  devcontainer:
+    build: 
+      context: ..
+      dockerfile: ./build/Dockerfile
+      # dockerfile: ./.devcontainer/devtest.Dockerfile
+    volumes:
+      # - ../..:/workspaces:cached
+      - /Users/Shared/repos/NITELite-pipeline:/NITELite-pipeline:cached
+      - /Users/Shared/data/night_horizons_test_data:/data:cached
+    command: sleep infinity
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    restart: always
+    environment: 
+      POSTGRES_DB: sciterra
+      POSTGRES_USER: sciterra
+      POSTGRES_PASSWORD: sciterra
+    ports:
+      - 5432:5432
+    volumes:
+      - /Users/Shared/data/postgis:/var/lib/postgresql/data
