@@ -11,6 +11,7 @@ requirements = [
     "pandas",
     "plotnine",
     "scikit-learn",
+    "scipy==1.10.1",
     "sentence-transformers",
     "semanticscholar==0.5.0",  # 0.6.0 has AsyncSemanticScholar which creates difficulties
     "spacy",
@@ -26,7 +27,7 @@ test_requirements = [
 
 setuptools.setup(
     name="sciterra",
-    version="0.0.1",
+    version="0.0.2",
     author="Nathaniel Imel",
     author_email="nimel@uci.edu",
     description="Scientific literature data exploration analysis",
