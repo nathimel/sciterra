@@ -1,6 +1,5 @@
 """Functions for measuring topographic properties of (the semantic feature space of publications inside) an Atlas."""
 
-import inspect
 import numpy as np
 
 
@@ -36,10 +35,7 @@ def smoothing_length_metric(
         return np.nan
 
     # Get 1D array of similarity scores to idx vector
-    try:
-        cospsi = cospsi_matrix[idx][valid_indices]
-    except IndexError:
-        breakpoint()
+    cospsi = cospsi_matrix[idx][valid_indices]
 
     # Get cosine distance to the least similar vector
     # np.sort orders from least to greatest similarity, so reverse after

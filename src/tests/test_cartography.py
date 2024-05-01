@@ -10,7 +10,6 @@ from sciterra.mapping.atlas import Atlas
 from sciterra.mapping.cartography import (
     Cartographer,
     pub_has_attributes,
-    pub_has_fields_of_study,
 )
 from sciterra.librarians.s2librarian import SemanticScholarLibrarian
 from sciterra.mapping.publication import Publication
@@ -296,8 +295,7 @@ class TestS2SBSort:
         pub = list(atl.publications.values())[0]
         center = pub.identifier
 
-        sorted_keys, sorted_values = TestS2SBSort.crt.sort(
-            atl, center=center)
+        sorted_keys, sorted_values = TestS2SBSort.crt.sort(atl, center=center)
         assert len(sorted_keys) == 10
         assert sorted_keys[0] == center
         assert sorted_values[0] > sorted_values[1]
@@ -369,7 +367,7 @@ class TestS2SBExpand:
         pub = list(atl.publications.values())[0]
         ids = pub.citations + pub.references
         center = pub.identifier
- 
+
         atl_exp_single = TestS2SBExpand.crt.expand(atl, center=center)
         assert len(atl_exp_single) == len(ids)
 

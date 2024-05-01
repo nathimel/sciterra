@@ -701,14 +701,11 @@ class Cartographer:
         # From here on, use embedding indices instead of identifiers
         # our embeddings are already in the correct order, so just use them
         publication_indices = np.arange(len(embeddings))
-        # publication_indices = atl.projection.identifiers_to_indices(ids)
 
         print(f"Computing {metrics} for {len(ids)} publications.")
         estimates = []
-        # for idx in tqdm(publication_indices):
         for idx, identifier in tqdm(enumerate(ids), total=len(ids)):
             # Get the date of publication
-            # identifier = atl.projection.index_to_identifier[idx]
             date = atl[identifier].publication_date
 
             # Identify prior publications
