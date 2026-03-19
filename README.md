@@ -150,14 +150,24 @@ In practice, it may be helpful to use the [`sciterra.mapping.tracing.AtlasTracer
 
 This software is a reimplimentation of Zachary Hafen-Saavedra's library, [cc](https://github.com/zhafen/cc).
 
-To cite sciterra, please use the following workshop paper,
+If you find sciterra useful, please consider citing the following work:
 
 ```
-@inproceedings{Imel2023,
- author = {Imel, Nathaniel, and Hafen, Zachary},
- title = {Citation-similarity relationships in astrophysics},
- booktitle = {AI for Scientific Discovery: From Theory to Practice Workshop (AI4Science @ NeurIPS)},
- year = {2023},
- url = {https://openreview.net/pdf?id=mISayy7DPI},
+@inproceedings{Imel2023Citation,
+  author       = {Imel, Nathaniel and Hafen, Zachary},
+  title        = {Citation-similarity relationships in astrophysics},
+  booktitle    = {AI for Scientific Discovery: From Theory to Practice Workshop (AI4Science @ NeurIPS)},
+  year         = {2023},
+  url          = {https://openreview.net/pdf?id=mISayy7DPI},
+}
+ 
+@misc{Imel2025Density,
+  author       = {Imel, Nathaniel and Hafen, Zachary},
+  title        = {Density, asymmetry and citation dynamics in scientific literature},
+  year         = {2025},
+  eprint       = {2506.23366},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.DL},
+  url          = {https://arxiv.org/abs/2506.23366},
 }
 ```
