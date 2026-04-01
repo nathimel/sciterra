@@ -1,0 +1,17 @@
+# Use postgres/example user/password credentials
+version: '3.9'
+
+services:
+  sciterra:
+    image: sciterra:latest
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    restart: always
+    environment: 
+      POSTGRES_DB: sciterra
+      POSTGRES_USER: sciterra
+      POSTGRES_PASSWORD: sciterra
+    ports:
+      - 5432:5432

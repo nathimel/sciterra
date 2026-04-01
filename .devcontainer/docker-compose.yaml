@@ -1,0 +1,22 @@
+services:
+  devcontainer:
+    build: 
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    volumes:
+      - ../..:/workspaces:cached
+      - /Users/Shared/data/sciterra:/data
+    command: sleep infinity
+    depends_on:
+      - db
+  db:
+    image: postgres:latest
+    restart: always
+    environment: 
+      POSTGRES_DB: sciterra
+      POSTGRES_USER: sciterra
+      POSTGRES_PASSWORD: sciterra
+    ports:
+      - 5432:5432
+    volumes:
+      - /Users/Shared/data/sciterra/db:/var/lib/postgresql/data
